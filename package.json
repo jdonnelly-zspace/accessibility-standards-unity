@@ -4,7 +4,11 @@
   "description": "Comprehensive accessibility standards framework for WCAG 2.2 Level AA compliance across all projects",
   "main": "index.js",
   "type": "module",
+  "bin": {
+    "a11y-setup": "./bin/setup.js"
+  },
   "scripts": {
+    "setup": "node bin/setup.js",
     "scrape:update": "node scrapers/update-standards.js",
     "test": "echo \"No tests yet\" && exit 0"
   },

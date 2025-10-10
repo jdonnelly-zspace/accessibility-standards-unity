@@ -23,6 +23,44 @@ This repository contains **everything you need** to build accessible web applica
 
 ---
 
+## 🚀 Quick Install (One Command)
+
+### Option 1: Interactive Setup (Recommended)
+
+```bash
+cd your-project
+npx github:jdonnelly-zspace/accessibility-standards
+```
+
+**What it does:**
+- Prompts you to choose what to install
+- Copies ESLint config, Playwright tests, and/or components
+- Installs npm dependencies automatically
+- Updates package.json with scripts
+- Takes ~2 minutes
+
+---
+
+### Option 2: Bash Script (No Node.js needed)
+
+```bash
+# Full installation (ESLint + Tests + Components)
+curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/scripts/install.sh | bash
+
+# Or install specific parts:
+curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/scripts/install.sh | bash -s -- --eslint --tests
+
+# Options: --eslint, --tests, --components, --all
+```
+
+---
+
+### Option 3: Manual (Full Control)
+
+See "Getting Started" section below for manual installation steps.
+
+---
+
 ## Quick Start by Role
 
 ### 👨‍💻 Developers
