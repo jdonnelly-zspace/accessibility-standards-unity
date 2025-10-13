@@ -27,7 +27,7 @@ This guide shows QA engineers how to test for accessibility compliance using aut
 #### Run Playwright Accessibility Tests
 
 ```bash
-# Run all accessibility tests
+# Run all accessibility tests (includes WCAG 2.2 tests)
 npx playwright test accessibility
 
 # Run specific test
@@ -41,9 +41,16 @@ npx playwright show-report
 ```
 
 **Expected Results:**
-- ✅ All tests pass
+- ✅ All tests pass (including 5 new WCAG 2.2 tests)
 - ✅ 0 axe-core violations
 - ✅ No console errors
+
+**New WCAG 2.2 Tests Included:**
+- SC 2.4.11: Focus Not Obscured
+- SC 2.5.7: Dragging Movements
+- SC 2.5.8: Target Size (Minimum)
+- SC 3.3.7: Redundant Entry
+- SC 3.3.8: Accessible Authentication
 
 **If Tests Fail:**
 1. Review violation details in report
@@ -74,6 +81,10 @@ npx playwright show-report
 | Low contrast text | 1.4.3 | Increase contrast to 4.5:1+ |
 | Missing form labels | 3.3.2 | Add label with htmlFor |
 | Heading order skip | 1.3.1 | Fix H1 → H2 → H3 order |
+| Focus hidden by header | 2.4.11 🆕 | Add scroll-padding-top CSS |
+| Small touch targets | 2.5.8 🆕 | Make buttons ≥ 24x24px |
+| No drag alternatives | 2.5.7 🆕 | Add keyboard controls |
+| Missing autocomplete | 3.3.7 🆕 | Add autocomplete attributes |
 
 ---
 
@@ -86,6 +97,7 @@ npx playwright show-report
 - [ ] Continue Tab - focus moves through all elements in logical order
 - [ ] Press Shift+Tab - focus moves backward
 - [ ] Focus indicator clearly visible on all elements
+- [ ] **🆕 WCAG 2.2: Focus not obscured by sticky headers/footers (SC 2.4.11)**
 - [ ] No keyboard traps (can Tab away from everything)
 
 **Interactive Elements:**
@@ -93,6 +105,8 @@ npx playwright show-report
 - [ ] Space bar activates buttons and toggles checkboxes
 - [ ] Arrow keys navigate within menus/dropdowns (if applicable)
 - [ ] Escape key closes modals and dropdowns
+- [ ] **🆕 WCAG 2.2: All interactive elements ≥ 24x24px (SC 2.5.8)**
+- [ ] **🆕 WCAG 2.2: Draggable items have keyboard alternatives (SC 2.5.7)**
 
 **Test Cases:**
 ```
@@ -250,12 +264,14 @@ Test: Blog Post Card
    - [ ] Content reflows to single column
    - [ ] No horizontal scrolling
    - [ ] All functionality available
-   - [ ] Touch targets ≥ 44x44 pixels
+   - [ ] Touch targets ≥ 44x44 pixels (prefer) or ≥ 24x24px (minimum per SC 2.5.8)
 
 **DevTools:**
 1. F12 → Toggle device toolbar
 2. Select "Responsive"
 3. Set width to 320px
+
+**Note:** WCAG 2.2 SC 2.5.8 requires minimum 24x24 CSS pixels, but 44x44 is recommended for mobile.
 
 ---
 
@@ -319,7 +335,163 @@ Test: Blog Post Card
 ✓ Escape key closes modal
 ✓ Focus returns to trigger on close
 ✓ Modal has role="dialog" and aria-modal="true"
+✓ 🆕 WCAG 2.2: Focused elements not obscured by modal overlay (SC 2.4.11)
 ```
+
+---
+
+## WCAG 2.2 Specific Testing
+
+### New Success Criteria Manual Tests
+
+#### SC 2.4.11: Focus Not Obscured (Minimum) - Level AA
+
+**Test Procedure:**
+1. Navigate to page with sticky header/footer
+2. Tab through all interactive elements
+3. Verify: Each focused element is at least partially visible
+4. Check: Fixed content doesn't completely hide focus
+
+**Pass Criteria:**
+- ✅ No focused element is completely hidden by fixed content
+- ✅ At least part of the focus indicator is visible
+- ✅ Scrolling reveals the focused element if needed
+
+**Common Violations:**
+- Sticky header covers focused elements at top
+- Fixed footer obscures buttons at bottom
+- Modal overlays hide focused elements
+
+**Fix:**
+```css
+html {
+  scroll-padding-top: 80px; /* Height of fixed header */
+  scroll-padding-bottom: 60px; /* Height of fixed footer */
+}
+```
+
+---
+
+#### SC 2.5.7: Dragging Movements - Level AA
+
+**Test Procedure:**
+1. Identify all drag-and-drop functionality
+2. Verify alternative methods exist:
+   - Up/Down buttons
+   - Click-to-select, click-destination
+   - Keyboard shortcuts (Ctrl+Arrow)
+3. Test all alternatives work
+
+**Pass Criteria:**
+- ✅ Every drag operation has a non-dragging alternative
+- ✅ Keyboard users can perform same actions
+- ✅ Touch users can use tap/button controls
+
+**Examples to Test:**
+- Sortable lists
+- File uploads (must have "Browse" button)
+- Sliders (must have text input or arrow buttons)
+- Kanban boards (must have move buttons)
+
+---
+
+#### SC 2.5.8: Target Size (Minimum) - Level AA
+
+**Test Procedure:**
+1. Measure all interactive elements
+2. Use DevTools to inspect dimensions
+3. Verify: width ≥ 24px AND height ≥ 24px
+
+**Pass Criteria:**
+- ✅ All buttons/links are ≥ 24x24 CSS pixels
+- ✅ Icon buttons meet minimum size
+- ✅ Form controls meet minimum size
+
+**Exceptions:**
+- Inline text links (in paragraphs)
+- Elements with sufficient spacing (>24px gap)
+
+**Measurement Tool:**
+```javascript
+// Run in console to measure element
+document.querySelectorAll('button, a, input[type="checkbox"]').forEach(el => {
+  const rect = el.getBoundingClientRect();
+  if (rect.width < 24 || rect.height < 24) {
+    console.warn('Too small:', el, `${rect.width}x${rect.height}px`);
+  }
+});
+```
+
+---
+
+#### SC 3.3.7: Redundant Entry - Level A
+
+**Test Procedure:**
+1. Fill out multi-step forms
+2. Look for repeated information requests
+3. Check if form remembers previous entries
+
+**Pass Criteria:**
+- ✅ Information auto-filled from previous steps
+- ✅ "Same as billing address" checkbox works
+- ✅ Autocomplete attributes on common fields
+- ✅ Previous selections available in dropdowns
+
+**Test Scenario:**
+```
+Checkout Process:
+1. Enter email on Step 1
+2. Go to Step 2
+3. Verify: Email is pre-filled or available to select
+4. Enter billing address
+5. Go to shipping address
+6. Verify: "Same as billing" option exists
+```
+
+**Common Fields to Check:**
+- Email, phone, address (should use autocomplete)
+- Payment info across sessions
+- User preferences (should persist)
+
+---
+
+#### SC 3.3.8: Accessible Authentication (Minimum) - Level AA
+
+**Test Procedure:**
+1. Find login/authentication forms
+2. Check password field attributes
+3. Test paste functionality
+4. Look for alternative auth methods
+
+**Pass Criteria:**
+- ✅ Password field has autocomplete="current-password"
+- ✅ Password field allows paste (Cmd/Ctrl+V)
+- ✅ No cognitive tests (CAPTCHAs that require transcription)
+- ✅ Alternative methods available (magic link, biometric, SSO)
+
+**Tests:**
+```
+Test: Password Manager Support
+1. Right-click password field
+2. Verify: Browser offers to fill password
+3. Test: Autofill works
+
+Test: Paste Functionality
+1. Copy password from password manager
+2. Paste into password field (Cmd/Ctrl+V)
+3. Verify: Paste is not blocked
+
+Test: Alternatives
+1. Look for "Email me a link" option
+2. Look for "Sign in with Google/Microsoft" option
+3. Look for biometric option (if mobile)
+```
+
+**Violations:**
+- Password field has autocomplete="off"
+- onPaste event blocked
+- CAPTCHA requires transcription with no audio alternative
+- Only password authentication available
 
 ---
 
@@ -357,17 +529,22 @@ Test: Blog Post Card
 - Lighthouse (Chrome DevTools)
 - axe DevTools (browser extension)
 - WAVE (browser extension)
-- Playwright + axe-core (CI/CD)
+- Playwright + axe-core (CI/CD) - includes WCAG 2.2 tests
+- W3C HTML Validator: `npm run validate:html`
+- W3C CSS Validator: `npm run validate:css`
+- W3C Link Checker: `npm run check:links`
 
 **Manual:**
 - WebAIM Contrast Checker
 - VoiceOver (macOS)
 - NVDA (Windows)
 - Keyboard only
+- DevTools Inspect (for measuring target sizes)
 
 **Documentation:**
-- `/standards/WCAG-2.2-LEVEL-AA.md` - Complete checklist
+- `/standards/WCAG-2.2-LEVEL-AA.md` - Complete checklist with all 9 new criteria
 - `/resources/TOOLS-CATALOG.md` - All testing tools
+- `/implementation/testing/playwright-setup/` - Test templates
 
 ---
 

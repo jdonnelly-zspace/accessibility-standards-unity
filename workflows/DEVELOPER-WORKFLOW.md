@@ -25,15 +25,23 @@ cp implementation/testing/playwright-setup/accessibility.spec.js ./tests/e2e/
 
 ### 3. Copy Components
 ```bash
-# Reusable accessible components
+# Reusable accessible components demonstrating WCAG 2.2 compliance
 cp implementation/development/components/Tooltip.jsx ./src/components/
+cp implementation/development/components/AccessibleAuthForm.jsx ./src/components/
+cp implementation/development/components/ConsistentHelp.jsx ./src/components/
+cp implementation/development/components/DraggableList.jsx ./src/components/
 ```
 
-### 4. Run Linter
+### 4. Run Linter & Validators
 ```bash
 npm run lint
 # Fix auto-fixable issues
 npm run lint -- --fix
+
+# W3C validation (HTML, CSS, Links)
+npm run validate:html ./dist/index.html
+npm run validate:css ./dist/styles.css
+npm run check:links https://your-site.com
 ```
 
 ---
@@ -46,6 +54,9 @@ npm run lint -- --fix
 - [ ] Check if design includes accessibility annotations
 - [ ] Identify interactive elements that need keyboard support
 - [ ] Note any custom components that need ARIA
+- [ ] Review WCAG 2.2 new criteria (focus visibility, target size, dragging alternatives)
+- [ ] Check if forms need autocomplete attributes (SC 3.3.7)
+- [ ] Verify authentication doesn't require cognitive tests (SC 3.3.8)
 
 **Set Up Linting**
 - [ ] Install ESLint with jsx-a11y plugin
@@ -176,10 +187,12 @@ npm run lint -- --fix
 
 **Checklist:**
 - [ ] All buttons/links reachable via Tab
-- [ ] Focus indicator clearly visible
+- [ ] Focus indicator clearly visible (SC 2.4.11 - not obscured by sticky headers)
 - [ ] Tab order matches visual order
 - [ ] No keyboard traps (can always Tab away)
 - [ ] Modals close with Escape
+- [ ] Interactive elements at least 24x24px (SC 2.5.8)
+- [ ] Draggable interfaces have keyboard alternatives (SC 2.5.7)
 
 #### Use Browser DevTools
 
@@ -250,6 +263,9 @@ npx playwright test --ui
 # Run all accessibility checks before committing
 npm run lint
 npm run test:a11y
+
+# W3C validation (HTML, CSS, Links)
+npm run validate:all
 ```
 
 **Husky Pre-Commit Hook (Optional):**
@@ -457,6 +473,156 @@ function useReducedMotion() {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+```
+
+---
+
+---
+
+## WCAG 2.2 Specific Requirements
+
+### New in WCAG 2.2 - Developer Checklist
+
+#### SC 2.4.11: Focus Not Obscured (Level AA)
+**Requirement:** Focused elements must not be completely hidden by sticky/fixed content.
+
+**Implementation:**
+```css
+/* Add scroll padding to account for fixed headers */
+html {
+  scroll-padding-top: 80px; /* Height of fixed header */
+}
+
+/* Fixed header should not obscure focus */
+.fixed-header {
+  position: fixed;
+  top: 0;
+  z-index: 100;
+}
+```
+
+#### SC 2.5.7: Dragging Movements (Level AA)
+**Requirement:** All dragging functionality must have a single-pointer alternative.
+
+**Implementation:**
+```jsx
+// Use the DraggableList component from components/
+import DraggableList from './components/DraggableList';
+
+// Or provide alternative controls
+function SortableItem({ item, onMoveUp, onMoveDown }) {
+  return (
+    <div draggable onDragStart={...}>
+      {item.name}
+      {/* Alternative: buttons for keyboard/touch users */}
+      <button onClick={onMoveUp} aria-label="Move up">↑</button>
+      <button onClick={onMoveDown} aria-label="Move down">↓</button>
+    </div>
+  );
+}
+```
+
+#### SC 2.5.8: Target Size (Minimum) (Level AA)
+**Requirement:** Interactive elements must be at least 24x24 CSS pixels.
+
+**Implementation:**
+```css
+/* Ensure minimum touch target size */
+button,
+a,
+input[type="checkbox"],
+input[type="radio"] {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 12px; /* Or use padding to reach 24x24 */
+}
+
+/* Icon buttons */
+.icon-button {
+  width: 44px;  /* 44x44 is better for mobile */
+  height: 44px;
+  padding: 10px;
+}
+```
+
+#### SC 3.3.7: Redundant Entry (Level A)
+**Requirement:** Don't make users re-enter information already provided.
+
+**Implementation:**
+```jsx
+function CheckoutForm() {
+  const [sameAsBilling, setSameAsBilling] = useState(false);
+
+  return (
+    <form>
+      {/* Billing address */}
+      <AddressFields name="billing" />
+
+      {/* Shipping address with auto-fill option */}
+      <label>
+        <input
+          type="checkbox"
+          checked={sameAsBilling}
+          onChange={(e) => setSameAsBilling(e.target.checked)}
+        />
+        Shipping address same as billing
+      </label>
+
+      {!sameAsBilling && <AddressFields name="shipping" />}
+
+      {/* Autocomplete for common fields */}
+      <input
+        type="email"
+        name="email"
+        autoComplete="email"
+        required
+      />
+      <input
+        type="tel"
+        name="phone"
+        autoComplete="tel"
+        required
+      />
+    </form>
+  );
+}
+```
+
+#### SC 3.3.8: Accessible Authentication (Level AA)
+**Requirement:** Authentication must not require cognitive function tests (memory, puzzles) without alternatives.
+
+**Implementation:**
+```jsx
+// Use the AccessibleAuthForm component from components/
+import AccessibleAuthForm from './components/AccessibleAuthForm';
+
+// Or ensure your login form:
+// 1. Supports password managers (autocomplete attribute)
+// 2. Allows paste (don't block onPaste)
+// 3. Provides alternatives (magic link, SSO, biometric)
+function LoginForm() {
+  return (
+    <form>
+      <input
+        type="email"
+        autoComplete="email"  // ✅ Password manager support
+        required
+      />
+      <input
+        type="password"
+        autoComplete="current-password"  // ✅ Password manager support
+        // ❌ NO: onPaste={(e) => e.preventDefault()}
+        required
+      />
+      <button type="submit">Sign In</button>
+
+      {/* Alternative authentication methods */}
+      <button type="button" onClick={sendMagicLink}>
+        Email me a sign-in link
+      </button>
+    </form>
+  );
 }
 ```
 

@@ -10,9 +10,11 @@ This guide shows designers how to create accessible designs that meet WCAG 2.2 L
 1. ✅ Color contrast ≥ 4.5:1 for text
 2. ✅ Color contrast ≥ 3:1 for UI components
 3. ✅ Visible focus states for all interactive elements
-4. ✅ Keyboard interaction patterns specified
-5. ✅ ARIA labels documented for icon-only elements
-6. ✅ Touch targets ≥ 44x44px (mobile)
+4. ✅ **🆕 WCAG 2.2: Focus not obscured by sticky headers (SC 2.4.11)**
+5. ✅ Keyboard interaction patterns specified
+6. ✅ ARIA labels documented for icon-only elements
+7. ✅ **🆕 WCAG 2.2: Interactive elements ≥ 24x24px minimum (44x44px recommended)**
+8. ✅ **🆕 WCAG 2.2: Draggable interfaces have button alternatives**
 
 **Tools:**
 - WebAIM Contrast Checker: https://webaim.org/resources/contrastchecker/
@@ -285,10 +287,285 @@ Keyboard:
 - [ ] Required fields marked (visual + aria-required noted)
 
 ### Responsive
-- [ ] Mobile designs include touch targets ≥ 44x44px
+- [ ] Mobile designs include touch targets ≥ 44x44px (≥ 24x24px minimum per WCAG 2.2)
 - [ ] Content reflows at 320px width
 - [ ] Zoom to 200% considered
 - [ ] Breakpoints specified
+
+### WCAG 2.2 Specific
+- [ ] **SC 2.4.11:** Fixed headers don't obscure focused elements
+- [ ] **SC 2.5.7:** Draggable elements have button/keyboard alternatives
+- [ ] **SC 2.5.8:** All interactive elements ≥ 24x24 CSS pixels
+- [ ] **SC 3.3.7:** Forms designed to avoid redundant entry (auto-fill patterns)
+- [ ] **SC 3.3.8:** Authentication designed with password manager support
+
+---
+
+## WCAG 2.2 New Requirements for Designers
+
+### SC 2.4.11: Focus Not Obscured (Minimum) - Level AA
+
+**Problem:** Sticky/fixed headers can hide focused elements when users tab through page.
+
+**Design Solution:**
+
+**Option 1: Leave Space for Focus**
+```
+Design Layout:
+┌─────────────────────┐
+│ Fixed Header (60px) │
+├─────────────────────┤
+│                     │ ← Ensure 10-20px buffer
+│ [Focused Button]    │ ← Focus ring visible
+│                     │
+│ Content             │
+│                     │
+└─────────────────────┘
+```
+
+**Option 2: Transparent/Semi-Transparent Header**
+```
+Fixed Header:
+  Background: rgba(255,255,255,0.9)
+  Backdrop-filter: blur(10px)
+
+Note: Focused elements partially visible through header
+```
+
+**Figma Annotation:**
+```
+Fixed Header (z-index: 100)
+⚠️ Developer Note: Add scroll-padding-top: 80px to prevent focus being hidden
+```
+
+---
+
+### SC 2.5.7: Dragging Movements - Level AA
+
+**Requirement:** All drag-and-drop must have non-dragging alternatives.
+
+**Design Patterns:**
+
+**Pattern 1: Sortable List**
+```
+Item Layout:
+┌─────────────────────────┐
+│ ⋮⋮ Task Name        [↑] │
+│                     [↓] │
+└─────────────────────────┘
+
+Annotations:
+• Drag handle (⋮⋮) for mouse users
+• Up/Down buttons for keyboard/touch users
+• Keyboard: Ctrl+Arrow to reorder
+```
+
+**Pattern 2: File Upload**
+```
+❌ Bad:
+  "Drag and drop files here"
+
+✅ Good:
+  "Drag and drop files here or"
+  [Choose Files] button
+```
+
+**Pattern 3: Slider**
+```
+Slider Design:
+[──────●──────] 50%
+[-]         [+]
+[Text Input: 50]
+
+Alternatives provided:
+• Drag slider thumb
+• Click track to jump
+• +/- buttons
+• Direct number input
+```
+
+---
+
+### SC 2.5.8: Target Size (Minimum) - Level AA
+
+**Requirement:** Interactive elements must be ≥ 24x24 CSS pixels.
+
+**Updated Guidelines:**
+- **Minimum:** 24x24px (WCAG 2.2 Level AA)
+- **Recommended:** 44x44px (better usability, especially mobile)
+- **Ideal:** 48x48px (Material Design guideline)
+
+**Design Examples:**
+
+**Icon Buttons:**
+```
+❌ Too Small:
+  Icon: 16x16px
+  Button: 20x20px
+  ❌ Fails WCAG 2.2
+
+✅ Minimum:
+  Icon: 20x20px
+  Button: 24x24px with 2px padding
+  ✅ Passes (24x24 total)
+
+✅ Recommended:
+  Icon: 24x24px
+  Button: 44x44px with 10px padding
+  ✅ Excellent usability
+```
+
+**Form Controls:**
+```
+Checkbox:
+  Visible box: 18x18px
+  Click area: 24x24px (add padding)
+  Label: "Remember me" (clicking label also works)
+
+Radio Button:
+  Same as checkbox
+```
+
+**Spacing Exception:**
+```
+If elements have ≥ 24px spacing between them,
+they can be smaller than 24x24px.
+
+Example: Pagination
+[ 1 ] [ 2 ] [ 3 ] [ 4 ]
+  ↑     ↑     ↑     ↑
+ 20px  28px  28px  20px spacing
+
+20x20 buttons OK because spacing > 24px
+```
+
+**Figma Measurement:**
+```
+Layer Annotations:
+Button: 44x44px ✅ WCAG 2.2 AA
+Icon: 24x24px
+Padding: 10px all sides
+```
+
+---
+
+### SC 3.3.7: Redundant Entry - Level A
+
+**Requirement:** Don't make users re-enter information.
+
+**Design Patterns:**
+
+**Pattern 1: Multi-Step Forms**
+```
+Step 1: Contact Info
+  Email: _____________
+  Phone: _____________
+
+Step 2: Shipping Address
+  Email: user@example.com (pre-filled from Step 1)
+
+Note to Developer:
+  • Auto-populate email from Step 1
+  • Use autocomplete="email"
+```
+
+**Pattern 2: Billing = Shipping**
+```
+Billing Address:
+  Street: _____________
+  City: _____________
+  ...
+
+Shipping Address:
+  ☐ Same as billing address
+
+  [If checked, fields auto-fill]
+```
+
+**Pattern 3: Form Draft Saving**
+```
+Long Form Design:
+  "Your progress is automatically saved"
+
+  If user leaves and returns:
+  • Form data restored
+  • User can continue where they left off
+```
+
+**Annotations:**
+```
+Form Fields:
+• Email: autocomplete="email"
+• Phone: autocomplete="tel"
+• Address: autocomplete="street-address"
+• City: autocomplete="address-level2"
+• ZIP: autocomplete="postal-code"
+```
+
+---
+
+### SC 3.3.8: Accessible Authentication (Minimum) - Level AA
+
+**Requirement:** No cognitive function tests without alternatives.
+
+**Design Patterns:**
+
+**Pattern 1: Password Field with Manager Support**
+```
+Login Form:
+  Email: _____________
+         autocomplete="email"
+
+  Password: ●●●●●●●● [👁️]
+            autocomplete="current-password"
+            [Paste is allowed]
+
+  [Sign In]
+
+Annotations:
+⚠️ Developer: DO NOT block paste on password field
+⚠️ Developer: DO NOT use autocomplete="off"
+```
+
+**Pattern 2: Alternative Authentication**
+```
+Sign In Options:
+
+  Tab 1: Password
+    [Email and Password fields]
+
+  Tab 2: Magic Link
+    [Email only - sends login link]
+
+  Tab 3: Social Login
+    [Continue with Google]
+    [Continue with Microsoft]
+```
+
+**Pattern 3: Password Reset**
+```
+❌ Bad CAPTCHA:
+  "Type the text you see: gR8k2p"
+  (Requires transcription = cognitive test)
+
+✅ Good Alternative:
+  "Check your email for reset link"
+  (No cognitive test required)
+```
+
+**Pattern 4: Show/Hide Password**
+```
+Password Field:
+  [●●●●●●●●●] [👁️ Show]
+
+When clicked:
+  [mypassword] [👁️‍🗨️ Hide]
+
+Purpose:
+  • Helps users verify password
+  • Reduces cognitive load (remembering)
+  • Supports accessibility
+```
 
 ---
 
@@ -512,9 +789,9 @@ Notes:
 
 ---
 
-### Mistake #4: Small Touch Targets (Mobile)
-**❌ Problem:** 32x32px button on mobile
-**✅ Solution:** 44x44px minimum touch target
+### Mistake #4: Small Touch Targets
+**❌ Problem:** 20x20px button
+**✅ Solution:** 24x24px minimum (WCAG 2.2), 44x44px recommended
 
 ---
 

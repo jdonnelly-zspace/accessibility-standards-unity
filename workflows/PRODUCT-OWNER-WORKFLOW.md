@@ -26,19 +26,24 @@ This guide shows Product Owners how to ensure accessibility is built into the pr
 
 #### Add Accessibility to Acceptance Criteria
 
-**Standard Acceptance Criteria Template:**
+**Standard Acceptance Criteria Template (WCAG 2.2):**
 ```
 User Story: As a [user], I want to [action], so that [benefit]
 
 Acceptance Criteria:
 - [ ] [Functional requirement 1]
 - [ ] [Functional requirement 2]
-- [ ] **Accessibility:**
+- [ ] **Accessibility (WCAG 2.2 Level AA):**
   - [ ] All interactive elements keyboard accessible
   - [ ] Color contrast meets WCAG AA (4.5:1 minimum)
   - [ ] Screen reader compatible
+  - [ ] 🆕 Focus not obscured by fixed/sticky headers (SC 2.4.11)
+  - [ ] 🆕 Interactive elements ≥ 24x24 CSS pixels (SC 2.5.8)
+  - [ ] 🆕 Draggable features have keyboard alternatives (SC 2.5.7)
+  - [ ] 🆕 Forms use autocomplete to prevent redundant entry (SC 3.3.7)
   - [ ] Lighthouse accessibility score ≥ 95
   - [ ] Zero axe DevTools violations
+  - [ ] W3C HTML validation passes
 ```
 
 **Example User Story:**
@@ -62,7 +67,7 @@ Acceptance Criteria:
 
 ---
 
-#### Accessibility Requirements Checklist
+#### Accessibility Requirements Checklist (WCAG 2.2)
 
 **For Every Feature:**
 - [ ] Keyboard navigation defined
@@ -70,12 +75,17 @@ Acceptance Criteria:
 - [ ] Screen reader behavior described
 - [ ] Focus management plan (for modals/dynamic content)
 - [ ] Error handling accessibility (form validation, error messages)
+- [ ] **🆕 WCAG 2.2: Target size ≥ 24x24px for interactive elements**
+- [ ] **🆕 WCAG 2.2: Focus visibility with sticky headers considered**
 
 **For Complex Features:**
 - [ ] ARIA patterns identified (from W3C APG)
 - [ ] Keyboard shortcuts defined (if applicable)
 - [ ] Animation/motion preferences considered
 - [ ] Multi-language support planned (if applicable)
+- [ ] **🆕 WCAG 2.2: Drag-and-drop alternatives designed (SC 2.5.7)**
+- [ ] **🆕 WCAG 2.2: Form autocomplete strategy (SC 3.3.7)**
+- [ ] **🆕 WCAG 2.2: Authentication without cognitive tests (SC 3.3.8)**
 
 ---
 
@@ -106,15 +116,17 @@ Acceptance Criteria:
 
 #### Definition of Done (DoD)
 
-**Standard DoD Must Include:**
+**Standard DoD Must Include (WCAG 2.2):**
 ```
 Definition of Done:
 - [ ] Code complete and peer reviewed
 - [ ] Unit tests pass
 - [ ] **ESLint accessibility checks pass (0 warnings)**
-- [ ] **Playwright accessibility tests pass**
+- [ ] **Playwright accessibility tests pass (including 5 WCAG 2.2 tests)**
 - [ ] **Manual keyboard testing complete**
 - [ ] **Lighthouse score ≥ 95**
+- [ ] **W3C HTML validation passes**
+- [ ] **W3C CSS validation passes** (optional but recommended)
 - [ ] Documentation updated
 - [ ] QA approved
 ```
@@ -221,6 +233,8 @@ Accessibility Criteria:
 - [ ] Error messages associated with fields (`aria-describedby`)
 - [ ] Error messages announced by screen readers
 - [ ] Submit button keyboard accessible
+- [ ] **🆕 WCAG 2.2: Autocomplete attributes on common fields (SC 3.3.7)**
+- [ ] **🆕 WCAG 2.2: Submit button ≥ 24x24px (SC 2.5.8)**
 
 **Example Story:**
 ```
@@ -233,6 +247,8 @@ Accessibility Criteria:
 - [ ] Errors announced by screen reader
 - [ ] Form submits with Enter key
 - [ ] Success message announced by screen reader
+- [ ] 🆕 Email field has autocomplete="email" (SC 3.3.7)
+- [ ] 🆕 Submit button is 44x44px (exceeds 24px minimum - SC 2.5.8)
 ```
 
 ---
@@ -317,6 +333,77 @@ Accessibility Criteria:
 
 ---
 
+## WCAG 2.2 Specific Feature Requirements
+
+### Authentication Features
+
+**New Requirements (SC 3.3.8):**
+```
+User Story: As a user, I want to sign in to my account
+
+WCAG 2.2 Accessibility Criteria:
+- [ ] Password field supports password managers (autocomplete="current-password")
+- [ ] Password field allows paste functionality (not blocked)
+- [ ] Alternative authentication methods available:
+  - [ ] Magic link via email, OR
+  - [ ] Biometric authentication, OR
+  - [ ] SSO (Sign in with Google/Microsoft), OR
+  - [ ] Another non-cognitive-test method
+- [ ] No text-based CAPTCHAs without alternatives
+- [ ] "Show password" toggle available
+```
+
+---
+
+### Drag-and-Drop Features
+
+**New Requirements (SC 2.5.7):**
+```
+User Story: As a user, I want to reorder my task list
+
+WCAG 2.2 Accessibility Criteria:
+- [ ] Drag-and-drop works with mouse
+- [ ] Alternative: Up/Down buttons for each item
+- [ ] Alternative: Keyboard shortcuts (Ctrl+Arrow keys)
+- [ ] Screen reader announces position changes
+- [ ] Touch users can use button controls
+```
+
+---
+
+### Forms with Multiple Steps
+
+**New Requirements (SC 3.3.7):**
+```
+User Story: As a user, I want to complete checkout
+
+WCAG 2.2 Accessibility Criteria:
+- [ ] Email entered once, auto-filled in subsequent steps
+- [ ] "Same as billing address" option for shipping
+- [ ] Autocomplete attributes on all common fields:
+  - [ ] email, name, tel, address fields
+  - [ ] payment card fields (cc-name, cc-number, etc.)
+- [ ] Form progress saved if user leaves and returns
+- [ ] Previously selected options available in dropdowns
+```
+
+---
+
+### Pages with Sticky Headers/Footers
+
+**New Requirements (SC 2.4.11):**
+```
+User Story: As a user, I want to navigate the site with keyboard
+
+WCAG 2.2 Accessibility Criteria:
+- [ ] Focused elements not completely hidden by sticky header
+- [ ] Developer implements scroll-padding-top CSS
+- [ ] Manual keyboard testing verifies all focus visible
+- [ ] Works across all breakpoints (mobile, tablet, desktop)
+```
+
+---
+
 ## Templates
 
 ### Epic Template with Accessibility
@@ -366,14 +453,19 @@ As a [user type], I want to [action], so that [benefit].
 - [ ] [Requirement 1]
 - [ ] [Requirement 2]
 
-### Accessibility
+### Accessibility (WCAG 2.2 Level AA)
 - [ ] Keyboard accessible (all actions available via keyboard)
 - [ ] Screen reader compatible (proper labels and announcements)
 - [ ] Color contrast ≥ 4.5:1 (all text)
 - [ ] Focus indicators visible
+- [ ] 🆕 Focus not obscured by fixed content (SC 2.4.11)
+- [ ] 🆕 Interactive elements ≥ 24x24px (SC 2.5.8)
+- [ ] 🆕 Draggable features have alternatives (SC 2.5.7, if applicable)
+- [ ] 🆕 Forms use autocomplete (SC 3.3.7, if applicable)
 - [ ] ESLint accessibility checks pass
-- [ ] Playwright accessibility tests pass
+- [ ] Playwright accessibility tests pass (including WCAG 2.2 tests)
 - [ ] Lighthouse score ≥ 95
+- [ ] W3C HTML validation passes
 
 ## Test Scenarios
 1. [Scenario 1]
@@ -410,7 +502,13 @@ A: No. Free tools (ESLint, Lighthouse, axe) + this framework are sufficient for 
 A: Prioritize as P0/P1 bug, fix in next sprint, update VPAT if applicable.
 
 **Q: How do I know if we're compliant?**
-A: Lighthouse ≥ 95, axe 0 violations, QA manual testing passed, VPAT completed.
+A: Lighthouse ≥ 95, axe 0 violations, QA manual testing passed, WCAG 2.2 specific tests passed, VPAT completed.
+
+**Q: What's new in WCAG 2.2?**
+A: 9 new success criteria, including focus visibility (SC 2.4.11), target size 24x24px (SC 2.5.8), dragging alternatives (SC 2.5.7), form autocomplete (SC 3.3.7), and accessible authentication (SC 3.3.8). All covered in this framework.
+
+**Q: Do we need to update existing features for WCAG 2.2?**
+A: Yes, eventually. Prioritize high-traffic features and authentication flows. Most new features will be compliant if built using this framework.
 
 ---
 
