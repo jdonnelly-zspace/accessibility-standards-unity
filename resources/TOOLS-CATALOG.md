@@ -378,10 +378,216 @@ npm install --save-dev eslint-plugin-jsx-a11y
 
 ---
 
+---
+
+## W3C Validators (Official)
+
+### Nu HTML Checker (HTML Validator)
+**Platform:** Web-based, CLI, API
+**Cost:** Free (open source)
+**URL:** https://validator.w3.org/nu/
+**GitHub:** https://github.com/validator/validator
+**Best For:** Validating HTML5 markup for accessibility and standards compliance
+
+**Features:**
+- Validates HTML5 documents
+- Catches invalid markup that can break assistive technologies
+- Identifies accessibility-related HTML errors
+- Supports file upload, URL checking, or direct input
+- API available for automated testing
+
+**Why It Matters for Accessibility:**
+Invalid HTML can cause screen readers and other assistive technologies to fail or produce unexpected results. Proper HTML structure is foundational to WCAG compliance (Success Criterion 4.1.1 Parsing - though obsolete in WCAG 2.2, valid HTML is still essential).
+
+**How to Use:**
+
+**Web Interface:**
+1. Visit https://validator.w3.org/nu/
+2. Enter URL, upload file, or paste HTML
+3. Click "Check"
+4. Review errors and warnings
+
+**Command Line (with vnu.jar):**
+```bash
+# Install via npm
+npm install -g vnu-jar
+
+# Validate a file
+vnu mypage.html
+
+# Validate a directory
+vnu --skip-non-html src/
+
+# Validate with specific checks
+vnu --also-check-css --also-check-svg index.html
+```
+
+**API Usage:**
+```bash
+# Validate URL via API
+curl -H "Content-Type: text/html; charset=utf-8" \
+  --data-binary @index.html \
+  https://validator.w3.org/nu/?out=json
+```
+
+**Integration with CI/CD:**
+See `scripts/validate-html.sh` for automated validation script.
+
+---
+
+### W3C CSS Validator
+**Platform:** Web-based, CLI (via API)
+**Cost:** Free
+**URL:** https://jigsaw.w3.org/css-validator/
+**Best For:** Validating CSS for proper syntax and compatibility
+
+**Features:**
+- Validates CSS 1, 2, 2.1, and 3
+- Identifies syntax errors
+- Checks for browser compatibility issues
+- Validates CSS embedded in HTML
+- API available for automation
+
+**Why It Matters for Accessibility:**
+Invalid CSS can cause layout problems, hidden content, or broken responsive design, all of which can impact accessibility. Proper CSS ensures consistent rendering across browsers and assistive technologies.
+
+**How to Use:**
+
+**Web Interface:**
+1. Visit https://jigsaw.w3.org/css-validator/
+2. Enter URL, upload file, or paste CSS
+3. Select CSS profile (usually CSS level 3)
+4. Click "Check"
+
+**API Usage:**
+```bash
+# Validate CSS file
+curl "https://jigsaw.w3.org/css-validator/validator?uri=https://example.com/style.css&output=json"
+
+# Validate with specific profile
+curl "https://jigsaw.w3.org/css-validator/validator?uri=https://example.com&profile=css3svg&output=json"
+```
+
+**Integration with CI/CD:**
+See `scripts/validate-css.sh` for automated validation script.
+
+---
+
+### W3C Link Checker
+**Platform:** Web-based, Perl script
+**Cost:** Free
+**URL:** https://validator.w3.org/checklink
+**Best For:** Finding broken links that violate WCAG 2.4.4 (Link Purpose)
+
+**Features:**
+- Checks all links on a page
+- Identifies broken links (404s, 500s)
+- Checks redirects
+- Validates anchors
+- Recursively checks site (with depth limit)
+
+**Why It Matters for Accessibility:**
+Broken links violate WCAG Success Criterion 2.4.4 (Link Purpose in Context) when they promise functionality or content that doesn't exist. They also create poor user experience for all users, particularly those using assistive technologies.
+
+**How to Use:**
+
+**Web Interface:**
+1. Visit https://validator.w3.org/checklink
+2. Enter URL to check
+3. Choose options (depth, check anchors, etc.)
+4. Click "Check"
+5. Review broken links report
+
+**Command Line:**
+```bash
+# Install checklink (requires Perl)
+# On macOS with Homebrew
+brew install perl
+cpan install W3C::LinkChecker
+
+# Check a URL
+checklink https://example.com
+
+# Check with depth
+checklink -r 2 https://example.com
+
+# Check and suppress external links
+checklink -r 1 -s https://example.com
+```
+
+**Integration with CI/CD:**
+See `scripts/check-links.sh` for automated link checking script.
+
+---
+
+### W3C Internationalization Checker
+**Platform:** Web-based, API
+**Cost:** Free
+**URL:** https://validator.w3.org/i18n-checker/
+**GitHub:** https://github.com/w3c/i18n-checker
+**Best For:** Checking internationalization readiness and character encoding
+
+**Features:**
+- Checks character encoding declarations
+- Validates lang attributes (WCAG 3.1.1, 3.1.2)
+- Checks text direction (dir attribute)
+- Identifies markup issues for international content
+- Checks HTTP headers for charset
+
+**Why It Matters for Accessibility:**
+Proper language declaration (WCAG 3.1.1 Language of Page, 3.1.2 Language of Parts) is critical for screen readers to pronounce content correctly. Character encoding issues can cause garbled text for users worldwide.
+
+**How to Use:**
+
+**Web Interface:**
+1. Visit https://validator.w3.org/i18n-checker/
+2. Enter URL to check
+3. Click "Check"
+4. Review language, encoding, and direction issues
+
+**API Usage:**
+```bash
+# Check internationalization via API
+curl "https://validator.w3.org/i18n-checker/check?uri=https://example.com"
+```
+
+**Common Issues Detected:**
+- Missing or incorrect `lang` attribute on `<html>` tag
+- Missing charset declaration in HTTP headers or meta tag
+- Inconsistent language declarations
+- Missing `dir` attribute for RTL languages
+
+---
+
+## Recommended Validation Workflow
+
+### During Development
+1. **HTML Validation** - Run on every page before commit
+2. **CSS Validation** - Run on stylesheet changes
+3. **ESLint** - Catch React/JSX accessibility issues
+4. **axe DevTools** - Manual spot checks in browser
+
+### Pre-Commit / CI Pipeline
+1. **HTML Validator** - Automated via `npm run validate:html`
+2. **CSS Validator** - Automated via `npm run validate:css`
+3. **ESLint** - Automated linting
+4. **Playwright + axe-core** - E2E accessibility tests
+
+### Pre-Release
+1. **Link Checker** - Full site crawl via `npm run check:links`
+2. **Lighthouse** - Full accessibility audit
+3. **WAVE** - Visual accessibility check
+4. **Manual Testing** - Keyboard, screen reader, zoom
+
+### Total Cost: $0 (All W3C tools are free!)
+
+---
+
 ## Resources
 
 - **Tool Comparison:** https://www.w3.org/WAI/ER/tools/
 - **Testing Guide:** https://www.w3.org/WAI/test-evaluate/
+- **W3C Developer Tools:** https://www.w3.org/developers/tools/
 
 ---
 

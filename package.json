@@ -10,6 +10,10 @@
   "scripts": {
     "setup": "node bin/setup.js",
     "scrape:update": "node scrapers/update-standards.js",
+    "validate:html": "./scripts/validate-html.sh",
+    "validate:css": "./scripts/validate-css.sh",
+    "check:links": "./scripts/check-links.sh",
+    "validate:all": "npm run validate:html && npm run validate:css",
     "test": "echo \"No tests yet\" && exit 0"
   },
   "keywords": [

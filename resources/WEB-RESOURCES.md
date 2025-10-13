@@ -22,6 +22,45 @@ This document contains authoritative web resources that should be monitored for 
 
 ---
 
+### WCAG 2.2 Specification ⭐ PRIMARY RESOURCE
+**URL:** https://www.w3.org/TR/WCAG22/
+**Scrape Frequency:** Monthly
+**What to Monitor:**
+- Official W3C Recommendation updates
+- Errata and corrections
+- Complete success criteria list (all 86 criteria)
+- Conformance requirements
+- New techniques and understanding documents
+
+**Scraping Strategy:**
+- Monitor page checksum for changes
+- Track version and publication date
+- Compare against local documentation
+
+---
+
+### W3C Developer Tools Page ⭐ NEW
+**URL:** https://www.w3.org/developers/tools/
+**Scrape Frequency:** Quarterly
+**What to Monitor:**
+- New validator tools
+- Updates to existing tools (HTML, CSS, Link Checker, i18n)
+- New testing utilities
+- Tool deprecations or changes
+
+**Key Tools to Track:**
+- Nu HTML Checker (https://validator.w3.org/nu/)
+- CSS Validator (https://jigsaw.w3.org/css-validator/)
+- Link Checker (https://validator.w3.org/checklink)
+- Internationalization Checker (https://validator.w3.org/i18n-checker/)
+
+**Scraping Strategy:**
+- Monitor tools list for additions
+- Check individual tool documentation for updates
+- Track API changes
+
+---
+
 ### W3C WAI (Web Accessibility Initiative)
 **URL:** https://www.w3.org/WAI/
 **Scrape Frequency:** Monthly

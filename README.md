@@ -11,8 +11,8 @@
 
 This repository contains **everything you need** to build accessible web applications that meet WCAG 2.2 Level AA standards:
 
-✅ **Complete WCAG 2.2 documentation** - Level A and AA requirements with examples
-✅ **Ready-to-use code** - ESLint configs, Playwright tests, React components
+✅ **Complete WCAG 2.2 documentation** - All 9 new WCAG 2.2 criteria + Level A and AA requirements
+✅ **Ready-to-use code** - ESLint configs, Playwright tests, React components, W3C validators
 ✅ **Role-specific workflows** - Developers, Designers, QA Engineers, Product Owners
 ✅ **Testing tools catalog** - Free tools for automated and manual testing
 ✅ **VPAT 2.5 template** - Document compliance for customers/legal
@@ -73,8 +73,8 @@ npm install --save-dev eslint eslint-plugin-jsx-a11y @playwright/test @axe-core/
 cp implementation/development/eslint-a11y-config.js ./eslint.config.js
 cp implementation/testing/playwright-setup/* ./tests/e2e/
 
-# 3. Copy reusable components
-cp implementation/development/components/Tooltip.jsx ./src/components/
+# 3. Copy reusable WCAG 2.2 compliant components
+cp implementation/development/components/*.jsx ./src/components/
 
 # 4. Run linter
 npm run lint
@@ -157,7 +157,10 @@ accessibility-standards/
 │   ├── development/
 │   │   ├── eslint-a11y-config.js      # ESLint config template
 │   │   ├── components/
-│   │   │   └── Tooltip.jsx            # WCAG 2.2 compliant tooltip
+│   │   │   ├── Tooltip.jsx            # WCAG 2.2 compliant tooltip
+│   │   │   ├── AccessibleAuthForm.jsx # SC 3.3.8: Accessible Authentication
+│   │   │   ├── ConsistentHelp.jsx     # SC 3.2.6: Consistent Help
+│   │   │   └── DraggableList.jsx      # SC 2.5.7: Dragging Movements
 │   │   └── package-dependencies.json  # Required npm packages
 │   │
 │   ├── testing/
@@ -205,7 +208,8 @@ accessibility-standards/
 
 - **ESLint Configuration** - Catch 80% of issues during development
 - **Playwright + axe-core Tests** - Automated accessibility testing
-- **Reusable Components** - WCAG-compliant React components
+- **Reusable Components** - WCAG 2.2 compliant React components (Tooltip, Auth Forms, Help Widgets, Draggable Lists)
+- **W3C Validation Scripts** - HTML, CSS, and link validation with W3C tools
 - **CMS Scripts** - Auto-update accessibility documentation (Directus)
 
 ### 📖 Role-Specific Workflows
