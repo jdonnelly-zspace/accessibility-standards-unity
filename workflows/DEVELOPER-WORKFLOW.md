@@ -628,6 +628,278 @@ function LoginForm() {
 
 ---
 
+## Level AAA - Tier 1 Quick Wins (Optional)
+
+These 5 Level AAA criteria can be implemented quickly (1-2 weeks) for additional accessibility improvements beyond Level AA.
+
+### SC 2.2.6: Timeouts (Level AAA)
+**Requirement:** Inform users of session timeout duration to prevent data loss.
+
+**Implementation:**
+```jsx
+// Use the SessionTimeout component from components/
+import SessionTimeout from './components/SessionTimeout';
+
+function App() {
+  return (
+    <div>
+      <SessionTimeout
+        timeoutMinutes={30}
+        warningMinutes={5}
+        onExtendSession={() => {/* Refresh session */}}
+        onSaveWork={() => {/* Auto-save data */}}
+      />
+      {/* Rest of app */}
+    </div>
+  );
+}
+```
+
+**Alternative: Documentation Approach**
+```jsx
+// Display timeout info in footer or help section
+function Footer() {
+  return (
+    <footer>
+      <p>Session expires after 30 minutes of inactivity</p>
+    </footer>
+  );
+}
+```
+
+---
+
+### SC 2.3.2: Three Flashes (Level AAA)
+**Requirement:** No content flashes more than 3 times per second.
+
+**Implementation:**
+```css
+/* Ensure animations don't flash rapidly */
+
+/* ✅ GOOD: Slow animation (< 3 flashes/sec) */
+@keyframes safePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.pulse {
+  animation: safePulse 0.4s ease-in-out infinite;
+  /* 0.4s = 2.5 flashes per second ✓ */
+}
+
+/* ❌ BAD: Rapid flash (> 3 flashes/sec) */
+.flash-bad {
+  animation: rapidFlash 0.2s ease-in-out infinite;
+  /* 0.2s = 5 flashes per second ✗ */
+}
+```
+
+**Testing:**
+- Calculate: `flashes per second = 1 / animation-duration`
+- Ensure result < 3
+- Use PEAT tool for videos: https://trace.umd.edu/peat/
+
+---
+
+### SC 2.4.10: Section Headings (Level AAA)
+**Requirement:** Organize content with descriptive section headings.
+
+**Implementation:**
+```jsx
+// ✅ GOOD: Well-structured content
+function Article() {
+  return (
+    <article>
+      <h1>Main Topic</h1>
+
+      <section>
+        <h2>Introduction</h2>
+        <p>Content here...</p>
+      </section>
+
+      <section>
+        <h2>Key Points</h2>
+        <h3>Point 1</h3>
+        <p>Details...</p>
+
+        <h3>Point 2</h3>
+        <p>Details...</p>
+      </section>
+
+      <section>
+        <h2>Conclusion</h2>
+        <p>Summary...</p>
+      </section>
+    </article>
+  );
+}
+
+// ❌ BAD: No headings - wall of text
+function BadArticle() {
+  return (
+    <article>
+      <p>Lots of content...</p>
+      <p>More content...</p>
+      <p>Even more content...</p>
+      {/* No structure! */}
+    </article>
+  );
+}
+```
+
+**Checklist:**
+- [ ] Long content (>3 paragraphs) has headings
+- [ ] Heading hierarchy is logical (h1 → h2 → h3, no skipping)
+- [ ] Exactly one h1 per page
+- [ ] Headings are descriptive (not "Section 1", "Part A")
+
+---
+
+### SC 3.1.4: Abbreviations (Level AAA)
+**Requirement:** Provide expanded forms for abbreviations.
+
+**Implementation:**
+```jsx
+// Pattern 1: Use <abbr> tag
+function Documentation() {
+  return (
+    <p>
+      The{' '}
+      <abbr title="Application Programming Interface">API</abbr>{' '}
+      allows integration with your application.
+    </p>
+  );
+}
+
+// Pattern 2: First use expansion
+function Article() {
+  return (
+    <div>
+      <p>
+        The Web Content Accessibility Guidelines (WCAG) 2.2 specification
+        provides standards for web accessibility.
+      </p>
+      <p>
+        To achieve WCAG Level AA compliance... {/* Can abbreviate after first use */}
+      </p>
+    </div>
+  );
+}
+
+// Pattern 3: Glossary page
+import AbbreviationGlossary from './components/AbbreviationGlossary';
+
+function GlossaryPage() {
+  return <AbbreviationGlossary />;
+}
+```
+
+**CSS for abbr tags:**
+```css
+abbr {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+abbr:hover,
+abbr:focus {
+  background-color: #fffbcc;
+  outline: 2px solid #ffd700;
+}
+```
+
+---
+
+### SC 3.2.5: Change on Request (Level AAA)
+**Requirement:** User controls all navigation - no automatic redirects or form submissions.
+
+**Implementation:**
+```jsx
+// ✅ GOOD: User-initiated redirect
+function SetupComplete() {
+  const navigate = useNavigate();
+
+  return (
+    <div>
+      <p>Setup complete! Ready to continue?</p>
+      <button onClick={() => navigate('/dashboard')}>
+        Go to Dashboard
+      </button>
+    </div>
+  );
+}
+
+// ❌ BAD: Automatic redirect
+function BadRedirect() {
+  useEffect(() => {
+    setTimeout(() => {
+      window.location.href = '/dashboard'; // ❌ No user control
+    }, 3000);
+  }, []);
+
+  return <p>Redirecting...</p>;
+}
+
+// ✅ GOOD: Form with explicit submit
+function FilterForm() {
+  const [category, setCategory] = useState('all');
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <select
+        value={category}
+        onChange={(e) => setCategory(e.target.value)}
+        // ❌ NO: onChange={(e) => e.target.form.submit()}
+      >
+        <option value="all">All</option>
+        <option value="tech">Technology</option>
+      </select>
+
+      {/* ✅ Explicit submit button */}
+      <button type="submit">Apply Filter</button>
+    </form>
+  );
+}
+```
+
+**Checklist:**
+- [ ] No `<meta http-equiv="refresh">` tags
+- [ ] No auto-redirects in useEffect/setTimeout
+- [ ] Forms have explicit "Submit" buttons
+- [ ] Select dropdowns don't auto-submit on change
+- [ ] No automatic pop-ups
+
+---
+
+### Testing Level AAA Tier 1
+
+**Run automated tests:**
+```bash
+npx playwright test accessibility-aaa-tier1.spec.js
+```
+
+**Manual checklist:**
+- [ ] Session timeout duration is visible somewhere (UI or help docs)
+- [ ] No animations flash more than 3 times per second
+- [ ] All long content has descriptive section headings
+- [ ] Common abbreviations use `<abbr>` tag or glossary exists
+- [ ] No automatic redirects or form submissions
+- [ ] All navigation requires user action (click/tap)
+
+**Quick test commands:**
+```bash
+# Check for meta refresh
+grep -r "http-equiv=\"refresh\"" ./dist
+
+# Check for auto-submit in forms
+grep -r "\.submit()" ./src
+
+# Verify heading structure with HeadingsMap extension
+# Install: https://chrome.google.com/webstore
+```
+
+---
+
 ## Common Mistakes & Solutions
 
 ### Mistake #1: Using `<div>` as Button
