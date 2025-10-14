@@ -62,6 +62,925 @@ Use this checklist to verify compliance. Each criterion includes:
 
 ---
 
+### 1.2 Time-based Media
+
+#### ✅ 1.2.1 Audio-only and Video-only (Prerecorded) (Level A)
+
+**Requirement:** For prerecorded audio-only and video-only media, provide an alternative (transcript or audio description).
+
+**Implementation:**
+```jsx
+// Prerecorded audio-only (podcast, audio announcement)
+function AudioContent() {
+  return (
+    <div>
+      <h2>Company Announcement</h2>
+      <audio controls src="/announcement.mp3">
+        Your browser does not support the audio element.
+      </audio>
+
+      {/* Alternative: Text transcript */}
+      <details>
+        <summary>Read transcript</summary>
+        <div>
+          <h3>Transcript</h3>
+          <p>
+            Welcome to our Q4 company announcement. Today we're excited to share
+            three major updates with our team...
+          </p>
+          <p>
+            First, we're expanding our product line to include...
+          </p>
+        </div>
+      </details>
+
+      {/* Or link to separate transcript page */}
+      <a href="/transcripts/announcement-2025-10.html">
+        View full transcript
+      </a>
+    </div>
+  );
+}
+
+// Prerecorded video-only (silent demonstration, animation)
+function VideoOnlyContent() {
+  return (
+    <div>
+      <h2>Product Assembly Instructions</h2>
+      <video controls src="/assembly-demo.mp4" />
+
+      {/* Alternative 1: Audio description track */}
+      <video controls>
+        <source src="/assembly-demo.mp4" type="video/mp4" />
+        <track
+          kind="descriptions"
+          src="/assembly-demo-audio-description.vtt"
+          label="Audio descriptions"
+        />
+      </video>
+
+      {/* Alternative 2: Text transcript describing what's shown */}
+      <details>
+        <summary>Read description</summary>
+        <div>
+          <h3>Visual Description</h3>
+          <ol>
+            <li>Remove parts from packaging and lay them on a flat surface</li>
+            <li>Identify piece A (the base) and piece B (the frame)</li>
+            <li>Insert frame into base by aligning the notches...</li>
+          </ol>
+        </div>
+      </details>
+    </div>
+  );
+}
+
+// Podcast with transcript
+function PodcastEpisode({ episode }) {
+  return (
+    <article>
+      <h2>{episode.title}</h2>
+      <p>{episode.description}</p>
+
+      <audio controls src={episode.audioUrl}>
+        Your browser does not support the audio element.
+      </audio>
+
+      {/* Transcript */}
+      <section aria-labelledby="transcript-heading">
+        <h3 id="transcript-heading">Transcript</h3>
+        <div dangerouslySetInnerHTML={{ __html: episode.transcript }} />
+      </section>
+    </article>
+  );
+}
+```
+
+**Testing:**
+- [ ] All prerecorded audio-only content has text transcript
+- [ ] All prerecorded video-only (no audio) has audio description or transcript
+- [ ] Transcripts are accurate and complete
+- [ ] Transcripts identify speakers
+- [ ] Transcripts include relevant non-speech sounds
+- [ ] Alternative is easy to find (linked or on same page)
+
+**Common Content Types:**
+- **Audio-only:** Podcasts, audio announcements, audio messages, music
+- **Video-only:** Silent demonstrations, animations, visual-only instructions
+
+**Exceptions:**
+- Live audio/video (different requirement - see 1.2.4)
+- Media that is itself an alternative (e.g., audio version of text)
+- Test or exercise where audio/video must be audio/video to be valid
+
+**Tools:**
+- Manual review
+- Check for transcript links
+- Verify transcript accuracy
+
+---
+
+#### ✅ 1.2.2 Captions (Prerecorded) (Level A)
+
+**Requirement:** Captions are provided for all prerecorded audio content in synchronized media (video with audio).
+
+**Why This Matters:**
+Users who are deaf or hard of hearing need captions to access video content. Captions also benefit users in noisy environments or who prefer reading.
+
+**Implementation:**
+```html
+<!-- HTML5 video with WebVTT captions -->
+<video controls>
+  <source src="/presentation.mp4" type="video/mp4" />
+
+  <!-- Caption track -->
+  <track
+    kind="captions"
+    src="/presentation-captions-en.vtt"
+    srclang="en"
+    label="English"
+    default
+  />
+
+  <!-- Additional languages -->
+  <track
+    kind="captions"
+    src="/presentation-captions-es.vtt"
+    srclang="es"
+    label="Español"
+  />
+</video>
+
+<!-- YouTube embed (YouTube auto-generates captions but review for accuracy) -->
+<iframe
+  src="https://www.youtube.com/embed/VIDEO_ID?cc_load_policy=1"
+  title="Video title"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+></iframe>
+```
+
+**WebVTT Caption File Format:**
+```vtt
+WEBVTT
+
+00:00:00.000 --> 00:00:03.500
+Welcome to our accessibility training.
+
+00:00:03.500 --> 00:00:07.000
+Today we'll cover WCAG 2.2 Level AA compliance.
+
+00:00:07.000 --> 00:00:11.200
+[upbeat music playing]
+
+00:00:11.200 --> 00:00:14.500
+Let's start with keyboard navigation.
+```
+
+**React Implementation:**
+```jsx
+function VideoPlayer({ videoUrl, captionTracks }) {
+  const videoRef = useRef(null);
+
+  return (
+    <div className="video-container">
+      <video ref={videoRef} controls>
+        <source src={videoUrl} type="video/mp4" />
+
+        {captionTracks.map((track) => (
+          <track
+            key={track.language}
+            kind="captions"
+            src={track.url}
+            srclang={track.language}
+            label={track.label}
+            default={track.isDefault}
+          />
+        ))}
+
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  );
+}
+
+// Usage
+<VideoPlayer
+  videoUrl="/product-demo.mp4"
+  captionTracks={[
+    {
+      language: 'en',
+      url: '/captions/product-demo-en.vtt',
+      label: 'English',
+      isDefault: true
+    },
+    {
+      language: 'es',
+      url: '/captions/product-demo-es.vtt',
+      label: 'Español',
+      isDefault: false
+    }
+  ]}
+/>
+```
+
+**Caption Best Practices:**
+- Include all dialogue and narration
+- Identify speakers when not obvious
+- Describe relevant sound effects: [door slams], [phone ringing]
+- Describe music when relevant: [upbeat jazz music]
+- Include on-screen text if relevant
+- Sync captions accurately with audio (±200ms ideal)
+- Use proper punctuation and grammar
+- Break lines at natural phrase boundaries
+- Keep captions on screen long enough to read (1.5-2 seconds minimum)
+- Position captions to not obscure important visual content
+
+**Caption Format:**
+```vtt
+WEBVTT
+
+00:00:00.000 --> 00:00:02.500
+[Speaker 1] Welcome everyone.
+
+00:00:02.500 --> 00:00:05.000
+[Speaker 2] Thanks for having me.
+
+00:00:05.000 --> 00:00:08.000
+[upbeat music playing in background]
+
+00:00:08.000 --> 00:00:11.000
+Let's dive into today's topic.
+```
+
+**Testing:**
+- [ ] All videos have caption tracks
+- [ ] Captions can be enabled/disabled
+- [ ] Captions are accurate and complete
+- [ ] All dialogue is captioned
+- [ ] Relevant sound effects are described
+- [ ] Speaker identification when multiple speakers
+- [ ] Captions are properly synchronized
+- [ ] Captions are readable (contrast, size, position)
+- [ ] Test caption controls are keyboard accessible
+
+**Common Issues:**
+- Auto-generated captions without review (often inaccurate)
+- Missing sound effects or music descriptions
+- Poor synchronization
+- Captions obscuring important visuals
+- No speaker identification
+
+**Tools:**
+- Manual review
+- Caption validation tools
+- YouTube caption editor
+- Rev.com or similar caption services
+
+**Exceptions:**
+- Live video (see 1.2.4 Captions - Live)
+- Video that is itself a media alternative for text
+
+---
+
+#### ✅ 1.2.3 Audio Description or Media Alternative (Prerecorded) (Level A)
+
+**Requirement:** An alternative for time-based media (transcript) OR audio description of the video content is provided for prerecorded synchronized media.
+
+**Why This Matters:**
+Users who are blind or have low vision need descriptions of important visual content in videos. This can be provided as audio descriptions or as a full text transcript.
+
+**Implementation:**
+
+**Option 1: Full Text Transcript (Easiest)**
+```jsx
+// Comprehensive transcript includes both audio and visual information
+function VideoWithTranscript() {
+  return (
+    <div>
+      <video controls>
+        <source src="/training-video.mp4" type="video/mp4" />
+        <track kind="captions" src="/captions.vtt" srclang="en" />
+      </video>
+
+      <details open>
+        <summary>Full Transcript with Visual Descriptions</summary>
+        <div>
+          <h3>Video Transcript</h3>
+
+          <p><strong>[Scene: Office conference room]</strong></p>
+          <p><strong>Sarah:</strong> Welcome to the accessibility training.</p>
+
+          <p><strong>[Visual: Slide showing "WCAG 2.2 Level AA"]</strong></p>
+          <p><strong>Sarah:</strong> Today we're covering WCAG 2.2 compliance.</p>
+
+          <p><strong>[Visual: Sarah demonstrates keyboard navigation by pressing Tab key,
+          highlighting each button on screen in sequence]</strong></p>
+          <p><strong>Sarah:</strong> First, let's look at keyboard navigation.</p>
+
+          <p><strong>[Visual: Screen shows focus indicators moving between buttons]</strong></p>
+          <p><strong>Sarah:</strong> Notice how each element is clearly indicated
+          with a blue outline.</p>
+        </div>
+      </details>
+    </div>
+  );
+}
+```
+
+**Option 2: Separate Audio Description Track**
+```jsx
+function VideoWithAudioDescription() {
+  return (
+    <div>
+      <video controls>
+        <source src="/training-video.mp4" type="video/mp4" />
+
+        {/* Captions */}
+        <track kind="captions" src="/captions.vtt" srclang="en" label="English" />
+
+        {/* Audio descriptions */}
+        <track
+          kind="descriptions"
+          src="/audio-descriptions.vtt"
+          srclang="en"
+          label="Audio descriptions"
+        />
+      </video>
+
+      <p>
+        <button onClick={toggleAudioDescriptions}>
+          Enable Audio Descriptions
+        </button>
+      </p>
+    </div>
+  );
+}
+```
+
+**Audio Description VTT Format:**
+```vtt
+WEBVTT
+
+00:00:05.000 --> 00:00:08.000
+Sarah enters a modern conference room with a projector screen behind her.
+
+00:00:15.000 --> 00:00:18.000
+The slide shows "WCAG 2.2 Level AA" in large blue letters.
+
+00:00:25.000 --> 00:00:29.000
+Sarah's hand moves to the keyboard and presses the Tab key repeatedly.
+Focus indicators highlight each button in sequence.
+```
+
+**Option 3: Alternative Audio-Described Version**
+```jsx
+function VideoWithAlternativeVersion() {
+  const [version, setVersion] = useState('standard');
+
+  return (
+    <div>
+      <div role="group" aria-label="Video version selection">
+        <button
+          onClick={() => setVersion('standard')}
+          aria-pressed={version === 'standard'}
+        >
+          Standard Version
+        </button>
+        <button
+          onClick={() => setVersion('described')}
+          aria-pressed={version === 'described'}
+        >
+          Audio Described Version
+        </button>
+      </div>
+
+      <video controls key={version}>
+        <source
+          src={version === 'standard'
+            ? '/video.mp4'
+            : '/video-audio-described.mp4'}
+          type="video/mp4"
+        />
+        <track kind="captions" src="/captions.vtt" srclang="en" />
+      </video>
+    </div>
+  );
+}
+```
+
+**What to Describe:**
+- Important visual actions (gestures, demonstrations)
+- On-screen text that isn't spoken
+- Scene changes and locations
+- Facial expressions if relevant to content
+- Visual charts, graphs, diagrams
+- Visual humor or visual-only content
+- Speaker identification if not obvious from audio
+
+**What NOT to Describe:**
+- Things that are obvious from audio
+- Decorative elements
+- Details not relevant to understanding
+
+**Testing:**
+- [ ] Video has full transcript with visual descriptions OR audio description track
+- [ ] Transcript describes all important visual information
+- [ ] Audio descriptions fit in natural pauses (don't overlap dialogue)
+- [ ] Transcript is accurate and complete
+- [ ] Alternative is easy to find
+- [ ] Test with eyes closed - can you understand the content?
+
+**Common Issues:**
+- Transcript only includes dialogue (misses visual info)
+- Audio descriptions overlap important dialogue
+- Missing descriptions of key visual demonstrations
+- Transcript doesn't describe on-screen text
+
+**Best Choice:**
+- **Transcript with visual descriptions** - Easiest to implement, benefits everyone
+- **Audio description track** - Better for video-heavy content, requires more production
+
+**Tools:**
+- Manual review with screen reader
+- Watch video with eyes closed to test audio descriptions
+- YouDescribe (collaborative audio description)
+
+**Exceptions:**
+- Video is itself a media alternative for text (already has text version)
+- Video has no important visual information beyond what's in audio
+
+---
+
+#### ✅ 1.2.4 Captions (Live) (Level AA) ⭐
+
+**Requirement:** Captions are provided for all live audio content in synchronized media (live video with audio).
+
+**Why This Matters:**
+Users who are deaf or hard of hearing need real-time captions to access live content like webinars, live streams, video conferences, and live events.
+
+**Implementation:**
+```jsx
+// Good: Live stream with real-time captions
+function LiveStream() {
+  const [captionsEnabled, setCaptionsEnabled] = useState(true);
+
+  return (
+    <div>
+      <h2>Live Webinar</h2>
+
+      {/* Live video player */}
+      <video controls autoPlay>
+        <source src="https://live-stream.example.com/feed" type="application/x-mpegURL" />
+
+        {/* Live caption track */}
+        <track
+          kind="captions"
+          src="https://live-stream.example.com/captions"
+          srclang="en"
+          label="English (Live)"
+          default={captionsEnabled}
+        />
+      </video>
+
+      {/* Caption controls */}
+      <label>
+        <input
+          type="checkbox"
+          checked={captionsEnabled}
+          onChange={(e) => setCaptionsEnabled(e.target.checked)}
+        />
+        Show live captions
+      </label>
+    </div>
+  );
+}
+
+// Good: Video conference with live transcription
+function VideoConference() {
+  const [liveTranscript, setLiveTranscript] = useState([]);
+
+  return (
+    <div>
+      <div className="video-grid">
+        {/* Participant videos */}
+      </div>
+
+      {/* Live transcript panel */}
+      <aside aria-live="polite" aria-label="Live transcript">
+        <h3>Live Transcript</h3>
+        <div
+          style={{
+            height: '200px',
+            overflowY: 'auto',
+            background: '#f3f4f6',
+            padding: '1rem',
+            fontFamily: 'monospace'
+          }}
+        >
+          {liveTranscript.map((line, index) => (
+            <p key={index}>
+              <strong>{line.speaker}:</strong> {line.text}
+            </p>
+          ))}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+// Good: Live event with professional captioner
+function LiveEvent() {
+  return (
+    <div>
+      <iframe
+        src="https://event-platform.example.com/stream"
+        title="Live event stream with captions"
+        width="100%"
+        height="500"
+      />
+
+      <p>
+        This event includes live captions provided by a professional stenographer.
+        Captions appear on the video player.
+      </p>
+    </div>
+  );
+}
+
+// Real-time caption services integration
+function IntegratedLiveCaptions() {
+  const [captionService, setCaptionService] = useState('google'); // google, aws, azure
+
+  const initializeCaptions = async () => {
+    switch (captionService) {
+      case 'google':
+        // Google Cloud Speech-to-Text API
+        // Real-time transcription
+        break;
+      case 'aws':
+        // AWS Transcribe Streaming
+        break;
+      case 'azure':
+        // Azure Speech Service
+        break;
+    }
+  };
+
+  return (
+    <div>
+      <video id="live-video" controls autoPlay />
+
+      {/* Caption display overlay */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '50px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(0, 0, 0, 0.8)',
+          color: 'white',
+          padding: '8px 16px',
+          borderRadius: '4px',
+          fontSize: '18px'
+        }}
+        role="region"
+        aria-live="polite"
+        aria-label="Live captions"
+      >
+        {/* Real-time caption text appears here */}
+      </div>
+    </div>
+  );
+}
+```
+
+**Live Captioning Solutions:**
+
+**1. Automated Speech Recognition (ASR):**
+- Google Cloud Speech-to-Text
+- AWS Transcribe
+- Azure Speech Service
+- Rev.ai Live Captions
+- Accuracy: 80-95% (depends on audio quality, accents)
+
+**2. Professional Stenographers/CART:**
+- Communication Access Realtime Translation (CART)
+- Human captioner types in real-time
+- Accuracy: 98-99%
+- Higher cost but better quality
+
+**3. Platform-Specific Solutions:**
+- YouTube Live automatic captions
+- Zoom auto-transcription
+- Microsoft Teams live captions
+- Google Meet live captions
+
+**Implementation Considerations:**
+```javascript
+// Quality factors for live captions
+const captionQuality = {
+  audioQuality: 'Clear audio with minimal background noise',
+  speakerClarity: 'Clear speech, not too fast',
+  vocabulary: 'Standard vocabulary (technical terms may need training)',
+  delay: 'Acceptable delay: 2-5 seconds',
+  accuracy: 'Target: 95%+ accuracy'
+};
+
+// Improve ASR accuracy
+const improvements = {
+  audioSetup: 'Use quality microphone, minimize background noise',
+  speakerTraining: 'Ask speakers to speak clearly and at moderate pace',
+  vocabularyTraining: 'Train ASR on domain-specific terms',
+  humanReview: 'Consider hybrid: ASR + human correction for critical events',
+  fallback: 'Provide transcript after event if live captions unavailable'
+};
+```
+
+**Testing:**
+- [ ] All live video content has real-time captions
+- [ ] Captions are synchronized with audio (2-5 second delay acceptable)
+- [ ] Captions can be enabled/disabled by users
+- [ ] Caption accuracy is reasonable (aim for 95%+)
+- [ ] Test with live webinar or video call
+- [ ] Verify captions appear for all speakers
+- [ ] Check caption readability (size, contrast, position)
+
+**Common Live Content Requiring Captions:**
+- Webinars and online courses
+- Live video conferences
+- Virtual events and concerts
+- Live streaming (Twitch, YouTube Live)
+- Town halls and company meetings
+- Court proceedings (when streamed)
+- Legislative sessions
+
+**Acceptable Alternatives:**
+- Provide full transcript immediately after live event
+- Offer sign language interpreter visible in video
+- Provide alternative real-time communication (live chat with written summary)
+
+**Common Issues:**
+- No captions for live webinars
+- Auto-captions not enabled
+- Caption delay too long (>10 seconds)
+- Poor audio quality causing caption errors
+- Captions not visible to all participants
+
+**Best Practices:**
+- Test caption setup before live event
+- Have backup plan (post-event transcript)
+- Inform attendees that captions are available
+- Use quality audio equipment
+- Train speakers on clear speech
+- Consider professional captioner for important events
+
+**Tools:**
+- Zoom: Built-in auto-transcription or third-party CART integration
+- Google Meet: Built-in live captions
+- Microsoft Teams: Live captions feature
+- OBS Studio: Caption plugin for streaming
+- StreamText: Professional CART services
+- Rev: Live captioning services
+
+**Cost Considerations:**
+- **Automated ASR:** $0-0.02 per minute (often free with platform)
+- **Professional CART:** $150-250 per hour
+- **Hybrid:** ASR + human correction
+
+---
+
+#### ✅ 1.2.5 Audio Description (Prerecorded) (Level AA) ⭐
+
+**Requirement:** Audio description is provided for all prerecorded video content in synchronized media.
+
+**Why This Matters:**
+Level A allows either audio description OR a full transcript. Level AA requires actual audio description (narration of visual content) for prerecorded videos with important visual information.
+
+**Difference from 1.2.3:**
+- **1.2.3 (Level A):** Audio description OR transcript (either is acceptable)
+- **1.2.5 (Level AA):** Audio description required (transcript alone is not sufficient)
+
+**Implementation:**
+```jsx
+// Good: Video with audio description track
+function VideoWithAudioDescription() {
+  const [audioDescEnabled, setAudioDescEnabled] = useState(false);
+
+  return (
+    <div>
+      <h2>Training Video</h2>
+
+      <video controls id="training-video">
+        <source src="/training.mp4" type="video/mp4" />
+
+        {/* Standard captions */}
+        <track
+          kind="captions"
+          src="/training-captions.vtt"
+          srclang="en"
+          label="English"
+          default
+        />
+
+        {/* Audio description track */}
+        <track
+          kind="descriptions"
+          src="/training-audio-desc.vtt"
+          srclang="en"
+          label="Audio descriptions"
+        />
+      </video>
+
+      <label>
+        <input
+          type="checkbox"
+          checked={audioDescEnabled}
+          onChange={(e) => {
+            setAudioDescEnabled(e.target.checked);
+            const video = document.getElementById('training-video');
+            const descTrack = video.textTracks[1]; // Audio description track
+            descTrack.mode = e.target.checked ? 'showing' : 'hidden';
+          }}
+        />
+        Enable audio descriptions
+      </label>
+
+      <p>
+        <small>
+          Audio descriptions provide narration of important visual content
+          during natural pauses in dialogue.
+        </small>
+      </p>
+    </div>
+  );
+}
+
+// Good: Separate audio-described version
+function VideoWithADVersion() {
+  const [version, setVersion] = useState('standard');
+
+  return (
+    <div>
+      <h2>Product Demo</h2>
+
+      <div role="group" aria-label="Video version selection">
+        <button
+          onClick={() => setVersion('standard')}
+          aria-pressed={version === 'standard'}
+          style={{
+            fontWeight: version === 'standard' ? 'bold' : 'normal',
+            background: version === 'standard' ? '#e5e7eb' : 'transparent'
+          }}
+        >
+          Standard Version
+        </button>
+        <button
+          onClick={() => setVersion('audio-described')}
+          aria-pressed={version === 'audio-described'}
+          style={{
+            fontWeight: version === 'audio-described' ? 'bold' : 'normal',
+            background: version === 'audio-described' ? '#e5e7eb' : 'transparent'
+          }}
+        >
+          Audio Described Version
+        </button>
+      </div>
+
+      <video controls key={version}>
+        <source
+          src={
+            version === 'standard'
+              ? '/product-demo.mp4'
+              : '/product-demo-audio-described.mp4'
+          }
+          type="video/mp4"
+        />
+        <track kind="captions" src="/captions.vtt" srclang="en" />
+      </video>
+
+      {version === 'audio-described' && (
+        <p aria-live="polite">
+          This version includes narration of on-screen actions during pauses
+          in the dialogue.
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Audio description VTT file example
+const audioDescriptionExample = `
+WEBVTT
+
+NOTE
+Audio descriptions for training video
+Descriptions fit in natural pauses in dialogue
+
+00:00:05.000 --> 00:00:08.500
+The instructor opens a laptop and navigates to the dashboard.
+
+00:00:15.000 --> 00:00:19.000
+The screen shows a bar chart with sales data increasing from left to right.
+
+00:00:28.000 --> 00:00:32.000
+The instructor clicks on the settings icon, revealing a dropdown menu with five options.
+
+00:00:42.000 --> 00:00:46.500
+A split-screen view shows before and after comparisons of the interface redesign.
+`;
+```
+
+**Audio Description Best Practices:**
+
+**What to Describe:**
+- Important visual actions and demonstrations
+- On-screen text that isn't spoken
+- Scene changes and locations
+- Facial expressions conveying emotion
+- Charts, graphs, diagrams, and data visualizations
+- Visual humor or sight gags
+- Gestures and body language
+- Important props or objects
+- Visual-only information
+
+**What NOT to Describe:**
+- Things already clear from dialogue
+- Decorative elements
+- Obvious actions (person walking, if already mentioned)
+- Every detail (only important visual information)
+
+**Timing Considerations:**
+```javascript
+// Audio description timing rules
+const timingRules = {
+  placement: 'Fit descriptions in natural pauses between dialogue',
+  length: 'Keep descriptions concise (2-5 seconds typically)',
+  priority: 'Describe most important visual info first',
+  voicing: 'Use neutral, objective tone',
+  spoilers: 'Avoid revealing plot points before dialogue does'
+};
+```
+
+**Production Methods:**
+
+**1. Extended Audio Description:**
+- Pause video when needed for longer descriptions
+- Resume when description complete
+- Use when natural pauses insufficient
+
+**2. Standard Audio Description:**
+- Fit descriptions in existing pauses
+- Most common approach
+- No video modification needed
+
+**Example Script:**
+```
+[00:15-00:18] Sarah enters a modern office space with floor-to-ceiling windows.
+[00:32-00:35] The pie chart shows 60% blue, 30% green, 10% red.
+[00:58-01:02] The app interface displays a clean design with three main tabs at the top.
+[01:45-01:49] Tom nods in agreement, a slight smile on his face.
+```
+
+**Testing:**
+- [ ] All prerecorded videos have audio description
+- [ ] Audio descriptions don't overlap important dialogue
+- [ ] Descriptions cover all important visual information
+- [ ] Test by listening with eyes closed
+- [ ] Verify user can enable/disable audio description
+- [ ] Check that described version is easy to find
+- [ ] Descriptions are clear and concise
+- [ ] Voice quality is good (clear, neutral tone)
+
+**When Audio Description is NOT Required:**
+- Video is audio-only (no visual component)
+- All visual information is already in audio track
+- Video is decorative/ambient only
+- Alternative accessible version provided (detailed transcript)
+
+**Common Violations:**
+- Training videos with on-screen demonstrations not described
+- Charts/graphs shown without verbal description
+- Silent visual instructions
+- Visual-only humor or context
+
+**Production Resources:**
+- Audio Description Coalition: https://audiodescriptioncoalition.org/
+- Described and Captioned Media Program: https://dcmp.org/
+- Professional audio description services (Rev, 3Play Media)
+- DIY: Record descriptions, mix with video audio
+
+**Cost Considerations:**
+- **Professional AD:** $200-500 per finished minute
+- **DIY:** Free but time-intensive
+- **Software:** Audacity (free), Adobe Audition
+
+**Exceptions:**
+- Video has no important visual information (talking head only)
+- All visual content is described in dialogue naturally
+- Video is a pure demonstration where visual is the content (e.g., art exhibition)
+
+---
+
 ### 1.3 Adaptable
 
 #### ✅ 1.3.1 Info and Relationships (Level A)
@@ -590,6 +1509,218 @@ function ShippingForm() {
 
 ---
 
+#### ✅ 1.4.2 Audio Control (Level A)
+
+**Requirement:** If audio plays automatically for more than 3 seconds, provide a mechanism to pause, stop, or control the volume independently from the overall system volume.
+
+**Why This Matters:**
+Auto-playing audio interferes with screen readers and can be startling or disorienting. Users with screen readers cannot hear their assistive technology speak over background audio.
+
+**Implementation:**
+```jsx
+// Good: Audio with controls and no autoplay
+function AudioPlayer() {
+  return (
+    <div>
+      <h2>Background Music</h2>
+      <audio controls src="/background-music.mp3">
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+  );
+}
+
+// Good: Auto-playing audio with immediate pause control
+function AutoPlayAudio() {
+  const [isPlaying, setIsPlaying] = useState(true);
+  const audioRef = useRef(null);
+
+  // Ensure pause button is visible and accessible immediately
+  useEffect(() => {
+    if (audioRef.current && isPlaying) {
+      audioRef.current.play();
+    }
+  }, [isPlaying]);
+
+  const togglePlay = () => {
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  return (
+    <div>
+      <audio ref={audioRef} loop src="/ambient-sound.mp3" />
+
+      {/* Control MUST be at top of page if audio auto-plays */}
+      <button
+        onClick={togglePlay}
+        aria-label={isPlaying ? 'Pause background audio' : 'Play background audio'}
+        style={{
+          position: 'fixed',
+          top: '10px',
+          right: '10px',
+          zIndex: 9999,
+          padding: '10px 20px',
+          fontSize: '16px'
+        }}
+      >
+        {isPlaying ? '⏸ Pause Audio' : '▶ Play Audio'}
+      </button>
+    </div>
+  );
+}
+
+// Good: Volume control independent of system volume
+function VideoWithVolumeControl() {
+  const [volume, setVolume] = useState(0.5);
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  return (
+    <div>
+      <video ref={videoRef} controls autoPlay muted>
+        <source src="/video.mp4" type="video/mp4" />
+      </video>
+
+      <div>
+        <label htmlFor="volume-slider">Volume:</label>
+        <input
+          id="volume-slider"
+          type="range"
+          min="0"
+          max="1"
+          step="0.1"
+          value={volume}
+          onChange={(e) => setVolume(parseFloat(e.target.value))}
+          aria-label="Adjust video volume"
+        />
+        <span>{Math.round(volume * 100)}%</span>
+      </div>
+    </div>
+  );
+}
+
+// Bad: Auto-playing audio with no controls
+function BadAudioImplementation() {
+  return (
+    <div>
+      {/* ❌ Auto-plays, no way to stop, interferes with screen readers */}
+      <audio autoPlay loop src="/background-music.mp3" />
+      <h1>Welcome to Our Site</h1>
+    </div>
+  );
+}
+
+// Good: Auto-muted video (common pattern)
+function HeroVideo() {
+  return (
+    <video
+      autoPlay
+      muted  // Muted videos are allowed to autoplay
+      loop
+      playsInline
+      style={{ width: '100%' }}
+    >
+      <source src="/hero-video.mp4" type="video/mp4" />
+    </video>
+  );
+}
+
+// Good: User-initiated audio
+function PlaySoundButton() {
+  const [audio] = useState(new Audio('/notification.mp3'));
+
+  const playSound = () => {
+    audio.currentTime = 0;
+    audio.play();
+  };
+
+  return (
+    <button onClick={playSound}>
+      Play Notification Sound
+    </button>
+  );
+}
+```
+
+**HTML Pattern:**
+```html
+<!-- Bad: Autoplay without controls -->
+<audio autoplay loop>
+  <source src="background-music.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Good: Controls provided -->
+<audio controls>
+  <source src="background-music.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Good: No autoplay (user must click play) -->
+<audio controls>
+  <source src="background-music.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Acceptable: Autoplay with muted (no sound) -->
+<video autoplay muted loop>
+  <source src="background-video.mp4" type="video/mp4">
+</video>
+```
+
+**Testing:**
+- [ ] No audio plays automatically without user action
+- [ ] OR if audio auto-plays, it stops within 3 seconds
+- [ ] OR if audio auto-plays >3 seconds, pause/stop control is provided
+- [ ] Pause/stop control is keyboard accessible
+- [ ] Pause/stop control is near the top of the page (easily found)
+- [ ] Volume control is independent of system volume
+- [ ] Test with screen reader - verify audio doesn't interfere
+- [ ] Background music can be paused without leaving page
+
+**Common Issues:**
+- Background music auto-playing with no stop button
+- Auto-playing promotional videos with sound
+- Sound effects that can't be disabled
+- Pause button hidden in footer or hard to find
+- Audio that only stops by leaving the page
+
+**Acceptable Scenarios:**
+- Audio plays for ≤ 3 seconds automatically
+- Auto-muted video (no sound)
+- User explicitly clicks play
+- Pause control provided immediately (before audio starts or within first few seconds)
+
+**Required Control Features:**
+- Must be keyboard accessible
+- Should be near top of page
+- Clear label ("Pause Audio", "Stop Music", etc.)
+- Works independently of system volume (not just "turn down your speakers")
+
+**Tools:**
+- Manual testing (load page and listen)
+- Screen reader testing (verify audio doesn't interfere)
+- Keyboard testing (verify controls are reachable)
+
+**Exceptions:**
+- Audio is ≤ 3 seconds
+- Emergency alerts (may need to override, but provide control after initial alert)
+
+**Best Practice:**
+- Don't auto-play audio at all
+- If you must auto-play, use muted video
+- Provide prominent pause controls
+- Remember user's preference (if they paused, don't auto-play on next page)
+
+---
+
 #### ✅ 1.4.3 Contrast (Minimum) - Level AA ⭐
 
 **Requirement:** Text must have a contrast ratio of at least:
@@ -658,6 +1789,348 @@ function ShippingForm() {
 
 **Tools:**
 - Browser zoom (Cmd/Ctrl + "+")
+
+---
+
+#### ✅ 1.4.5 Images of Text (Level AA) ⭐
+
+**Requirement:** If the technologies being used can achieve the visual presentation, text is used to convey information rather than images of text, except for:
+- **Customizable:** The image of text can be visually customized to the user's requirements
+- **Essential:** A particular presentation of text is essential to the information being conveyed (e.g., logotypes)
+
+**Why This Matters:**
+Real text can be resized, recolored, and read by assistive technologies. Images of text cannot be customized by users and may become pixelated when zoomed. Screen readers cannot read text in images unless alt text is provided.
+
+**Implementation:**
+```jsx
+// Bad: Using image for heading
+function BadHeading() {
+  return (
+    <div>
+      {/* ❌ Text in image - cannot be resized, recolored, or customized */}
+      <img src="/heading-fancy-font.png" alt="Welcome to Our Site" />
+    </div>
+  );
+}
+
+// Good: Use real text with CSS styling
+function GoodHeading() {
+  return (
+    <h1
+      style={{
+        fontFamily: '"Playfair Display", serif',
+        fontSize: '3rem',
+        fontWeight: 'bold',
+        background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        textAlign: 'center'
+      }}
+    >
+      Welcome to Our Site
+    </h1>
+  );
+}
+
+// Bad: Button with text image
+function BadButton() {
+  return (
+    <button>
+      {/* ❌ Text in image */}
+      <img src="/button-text.png" alt="Submit Form" />
+    </button>
+  );
+}
+
+// Good: Real text button with styling
+function GoodButton() {
+  return (
+    <button
+      style={{
+        padding: '12px 24px',
+        fontSize: '16px',
+        fontWeight: '600',
+        color: 'white',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+      }}
+    >
+      Submit Form
+    </button>
+  );
+}
+
+// Bad: Quote as image
+function BadQuote() {
+  return (
+    <div>
+      {/* ❌ Decorative quote in image format */}
+      <img src="/inspirational-quote.jpg" alt="Believe in yourself" />
+    </div>
+  );
+}
+
+// Good: Styled quote with real text
+function GoodQuote() {
+  return (
+    <blockquote
+      style={{
+        fontSize: '1.5rem',
+        fontStyle: 'italic',
+        borderLeft: '4px solid #667eea',
+        paddingLeft: '1.5rem',
+        margin: '2rem 0',
+        color: '#374151'
+      }}
+    >
+      "Believe in yourself"
+      <footer style={{ fontSize: '1rem', fontStyle: 'normal', marginTop: '0.5rem' }}>
+        — Motivational Speaker
+      </footer>
+    </blockquote>
+  );
+}
+
+// Bad: Navigation menu as image map
+function BadNavigation() {
+  return (
+    <img src="/navigation-menu.png" useMap="#navmap" alt="Navigation" />
+  );
+}
+
+// Good: Real HTML/CSS navigation
+function GoodNavigation() {
+  return (
+    <nav>
+      <ul
+        style={{
+          display: 'flex',
+          listStyle: 'none',
+          gap: '2rem',
+          padding: 0,
+          margin: 0
+        }}
+      >
+        <li>
+          <a href="/" style={{ textDecoration: 'none', color: '#374151' }}>
+            Home
+          </a>
+        </li>
+        <li>
+          <a href="/about" style={{ textDecoration: 'none', color: '#374151' }}>
+            About
+          </a>
+        </li>
+        <li>
+          <a href="/contact" style={{ textDecoration: 'none', color: '#374151' }}>
+            Contact
+          </a>
+        </li>
+      </ul>
+    </nav>
+  );
+}
+
+// Acceptable: Logo (essential)
+function LogoExample() {
+  return (
+    <div>
+      {/* ✅ Logos are acceptable as images of text */}
+      <img
+        src="/company-logo.png"
+        alt="Acme Corporation"
+        style={{ height: '40px' }}
+      />
+    </div>
+  );
+}
+
+// Acceptable: Customizable image of text
+function CustomizableTextImage({ userFontSize, userColor }) {
+  // Generate image with user's preferences
+  const imageUrl = `/api/generate-text?text=Welcome&size=${userFontSize}&color=${userColor}`;
+
+  return (
+    <div>
+      <div>
+        <label>
+          Font Size:
+          <input type="range" min="12" max="72" /* ... */ />
+        </label>
+        <label>
+          Color:
+          <input type="color" /* ... */ />
+        </label>
+      </div>
+      <img src={imageUrl} alt="Welcome" />
+    </div>
+  );
+}
+
+// Modern CSS alternatives to images of text
+const CSSAlternatives = {
+  // Fancy fonts
+  webFonts: `
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+    }
+  `,
+
+  // Gradient text
+  gradientText: `
+    .gradient-text {
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+  `,
+
+  // Text shadows and effects
+  textEffects: `
+    .shadow-text {
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .outline-text {
+      text-shadow:
+        -1px -1px 0 #000,
+         1px -1px 0 #000,
+        -1px  1px 0 #000,
+         1px  1px 0 #000;
+      color: white;
+    }
+  `,
+
+  // Custom shapes with CSS
+  shapes: `
+    .circle-text {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+  `
+};
+```
+
+**When Images of Text ARE Acceptable:**
+
+**1. Logotypes (Company/Product Names):**
+```jsx
+// ✅ Acceptable
+<img src="/brand-logo.svg" alt="Company Name Inc." />
+```
+
+**2. Essential Presentation:**
+- Historical documents (preserving original appearance)
+- Artistic text (part of artwork)
+- Screenshots demonstrating specific visual appearance
+- Handwriting or signatures
+
+**3. Customizable:**
+```jsx
+// ✅ Acceptable if user can customize
+function UserCustomizableText({ fontSize, fontColor }) {
+  // Generate image based on user preferences
+  return <img src={`/api/text?size=${fontSize}&color=${fontColor}`} alt="..." />;
+}
+```
+
+**Common Violations:**
+- Decorative headings as images
+- Navigation menus as image maps
+- Buttons with text as images
+- Quotes/testimonials as graphics
+- Pricing tables as images
+- Feature callouts as graphics
+
+**Testing:**
+- [ ] All text is real HTML text, not images
+- [ ] OR images of text fall into acceptable categories (logos, essential)
+- [ ] Try to select text with mouse - if you can't, it might be an image
+- [ ] Zoom page to 200% - does text remain sharp or pixelated?
+- [ ] Check if text can be customized by browser/OS settings
+- [ ] Use "Select All" (Cmd/Ctrl+A) - does it select all text?
+- [ ] Inspect element in DevTools - is it actual text or img tag?
+
+**How to Check:**
+```javascript
+// Find all images on page
+document.querySelectorAll('img').forEach(img => {
+  // Check alt text - might indicate text in image
+  if (img.alt && img.alt.length > 5) {
+    console.log('Potential text image:', img.src, 'Alt:', img.alt);
+  }
+});
+
+// Check for background images (CSS)
+document.querySelectorAll('*').forEach(el => {
+  const bg = window.getComputedStyle(el).backgroundImage;
+  if (bg !== 'none') {
+    console.log('Element with background image:', el, bg);
+  }
+});
+```
+
+**Modern CSS Can Replace Most Images of Text:**
+```css
+/* Fancy fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lobster&display=swap');
+
+/* Gradient text */
+.gradient {
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Text effects */
+.shadow { text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+.outline { -webkit-text-stroke: 2px black; }
+
+/* Rotated text */
+.rotated { transform: rotate(-5deg); }
+
+/* Custom shapes */
+.badge {
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+```
+
+**Benefits of Real Text:**
+- Resizable without pixelation
+- Can be selected and copied
+- Works with browser/OS text customization
+- Better SEO
+- Translatable by browser translation tools
+- Smaller file size
+- Screen reader compatible without alt text
+- Color schemes can be applied
+
+**Tools:**
+- Manual inspection (try to select text)
+- Zoom test (real text stays sharp)
+- DevTools inspection
+- WAVE extension (flags images of text)
+
+**Exceptions:**
+- Logos and branding
+- Essential presentation (historical documents, artwork)
+- User-customizable generated images
+- Text that is part of a photograph (incidental)
 
 ---
 
@@ -1530,6 +3003,299 @@ function LiveFeed({ updates }) {
 
 ### 2.3 Seizures and Physical Reactions
 
+#### ✅ 2.3.1 Three Flashes or Below Threshold (Level A)
+
+**Requirement:** Web pages do not contain anything that flashes more than three times in any one second period, or the flash is below the general flash and red flash thresholds.
+
+**Why This Matters:**
+Flashing content can trigger seizures in people with photosensitive epilepsy. Even brief flashing can cause seizures, disorientation, or nausea.
+
+**Implementation:**
+```jsx
+// Bad: Flashing animation
+function BadFlashingAlert() {
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    // ❌ Flashes 5 times per second - DANGEROUS
+    const interval = setInterval(() => {
+      setIsVisible(prev => !prev);
+    }, 200); // Flashes every 200ms = 5 times/second
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{
+      background: isVisible ? 'red' : 'white',
+      padding: '20px'
+    }}>
+      URGENT ALERT
+    </div>
+  );
+}
+
+// Good: Non-flashing animation
+function GoodPulseAnimation() {
+  return (
+    <div
+      style={{
+        animation: 'pulse 2s ease-in-out infinite',
+        background: 'red',
+        padding: '20px'
+      }}
+    >
+      URGENT ALERT
+    </div>
+  );
+}
+
+// CSS for good animation (smooth, not flashing)
+const styles = `
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+`;
+
+// Good: Static notification with movement
+function SafeNotification({ message }) {
+  return (
+    <div
+      role="alert"
+      style={{
+        background: '#fee2e2',
+        border: '2px solid #ef4444',
+        borderRadius: '8px',
+        padding: '16px',
+        // Slide in instead of flash
+        animation: 'slideIn 0.3s ease-out'
+      }}
+    >
+      {message}
+    </div>
+  );
+}
+
+// CSS for slide animation
+const slideInStyles = `
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+`;
+
+// Good: Attention-getting without flashing
+function AttentionBanner() {
+  return (
+    <div
+      style={{
+        background: 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)',
+        color: 'white',
+        padding: '16px',
+        // Gentle animation, not flashing
+        animation: 'gentle-pulse 3s ease-in-out infinite'
+      }}
+    >
+      <strong>⚠️ Important:</strong> Your session will expire in 5 minutes.
+    </div>
+  );
+}
+
+const gentlePulseStyles = `
+  @keyframes gentle-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.02);
+    }
+  }
+`;
+
+// Testing: Measure flash rate
+function FlashRateChecker() {
+  const [flashCount, setFlashCount] = useState(0);
+  const [isMonitoring, setIsMonitoring] = useState(false);
+
+  const startMonitoring = () => {
+    setFlashCount(0);
+    setIsMonitoring(true);
+
+    // Count flashes for 1 second
+    setTimeout(() => {
+      setIsMonitoring(false);
+    }, 1000);
+  };
+
+  return (
+    <div>
+      <p>Flash count in 1 second: {flashCount}</p>
+      {flashCount > 3 && (
+        <p style={{ color: 'red', fontWeight: 'bold' }}>
+          ⚠️ WARNING: Exceeds 3 flashes per second - FAILS WCAG 2.3.1
+        </p>
+      )}
+      <button onClick={startMonitoring}>
+        Test Flash Rate
+      </button>
+    </div>
+  );
+}
+```
+
+**Safe Alternatives to Flashing:**
+```jsx
+// 1. Smooth fade animations
+const FadeAnimation = styled.div`
+  animation: fade 2s ease-in-out infinite;
+
+  @keyframes fade {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+`;
+
+// 2. Slide animations
+const SlideAnimation = styled.div`
+  animation: slide 1s ease-out;
+
+  @keyframes slide {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+`;
+
+// 3. Gentle color transitions
+const ColorTransition = styled.div`
+  animation: color-change 3s ease-in-out infinite;
+
+  @keyframes color-change {
+    0%, 100% { background-color: #3b82f6; }
+    50% { background-color: #2563eb; }
+  }
+`;
+
+// 4. Rotate/spin (not flashing)
+const SpinAnimation = styled.div`
+  animation: spin 2s linear infinite;
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;
+
+// 5. Scale/bounce
+const BounceAnimation = styled.div`
+  animation: bounce 2s ease-in-out infinite;
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+`;
+```
+
+**Flash Thresholds:**
+- **General Flash Threshold:** A flash or rapidly changing image sequence is below the threshold if:
+  - Flashes 3 times or less in any 1-second period, OR
+  - The combined area flashing is less than 25% of a 10-degree visual field (roughly 341 x 256 pixels at typical viewing distance), OR
+  - The relative luminance changes are small
+
+- **Red Flash Threshold:** Additional requirements for saturated red flashing
+
+**Testing:**
+- [ ] No content flashes more than 3 times per second
+- [ ] Animations use smooth transitions, not rapid on/off states
+- [ ] Test all animations, videos, GIFs
+- [ ] Use Photosensitive Epilepsy Analysis Tool (PEAT) if available
+- [ ] Review any rapidly changing content
+- [ ] Check video content for flashing scenes
+- [ ] Verify animated GIFs don't flash rapidly
+
+**Common Violations:**
+- Rapid on/off toggle animations
+- Strobe effects
+- Lightning effects in videos
+- Emergency vehicle lights in videos/GIFs
+- Flashing banner ads
+- Camera flashes in photo slideshows
+- Blinking cursors or indicators faster than 3Hz
+
+**Safe Practices:**
+- Use smooth CSS transitions (`transition: opacity 0.3s ease`)
+- Fade animations instead of blinking
+- Slide or scale animations
+- Limit animation frequency to ≤ 2 times per second
+- Review all third-party content (ads, embeds) for flashing
+- If video contains flashing, provide warning and alternative
+
+**Video Content:**
+```jsx
+// Good: Video with flash warning
+function VideoWithWarning({ videoUrl, hasFlashing }) {
+  const [acknowledgedWarning, setAcknowledgedWarning] = useState(!hasFlashing);
+
+  if (!acknowledgedWarning) {
+    return (
+      <div
+        role="alertdialog"
+        aria-labelledby="warning-title"
+        aria-describedby="warning-desc"
+      >
+        <h2 id="warning-title">⚠️ Warning</h2>
+        <p id="warning-desc">
+          This video contains flashing lights that may trigger seizures
+          in people with photosensitive epilepsy. Viewer discretion is advised.
+        </p>
+        <button onClick={() => setAcknowledgedWarning(true)}>
+          I Understand, Continue
+        </button>
+        <button onClick={() => window.history.back()}>
+          Go Back
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <video controls>
+      <source src={videoUrl} type="video/mp4" />
+    </video>
+  );
+}
+```
+
+**Tools:**
+- **PEAT (Photosensitive Epilepsy Analysis Tool)** - Free tool from Trace Research & Development Center
+- Manual inspection of animations
+- Slow-motion video review
+- Browser DevTools performance recording
+
+**Exceptions:**
+- None. This is a critical safety requirement with no exceptions.
+
+**Legal Note:**
+Violating this criterion can cause real physical harm. In some jurisdictions, triggering seizures through flashing content could result in legal liability.
+
+**Resources:**
+- Epilepsy Foundation: https://www.epilepsy.com/
+- Photosensitive Epilepsy Analysis Tool: https://trace.umd.edu/peat
+- W3C Understanding 2.3.1: https://www.w3.org/WAI/WCAG22/Understanding/three-flashes-or-below-threshold
+
+---
+
 #### ✅ 2.3.3 Animation from Interactions (Level AAA - Bonus)
 
 **Requirement:** Motion animation can be disabled except when essential.
@@ -1854,6 +3620,795 @@ main {
 ---
 
 ### 2.5 Input Modalities
+
+#### ✅ 2.5.1 Pointer Gestures (Level A)
+
+**Requirement:** All functionality that uses multipoint or path-based gestures can be operated with a single pointer without a path-based gesture, unless multipoint or path-based gestures are essential.
+
+**Why This Matters:**
+Users with motor impairments, tremors, or who use assistive devices may be unable to perform complex gestures like pinch-to-zoom, two-finger swipes, or drawing specific paths.
+
+**Implementation:**
+```jsx
+// Bad: Pinch-only zoom
+function BadImageViewer() {
+  const [scale, setScale] = useState(1);
+
+  const handlePinch = (e) => {
+    // Only pinch gesture - no alternative
+    setScale(e.scale);
+  };
+
+  return (
+    <img
+      src="/photo.jpg"
+      onGestureChange={handlePinch}
+      style={{ transform: `scale(${scale})` }}
+    />
+  );
+}
+
+// Good: Pinch zoom + single-pointer alternative (buttons)
+function GoodImageViewer() {
+  const [scale, setScale] = useState(1);
+
+  const zoomIn = () => setScale(prev => Math.min(prev + 0.2, 3));
+  const zoomOut = () => setScale(prev => Math.max(prev - 0.2, 1));
+
+  return (
+    <div>
+      {/* Single-pointer alternatives */}
+      <div role="group" aria-label="Zoom controls">
+        <button onClick={zoomIn} aria-label="Zoom in">
+          +
+        </button>
+        <button onClick={zoomOut} aria-label="Zoom out">
+          -
+        </button>
+        <button onClick={() => setScale(1)} aria-label="Reset zoom">
+          Reset
+        </button>
+      </div>
+
+      <img
+        src="/photo.jpg"
+        alt="Product photo"
+        style={{ transform: `scale(${scale})` }}
+      />
+    </div>
+  );
+}
+
+// Good: Two-finger swipe + single-tap alternative
+function SwipeableGallery({ images }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  return (
+    <div>
+      <img src={images[currentIndex]} alt={`Slide ${currentIndex + 1}`} />
+
+      {/* Single-pointer alternatives */}
+      <button
+        onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
+        disabled={currentIndex === 0}
+        aria-label="Previous image"
+      >
+        ← Previous
+      </button>
+      <button
+        onClick={() => setCurrentIndex(Math.min(images.length - 1, currentIndex + 1))}
+        disabled={currentIndex === images.length - 1}
+        aria-label="Next image"
+      >
+        Next →
+      </button>
+    </div>
+  );
+}
+
+// Good: Path-based gesture with alternative
+function SignaturePad() {
+  const [signature, setSignature] = useState(null);
+  const [useTyped, setUseTyped] = useState(false);
+
+  return (
+    <div>
+      <div role="radiogroup" aria-label="Signature method">
+        <label>
+          <input
+            type="radio"
+            checked={!useTyped}
+            onChange={() => setUseTyped(false)}
+          />
+          Draw signature
+        </label>
+        <label>
+          <input
+            type="radio"
+            checked={useTyped}
+            onChange={() => setUseTyped(true)}
+          />
+          Type signature
+        </label>
+      </div>
+
+      {useTyped ? (
+        <input
+          type="text"
+          placeholder="Type your full name"
+          aria-label="Typed signature"
+        />
+      ) : (
+        <canvas
+          width="400"
+          height="200"
+          aria-label="Signature drawing pad"
+        />
+      )}
+    </div>
+  );
+}
+
+// Good: Map with multipoint gestures + alternatives
+function InteractiveMap() {
+  return (
+    <div>
+      {/* Multipoint: Pinch to zoom, two-finger pan */}
+      <div className="map-container">
+        {/* Map component */}
+      </div>
+
+      {/* Single-pointer alternatives */}
+      <div role="group" aria-label="Map controls">
+        <button aria-label="Zoom in">+</button>
+        <button aria-label="Zoom out">-</button>
+        <button aria-label="Pan left">←</button>
+        <button aria-label="Pan right">→</button>
+        <button aria-label="Pan up">↑</button>
+        <button aria-label="Pan down">↓</button>
+      </div>
+    </div>
+  );
+}
+```
+
+**Common Multi-point Gestures Requiring Alternatives:**
+- Pinch to zoom → Zoom buttons (+/-)
+- Two-finger rotate → Rotate buttons (↻/↺)
+- Two-finger scroll → Scroll buttons or keyboard arrows
+- Three-finger swipe → Navigation buttons
+
+**Common Path-based Gestures Requiring Alternatives:**
+- Draw a shape to unlock → PIN code or typed password
+- Swipe pattern unlock → Traditional password
+- Signature drawing → Typed name or checkbox consent
+
+**Testing:**
+- [ ] All pinch zoom has button alternatives
+- [ ] All two-finger gestures have single-pointer alternatives
+- [ ] All path-based gestures (drawing, swiping patterns) have alternatives
+- [ ] Test on touch device using only single finger taps
+- [ ] Test with mouse (single clicks only, no dragging if covered by 2.5.7)
+
+**Exceptions:**
+- Gesture is essential (e.g., freehand drawing app where drawing IS the purpose)
+
+**Tools:**
+- Manual testing on touch devices
+- Mouse-only testing
+- Switch device testing
+
+---
+
+#### ✅ 2.5.2 Pointer Cancellation (Level A)
+
+**Requirement:** For functionality activated by single pointer:
+- **No Down-Event:** The down-event doesn't execute any part of the function
+- **Abort or Undo:** Function completes on up-event, and mechanism available to abort before completion or undo after completion
+- **Up Reversal:** The up-event reverses any outcome of the down-event
+- **Essential:** Completing function on down-event is essential
+
+**Why This Matters:**
+Users with motor impairments may accidentally touch/click elements. Triggering actions on down-event (mousedown/touchstart) prevents users from canceling by moving pointer away before releasing.
+
+**Implementation:**
+```jsx
+// Bad: Activates on mousedown/touchstart
+function BadButton() {
+  const handleMouseDown = () => {
+    // ❌ Triggers immediately on press - can't be cancelled
+    deleteAllData();
+  };
+
+  return <button onMouseDown={handleMouseDown}>Delete</button>;
+}
+
+// Good: Activates on click (mouseup/touchend)
+function GoodButton() {
+  const handleClick = () => {
+    // ✅ Triggers on release - can be cancelled by moving away
+    deleteAllData();
+  };
+
+  return <button onClick={handleClick}>Delete</button>;
+}
+
+// Good: Down-event with abort mechanism
+function ButtonWithAbort() {
+  const [isPressed, setIsPressed] = useState(false);
+  const timeoutRef = useRef(null);
+
+  const handleMouseDown = () => {
+    setIsPressed(true);
+    // Give user time to abort
+    timeoutRef.current = setTimeout(() => {
+      deleteAllData();
+      setIsPressed(false);
+    }, 1000);
+  };
+
+  const handleMouseUp = () => {
+    // Cancel if released before timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setIsPressed(false);
+  };
+
+  return (
+    <button
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      aria-label={isPressed ? 'Hold to delete... Release to cancel' : 'Delete'}
+    >
+      {isPressed ? 'Deleting...' : 'Hold to Delete'}
+    </button>
+  );
+}
+
+// Good: Confirmation before completing action
+function DeleteButton({ onDelete }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const handleClick = () => {
+    setShowConfirm(true);
+  };
+
+  const handleConfirm = () => {
+    onDelete();
+    setShowConfirm(false);
+  };
+
+  const handleCancel = () => {
+    setShowConfirm(false);
+  };
+
+  if (showConfirm) {
+    return (
+      <div role="alertdialog" aria-labelledby="confirm-title">
+        <h2 id="confirm-title">Confirm Delete</h2>
+        <p>Are you sure you want to delete this item?</p>
+        <button onClick={handleConfirm}>Yes, Delete</button>
+        <button onClick={handleCancel}>Cancel</button>
+      </div>
+    );
+  }
+
+  return <button onClick={handleClick}>Delete</button>;
+}
+
+// Good: Undo mechanism
+function ButtonWithUndo({ onAction }) {
+  const [showUndo, setShowUndo] = useState(false);
+
+  const handleClick = () => {
+    onAction();
+    setShowUndo(true);
+
+    // Hide undo after 5 seconds
+    setTimeout(() => setShowUndo(false), 5000);
+  };
+
+  const handleUndo = () => {
+    undoAction();
+    setShowUndo(false);
+  };
+
+  return (
+    <>
+      <button onClick={handleClick}>Delete Item</button>
+
+      {showUndo && (
+        <div role="status" aria-live="polite">
+          <p>Item deleted.</p>
+          <button onClick={handleUndo}>Undo</button>
+        </div>
+      )}
+    </>
+  );
+}
+
+// Essential: Keyboard playing (down-event essential)
+function PianoKey({ note }) {
+  const playNote = () => {
+    // Play sound
+    audioContext.play(note);
+  };
+
+  const stopNote = () => {
+    // Stop sound
+    audioContext.stop(note);
+  };
+
+  return (
+    <button
+      onMouseDown={playNote}
+      onMouseUp={stopNote}
+      onTouchStart={playNote}
+      onTouchEnd={stopNote}
+      aria-label={`Piano key ${note}`}
+    >
+      {note}
+    </button>
+  );
+}
+
+// Context menu pattern (down-event opens menu)
+function ContextMenuTrigger() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    setMenuPosition({ x: e.clientX, y: e.clientY });
+    setMenuOpen(true);
+  };
+
+  return (
+    <>
+      <div onContextMenu={handleContextMenu}>
+        Right-click for menu
+      </div>
+
+      {menuOpen && (
+        <div
+          role="menu"
+          style={{
+            position: 'fixed',
+            left: menuPosition.x,
+            top: menuPosition.y
+          }}
+        >
+          <button role="menuitem">Copy</button>
+          <button role="menuitem">Paste</button>
+          <button role="menuitem" onClick={() => setMenuOpen(false)}>
+            Close
+          </button>
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+**Testing:**
+- [ ] All interactive elements trigger on up-event (click) not down-event
+- [ ] OR down-event actions have abort mechanism (move pointer away before release)
+- [ ] OR destructive actions have undo within reasonable time
+- [ ] Test by pressing and holding, then moving away before release
+- [ ] Verify action doesn't execute if pointer moved away
+
+**Common Violations:**
+- Delete buttons on mousedown
+- Navigation on touchstart
+- Form submission on mousedown
+- Opening links on touchstart
+
+**Acceptable Patterns:**
+- Standard buttons (use onClick)
+- Links (use href, trigger on up-event)
+- Down-event for essential functionality (games, instruments)
+- Down-event with prominent undo
+
+**Tools:**
+- Manual testing (press and move away before release)
+- Touch device testing
+
+---
+
+#### ✅ 2.5.3 Label in Name (Level A)
+
+**Requirement:** For user interface components with labels that include text or images of text, the accessible name contains the visible text.
+
+**Why This Matters:**
+Voice control users speak the visible label to activate controls. If the accessible name doesn't match, voice commands won't work.
+
+**Implementation:**
+```jsx
+// Bad: Visible text doesn't match accessible name
+function BadButton() {
+  return (
+    <button aria-label="Submit form">
+      Send {/* Voice users say "Click Send" but accessible name is "Submit form" */}
+    </button>
+  );
+}
+
+// Good: Accessible name includes visible text
+function GoodButton() {
+  return (
+    <button aria-label="Send message">
+      Send {/* Accessible name includes "Send" */}
+    </button>
+  );
+}
+
+// Better: Use visible text as accessible name
+function BetterButton() {
+  return (
+    <button>
+      Send {/* Accessible name is "Send" - perfect match */}
+    </button>
+  );
+}
+
+// Bad: Icon button with mismatched label
+function BadIconButton() {
+  return (
+    <button aria-label="Remove item">
+      <TrashIcon /> {/* Voice users might say "Click delete" or "Click trash" */}
+    </button>
+  );
+}
+
+// Good: Clear relationship between icon and label
+function GoodIconButton() {
+  return (
+    <button aria-label="Delete">
+      <TrashIcon />
+      Delete {/* Visible text matches accessible name */}
+    </button>
+  );
+}
+
+// Good: Supplemented label
+function SearchButton() {
+  return (
+    <button aria-label="Search for products">
+      Search {/* "Search" from visible text is in accessible name */}
+    </button>
+  );
+}
+
+// Bad: Completely different text
+function BadLinkText() {
+  return (
+    <a href="/article" aria-label="View blog post">
+      Read More {/* Voice users say "Click read more" but accessible name is different */}
+    </a>
+  );
+}
+
+// Good: Accessible name includes visible text
+function GoodLinkText() {
+  return (
+    <a href="/article" aria-label="Read more about accessibility">
+      Read More {/* "Read More" is in accessible name */}
+    </a>
+  );
+}
+
+// Good: Match visible text exactly
+function CardLink({ title }) {
+  return (
+    <article>
+      <h3>{title}</h3>
+      <p>Article excerpt...</p>
+      {/* Accessible name matches visible text */}
+      <a href="/article" aria-label={`Read more: ${title}`}>
+        Read More
+      </a>
+    </article>
+  );
+}
+
+// Good: Form input labels
+function FormField() {
+  return (
+    <div>
+      <label htmlFor="email">
+        Email Address
+      </label>
+      <input
+        id="email"
+        type="email"
+        // Accessible name is "Email Address" from <label>
+        // Matches visible text ✓
+      />
+    </div>
+  );
+}
+```
+
+**Rules:**
+1. **Accessible name must CONTAIN the visible text** (can have additional text)
+2. **Visible text should appear at START of accessible name** (voice control users expect this)
+3. **Exact match is best** (use visible text as accessible name when possible)
+
+**Testing:**
+- [ ] For each button/link, compare visible text to accessible name
+- [ ] Accessible name contains visible text
+- [ ] Test with voice control ("Click [visible text]")
+- [ ] Use screen reader to hear accessible name
+- [ ] Check aria-label, aria-labelledby, and visible text match
+
+**Common Violations:**
+- "Read More" button with aria-label="View Article Details"
+- "Submit" button with aria-label="Send form to server"
+- Search icon with aria-label="Find" (when visible text says "Search")
+- Icon + text where aria-label only describes icon
+
+**Tools:**
+- Screen reader testing
+- Voice control testing (Dragon, Voice Control on Mac/iOS)
+- Browser DevTools (inspect accessible name)
+- axe DevTools
+
+---
+
+#### ✅ 2.5.4 Motion Actuation (Level A)
+
+**Requirement:** Functionality triggered by device motion (shaking, tilting) or user motion can also be operated by user interface components, and motion can be disabled to prevent accidental actuation (unless motion is essential).
+
+**Why This Matters:**
+Users with motor disabilities may be unable to perform or may involuntarily perform motions. Device motion can also be triggered accidentally (phone in pocket, wheelchair vibration).
+
+**Implementation:**
+```jsx
+// Bad: Shake-only undo
+function BadShakeToUndo() {
+  useEffect(() => {
+    const handleShake = (e) => {
+      if (e.accelerationIncludingGravity.x > 15) {
+        // ❌ No alternative method
+        undoLastAction();
+      }
+    };
+
+    window.addEventListener('devicemotion', handleShake);
+    return () => window.removeEventListener('devicemotion', handleShake);
+  }, []);
+
+  return <div>Shake device to undo</div>;
+}
+
+// Good: Shake to undo + button alternative + disable option
+function GoodShakeToUndo() {
+  const [motionEnabled, setMotionEnabled] = useState(
+    localStorage.getItem('motionEnabled') === 'true'
+  );
+
+  useEffect(() => {
+    if (!motionEnabled) return;
+
+    const handleShake = (e) => {
+      if (e.accelerationIncludingGravity.x > 15) {
+        undoLastAction();
+      }
+    };
+
+    window.addEventListener('devicemotion', handleShake);
+    return () => window.removeEventListener('devicemotion', handleShake);
+  }, [motionEnabled]);
+
+  const toggleMotion = () => {
+    const newValue = !motionEnabled;
+    setMotionEnabled(newValue);
+    localStorage.setItem('motionEnabled', String(newValue));
+  };
+
+  return (
+    <div>
+      {/* UI alternative */}
+      <button onClick={undoLastAction}>
+        Undo
+      </button>
+
+      {/* Disable motion */}
+      <label>
+        <input
+          type="checkbox"
+          checked={motionEnabled}
+          onChange={toggleMotion}
+        />
+        Enable shake to undo
+      </label>
+
+      {motionEnabled && <p>You can also shake device to undo</p>}
+    </div>
+  );
+}
+
+// Good: Tilt to scroll + traditional scroll + disable
+function TiltScroll() {
+  const [tiltEnabled, setTiltEnabled] = useState(false);
+
+  useEffect(() => {
+    if (!tiltEnabled) return;
+
+    const handleOrientation = (e) => {
+      const tilt = e.beta; // Front-to-back tilt
+      if (tilt > 10) {
+        window.scrollBy(0, 5);
+      } else if (tilt < -10) {
+        window.scrollBy(0, -5);
+      }
+    };
+
+    window.addEventListener('deviceorientation', handleOrientation);
+    return () => window.removeEventListener('deviceorientation', handleOrientation);
+  }, [tiltEnabled]);
+
+  return (
+    <div>
+      {/* Traditional scrolling still works */}
+      <div style={{ height: '2000px', overflowY: 'scroll' }}>
+        Content...
+      </div>
+
+      {/* Optional motion feature */}
+      <button onClick={() => setTiltEnabled(!tiltEnabled)}>
+        {tiltEnabled ? 'Disable' : 'Enable'} Tilt Scrolling
+      </button>
+    </div>
+  );
+}
+
+// Good: Motion controls for game with alternatives
+function Game() {
+  const [useMotion, setUseMotion] = useState(false);
+  const [playerPosition, setPlayerPosition] = useState({ x: 0, y: 0 });
+
+  // Motion controls
+  useEffect(() => {
+    if (!useMotion) return;
+
+    const handleMotion = (e) => {
+      setPlayerPosition({
+        x: e.accelerationIncludingGravity.x,
+        y: e.accelerationIncludingGravity.y
+      });
+    };
+
+    window.addEventListener('devicemotion', handleMotion);
+    return () => window.removeEventListener('devicemotion', handleMotion);
+  }, [useMotion]);
+
+  // Keyboard controls (alternative)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      switch (e.key) {
+        case 'ArrowLeft':
+          setPlayerPosition(prev => ({ ...prev, x: prev.x - 10 }));
+          break;
+        case 'ArrowRight':
+          setPlayerPosition(prev => ({ ...prev, x: prev.x + 10 }));
+          break;
+        case 'ArrowUp':
+          setPlayerPosition(prev => ({ ...prev, y: prev.y - 10 }));
+          break;
+        case 'ArrowDown':
+          setPlayerPosition(prev => ({ ...prev, y: prev.y + 10 }));
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  return (
+    <div>
+      <div>
+        <label>
+          <input
+            type="checkbox"
+            checked={useMotion}
+            onChange={(e) => setUseMotion(e.target.checked)}
+          />
+          Use device motion controls
+        </label>
+        <p>Or use arrow keys</p>
+      </div>
+
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: '400px',
+          border: '1px solid black'
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            left: playerPosition.x,
+            top: playerPosition.y,
+            width: '20px',
+            height: '20px',
+            background: 'blue'
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Settings page pattern
+function MotionSettings() {
+  const [motionEnabled, setMotionEnabled] = useState(false);
+
+  return (
+    <fieldset>
+      <legend>Motion Controls</legend>
+
+      <label>
+        <input
+          type="checkbox"
+          checked={motionEnabled}
+          onChange={(e) => setMotionEnabled(e.target.checked)}
+        />
+        Enable motion-based controls
+      </label>
+
+      <p>
+        <small>
+          When disabled, all motion-activated features will use button/keyboard
+          alternatives instead.
+        </small>
+      </p>
+
+      {motionEnabled && (
+        <p>
+          <strong>Note:</strong> You can shake your device to undo, or tilt to scroll.
+        </p>
+      )}
+    </fieldset>
+  );
+}
+```
+
+**Common Motion-Triggered Functions:**
+- Shake to undo/redo/refresh
+- Tilt to scroll
+- Tilt for parallax effects
+- Lean closer to zoom
+- Raise phone to ear for actions
+- Flip phone for different view
+
+**Requirements:**
+1. **UI alternative must exist** (button, keyboard, etc.)
+2. **Motion can be disabled** (settings toggle)
+3. **Motion is opt-in preferred** (not enabled by default)
+
+**Testing:**
+- [ ] All motion-triggered functions have UI alternatives
+- [ ] Motion can be disabled in settings
+- [ ] Test without performing motion gestures
+- [ ] Verify accidental motion doesn't trigger functions
+- [ ] Check if motion is opt-in or opt-out
+
+**Exceptions:**
+- Motion is essential (e.g., pedometer app, motion-controlled game where motion IS the purpose)
+- Motion is used for accessibility (e.g., Switch Control, Voice Control)
+
+**Tools:**
+- Manual testing (try to use app without motion)
+- Device motion simulation in DevTools
+- Test with motion disabled
+
+---
 
 #### ✅ 2.5.7 Dragging Movements (Level AA) 🆕 WCAG 2.2
 
@@ -2212,6 +4767,250 @@ function TagList({ tags, onRemove }) {
 
 ---
 
+#### ✅ 3.1.2 Language of Parts (Level AA) ⭐
+
+**Requirement:** The human language of each passage or phrase in the content can be programmatically determined, except for proper names, technical terms, words of indeterminate language, and words or phrases that have become part of the vernacular of the immediately surrounding text.
+
+**Why This Matters:**
+Screen readers need to know when language changes to pronounce words correctly. Mixing languages without marking them causes mispronunciation and confusion for users relying on text-to-speech.
+
+**Implementation:**
+```html
+<!-- Good: Marking language changes -->
+<p>
+  The French phrase <span lang="fr">je ne sais quoi</span> is often used in English.
+</p>
+
+<p>
+  In Germany, you might say <span lang="de">Guten Tag</span> to greet someone.
+</p>
+
+<p>
+  The Spanish word <span lang="es">mañana</span> means tomorrow.
+</p>
+
+<!-- Good: Multilingual quote -->
+<blockquote lang="es">
+  <p>La vida es bella.</p>
+  <footer>— Spanish proverb</footer>
+</blockquote>
+
+<!-- Good: Mixed language content -->
+<article lang="en">
+  <h1>Learning Italian</h1>
+  <p>
+    Today we'll learn about Italian greetings. The most common greeting is
+    <span lang="it">ciao</span>, which means both hello and goodbye.
+  </p>
+
+  <p>
+    For a more formal greeting, you would say
+    <span lang="it">buongiorno</span> (good morning) or
+    <span lang="it">buonasera</span> (good evening).
+  </p>
+</article>
+```
+
+**React Implementation:**
+```jsx
+// Good: Component for foreign phrases
+function ForeignPhrase({ text, language, translation }) {
+  return (
+    <span>
+      <span lang={language} style={{ fontStyle: 'italic' }}>
+        {text}
+      </span>
+      {translation && <span> ({translation})</span>}
+    </span>
+  );
+}
+
+// Usage
+<p>
+  The German word <ForeignPhrase text="Schadenfreude" language="de" translation="pleasure derived from another's misfortune" /> has no direct English equivalent.
+</p>
+
+// Good: Multilingual blog post
+function BlogPost({ title, content, excerpts }) {
+  return (
+    <article lang="en">
+      <h1>{title}</h1>
+      <div dangerouslySetInnerHTML={{ __html: content }} />
+
+      {/* Quotes in different languages */}
+      <section>
+        <h2>International Perspectives</h2>
+
+        <blockquote lang="fr">
+          <p>L'art est long, la vie est courte.</p>
+          <footer>— French saying</footer>
+        </blockquote>
+
+        <blockquote lang="ja">
+          <p>七転び八起き</p>
+          <footer>— Japanese proverb (Fall down seven times, stand up eight)</footer>
+        </blockquote>
+      </section>
+    </article>
+  );
+}
+
+// Good: Language switcher with proper lang attributes
+function MultilingualContent({ contentByLang, currentLang }) {
+  return (
+    <div>
+      <div role="group" aria-label="Language selection">
+        <button onClick={() => setLang('en')} aria-pressed={currentLang === 'en'}>
+          English
+        </button>
+        <button onClick={() => setLang('es')} aria-pressed={currentLang === 'es'}>
+          Español
+        </button>
+        <button onClick={() => setLang('fr')} aria-pressed={currentLang === 'fr'}>
+          Français
+        </button>
+      </div>
+
+      <div lang={currentLang}>
+        {contentByLang[currentLang]}
+      </div>
+    </div>
+  );
+}
+
+// Good: Product names in different languages
+function ProductList({ products }) {
+  return (
+    <ul>
+      {products.map(product => (
+        <li key={product.id}>
+          <span lang={product.nameLanguage}>{product.name}</span>
+          {' - '}
+          <span>{product.description}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// Example usage
+<ProductList
+  products={[
+    { id: 1, name: 'Café con Leche', nameLanguage: 'es', description: 'Coffee with milk' },
+    { id: 2, name: 'Croissant', nameLanguage: 'fr', description: 'Buttery pastry' },
+    { id: 3, name: 'Gelato', nameLanguage: 'it', description: 'Italian ice cream' }
+  ]}
+/>
+```
+
+**Common Language Codes:**
+- `en` - English
+- `es` - Spanish
+- `fr` - French
+- `de` - German
+- `it` - Italian
+- `pt` - Portuguese
+- `ru` - Russian
+- `zh` - Chinese
+- `ja` - Japanese
+- `ko` - Korean
+- `ar` - Arabic
+- `hi` - Hindi
+
+**Regional Variants:**
+- `en-US` - American English
+- `en-GB` - British English
+- `es-ES` - Spain Spanish
+- `es-MX` - Mexican Spanish
+- `fr-FR` - France French
+- `fr-CA` - Canadian French
+- `pt-BR` - Brazilian Portuguese
+- `pt-PT` - European Portuguese
+- `zh-CN` - Simplified Chinese
+- `zh-TW` - Traditional Chinese
+
+**When NOT to Mark Language:**
+
+**1. Proper Names:**
+```html
+<!-- No lang attribute needed -->
+<p>I met Maria Garcia in Madrid.</p>
+<p>The company Tesla was founded by Elon Musk.</p>
+```
+
+**2. Technical Terms:**
+```html
+<!-- No lang attribute needed for technical terms -->
+<p>The function uses an AJAX request to fetch data.</p>
+<p>Configure the nginx server for HTTPS.</p>
+```
+
+**3. Loan Words in Common Use:**
+```html
+<!-- No lang attribute needed - part of English vocabulary -->
+<p>We had pizza and espresso for lunch.</p>
+<p>The entrepreneur had a lot of charisma.</p>
+```
+
+**4. Indeterminate Language:**
+```html
+<!-- Brand names, neologisms -->
+<p>Download the app from the App Store.</p>
+```
+
+**Testing:**
+- [ ] Foreign language words/phrases have lang attribute
+- [ ] Language codes are valid (ISO 639-1)
+- [ ] Quotes in other languages marked with lang
+- [ ] Multi-language content properly identified
+- [ ] Test with screen reader - verify correct pronunciation
+- [ ] Proper names not over-marked
+- [ ] Common loan words not marked
+
+**How Screen Readers Use Language:**
+```javascript
+// Screen reader switches voice/pronunciation based on lang attribute
+<p>
+  <!-- English voice -->
+  The French word
+  <!-- Switches to French voice/pronunciation -->
+  <span lang="fr">bonjour</span>
+  <!-- Back to English voice -->
+  means hello.
+</p>
+```
+
+**Common Issues:**
+- Foreign phrases not marked
+- Quotes in other languages without lang attribute
+- Entire page in wrong language
+- Over-marking common loan words
+- Forgetting lang on blockquotes
+
+**Testing with Screen Reader:**
+```html
+<!-- Bad: Mispronounced by English voice -->
+<p>In France, you say bonjour</p>
+
+<!-- Good: Correctly pronounced by French voice -->
+<p>In France, you say <span lang="fr">bonjour</span></p>
+```
+
+**Tools:**
+- Screen reader testing (VoiceOver, NVDA, JAWS)
+- Browser DevTools (inspect lang attributes)
+- W3C HTML Validator (checks for lang attributes)
+- Manual inspection
+
+**Best Practices:**
+- Mark all foreign language passages
+- Use most specific language code when known (en-US vs en)
+- Don't over-mark (proper names, common loan words)
+- Test with screen reader to verify pronunciation
+- Document language changes for content creators
+
+---
+
 ### 3.2 Predictable
 
 #### ✅ 3.2.1 On Focus (Level A)
@@ -2254,6 +5053,305 @@ function TagList({ tags, onRemove }) {
 **Testing:**
 - [ ] Navigation consistent across all pages
 - [ ] Same relative order maintained
+
+---
+
+#### ✅ 3.2.4 Consistent Identification (Level AA) ⭐
+
+**Requirement:** Components that have the same functionality within a set of web pages are identified consistently.
+
+**Why This Matters:**
+Users with cognitive disabilities benefit from consistent labels and icons. If a "Download" button is labeled "Download" on one page and "Get File" on another, it creates confusion and increases cognitive load.
+
+**Implementation:**
+```jsx
+// Bad: Inconsistent button labels for same function
+function PageOne() {
+  return <button onClick={downloadFile}>Download</button>;
+}
+
+function PageTwo() {
+  return <button onClick={downloadFile}>Get File</button>; // ❌ Different label
+}
+
+// Good: Consistent button labels
+function PageOne() {
+  return <button onClick={downloadFile}>Download</button>;
+}
+
+function PageTwo() {
+  return <button onClick={downloadFile}>Download</button>; // ✅ Same label
+}
+
+// Bad: Inconsistent icon meanings
+function Header() {
+  return (
+    <nav>
+      <button aria-label="Search">🔍</button>
+      <button aria-label="Menu">☰</button>
+    </nav>
+  );
+}
+
+function Sidebar() {
+  return (
+    <div>
+      <button aria-label="Search">🔎</button> {/* Different icon */}
+      <button aria-label="Navigation">☰</button> {/* Different label */}
+    </div>
+  );
+}
+
+// Good: Consistent icons and labels
+const IconButton = ({ icon, label, onClick }) => (
+  <button onClick={onClick} aria-label={label}>
+    {icon}
+  </button>
+);
+
+// Reusable icon constants
+const ICONS = {
+  search: '🔍',
+  menu: '☰',
+  save: '💾',
+  delete: '🗑️',
+  edit: '✏️'
+};
+
+// Good: Consistent search across pages
+function SearchButton() {
+  return (
+    <button aria-label="Search">
+      <SearchIcon />
+      Search
+    </button>
+  );
+}
+
+// Use same component everywhere
+<Header>
+  <SearchButton />
+</Header>
+
+<Sidebar>
+  <SearchButton />
+</Sidebar>
+
+<Footer>
+  <SearchButton />
+</Footer>
+
+// Good: Consistent save functionality
+function SaveButton({ onSave }) {
+  return (
+    <button onClick={onSave} aria-label="Save">
+      <SaveIcon />
+      Save
+    </button>
+  );
+}
+
+// Use consistently across forms
+<ProfileForm>
+  <SaveButton onSave={saveProfile} />
+</ProfileForm>
+
+<SettingsForm>
+  <SaveButton onSave={saveSettings} />
+</SettingsForm>
+
+// Good: Consistent help links
+const HelpLink = () => (
+  <a href="/help" aria-label="Help documentation">
+    <HelpIcon />
+    Help
+  </a>
+);
+
+// Good: Consistent pagination
+function Pagination({ currentPage, totalPages, onPageChange }) {
+  return (
+    <nav aria-label="Pagination">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        aria-label="Previous page"
+      >
+        ← Previous
+      </button>
+
+      <span>
+        Page {currentPage} of {totalPages}
+      </span>
+
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        aria-label="Next page"
+      >
+        Next →
+      </button>
+    </nav>
+  );
+}
+
+// Use same pagination component everywhere
+<BlogList>
+  <Pagination {...paginationProps} />
+</BlogList>
+
+<ProductList>
+  <Pagination {...paginationProps} />
+</ProductList>
+```
+
+**Consistency Requirements:**
+
+**1. Text Labels:**
+```jsx
+// Bad: Inconsistent
+<button>Download</button>  // Page 1
+<button>Get File</button>  // Page 2
+
+// Good: Consistent
+<button>Download</button>  // All pages
+```
+
+**2. Icons:**
+```jsx
+// Bad: Different icons for same function
+<button aria-label="Delete"><TrashIcon /></button>  // Page 1
+<button aria-label="Delete"><XIcon /></button>      // Page 2
+
+// Good: Same icon for same function
+<button aria-label="Delete"><TrashIcon /></button>  // All pages
+```
+
+**3. Alternative Text:**
+```jsx
+// Bad: Inconsistent alt text
+<img src="/logo.png" alt="Company Logo" />     // Page 1
+<img src="/logo.png" alt="Our Brand" />        // Page 2
+
+// Good: Consistent alt text
+<img src="/logo.png" alt="Acme Corporation" /> // All pages
+```
+
+**4. Link Text:**
+```jsx
+// Bad: Inconsistent
+<a href="/contact">Contact Us</a>    // Page 1
+<a href="/contact">Get in Touch</a>  // Page 2
+
+// Good: Consistent
+<a href="/contact">Contact Us</a>    // All pages
+```
+
+**Common Patterns to Keep Consistent:**
+
+```jsx
+// Create a design system with reusable components
+const DesignSystem = {
+  // Primary actions
+  SaveButton: ({ onClick }) => (
+    <button className="btn-primary" onClick={onClick}>
+      <SaveIcon /> Save
+    </button>
+  ),
+
+  CancelButton: ({ onClick }) => (
+    <button className="btn-secondary" onClick={onClick}>
+      Cancel
+    </button>
+  ),
+
+  DeleteButton: ({ onClick }) => (
+    <button className="btn-danger" onClick={onClick} aria-label="Delete">
+      <TrashIcon /> Delete
+    </button>
+  ),
+
+  // Navigation
+  BackButton: ({ onClick }) => (
+    <button onClick={onClick} aria-label="Go back">
+      ← Back
+    </button>
+  ),
+
+  // Search
+  SearchInput: ({ onSearch }) => (
+    <div>
+      <input
+        type="search"
+        placeholder="Search..."
+        aria-label="Search"
+        onChange={onSearch}
+      />
+      <button aria-label="Submit search">
+        <SearchIcon />
+      </button>
+    </div>
+  ),
+
+  // Social media links
+  SocialLinks: () => (
+    <div role="group" aria-label="Social media links">
+      <a href="https://facebook.com" aria-label="Facebook">
+        <FacebookIcon />
+      </a>
+      <a href="https://twitter.com" aria-label="Twitter">
+        <TwitterIcon />
+      </a>
+    </div>
+  )
+};
+```
+
+**Testing:**
+- [ ] Same function has same label across all pages
+- [ ] Same icons used for same functions
+- [ ] Navigation labels consistent
+- [ ] Form buttons consistent (Save, Cancel, Submit)
+- [ ] Help links labeled consistently
+- [ ] Search functionality labeled consistently
+- [ ] Social media links consistent
+- [ ] Document download links consistent
+
+**Common Violations:**
+- "Download PDF" on one page, "Get PDF" on another
+- Save icon differs across forms
+- "Search" button vs "Find" button for same function
+- Social media icons without consistent labels
+- Help icon in different positions with different labels
+
+**Acceptable Variations:**
+```jsx
+// OK: Same function, more specific context in label
+<button aria-label="Save profile">Save</button>
+<button aria-label="Save settings">Save</button>
+
+// OK: Same function, additional descriptive text
+<button>Download</button>
+<button>Download (PDF, 2MB)</button>
+
+// OK: Icon with text vs icon-only (as long as aria-label consistent)
+<button aria-label="Edit"><EditIcon /> Edit</button>
+<button aria-label="Edit"><EditIcon /></button>
+```
+
+**Best Practices:**
+- Create reusable components for common actions
+- Document standard labels in design system
+- Use component libraries (Material-UI, Ant Design)
+- Code review for consistency
+- Accessibility audit across multiple pages
+- User testing to identify confusing inconsistencies
+
+**Tools:**
+- Manual inspection across multiple pages
+- Design system documentation
+- Component storybook
+- Accessibility audit tools
 
 ---
 
@@ -2377,6 +5475,467 @@ function Header() {
 
 ### 3.3 Input Assistance
 
+#### ✅ 3.3.1 Error Identification (Level A)
+
+**Requirement:** If an input error is automatically detected, the item in error is identified and the error is described to the user in text.
+
+**Why This Matters:**
+Users need clear, text-based error messages to understand what went wrong and how to fix it. Visual indicators alone (like red borders) are insufficient for blind users, colorblind users, or screen reader users.
+
+**Implementation:**
+```jsx
+// Bad: Visual-only error indication
+function BadForm() {
+  const [email, setEmail] = useState('');
+  const [hasError, setHasError] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!email.includes('@')) {
+      setHasError(true); // Only visual indicator - no text description
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="email">Email</label>
+      <input
+        id="email"
+        type="text"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={{ borderColor: hasError ? 'red' : 'gray' }} // ❌ Color only
+      />
+      <button>Submit</button>
+    </form>
+  );
+}
+
+// Good: Text error message
+function GoodForm() {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!email.includes('@')) {
+      setError('Email must contain an @ symbol');
+    } else {
+      setError('');
+      // Submit form
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="email">Email</label>
+      <input
+        id="email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        aria-invalid={error ? 'true' : 'false'}
+        aria-describedby={error ? 'email-error' : undefined}
+      />
+      {error && (
+        <div id="email-error" role="alert">
+          {error}
+        </div>
+      )}
+      <button>Submit</button>
+    </form>
+  );
+}
+
+// Good: Multiple field validation with error summary
+function RegistrationForm() {
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  const [errors, setErrors] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.username) {
+      newErrors.username = 'Username is required';
+    } else if (formData.username.length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
+    }
+
+    if (!formData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!formData.email.includes('@')) {
+      newErrors.email = 'Email must be a valid email address';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    return newErrors;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = validate();
+    setErrors(newErrors);
+    setSubmitted(true);
+
+    if (Object.keys(newErrors).length === 0) {
+      // Submit form
+      console.log('Form submitted successfully');
+    }
+  };
+
+  const errorCount = Object.keys(errors).length;
+
+  return (
+    <form onSubmit={handleSubmit} noValidate>
+      {/* Error Summary */}
+      {submitted && errorCount > 0 && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          style={{
+            padding: '1rem',
+            background: '#fee2e2',
+            border: '2px solid #ef4444',
+            borderRadius: '4px',
+            marginBottom: '1rem'
+          }}
+        >
+          <h2 style={{ marginTop: 0 }}>
+            There {errorCount === 1 ? 'is' : 'are'} {errorCount} error
+            {errorCount === 1 ? '' : 's'} in the form:
+          </h2>
+          <ul>
+            {Object.entries(errors).map(([field, message]) => (
+              <li key={field}>
+                <a href={`#${field}`}>{message}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Username Field */}
+      <div>
+        <label htmlFor="username">Username</label>
+        <input
+          id="username"
+          type="text"
+          value={formData.username}
+          onChange={(e) =>
+            setFormData({ ...formData, username: e.target.value })
+          }
+          aria-invalid={errors.username ? 'true' : 'false'}
+          aria-describedby={errors.username ? 'username-error' : undefined}
+        />
+        {errors.username && (
+          <div id="username-error" role="alert">
+            {errors.username}
+          </div>
+        )}
+      </div>
+
+      {/* Email Field */}
+      <div>
+        <label htmlFor="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          aria-invalid={errors.email ? 'true' : 'false'}
+          aria-describedby={errors.email ? 'email-error' : undefined}
+        />
+        {errors.email && (
+          <div id="email-error" role="alert">
+            {errors.email}
+          </div>
+        )}
+      </div>
+
+      {/* Password Field */}
+      <div>
+        <label htmlFor="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          value={formData.password}
+          onChange={(e) =>
+            setFormData({ ...formData, password: e.target.value })
+          }
+          aria-invalid={errors.password ? 'true' : 'false'}
+          aria-describedby={errors.password ? 'password-error' : undefined}
+        />
+        {errors.password && (
+          <div id="password-error" role="alert">
+            {errors.password}
+          </div>
+        )}
+      </div>
+
+      {/* Confirm Password Field */}
+      <div>
+        <label htmlFor="confirmPassword">Confirm Password</label>
+        <input
+          id="confirmPassword"
+          type="password"
+          value={formData.confirmPassword}
+          onChange={(e) =>
+            setFormData({ ...formData, confirmPassword: e.target.value })
+          }
+          aria-invalid={errors.confirmPassword ? 'true' : 'false'}
+          aria-describedby={
+            errors.confirmPassword ? 'confirmPassword-error' : undefined
+          }
+        />
+        {errors.confirmPassword && (
+          <div id="confirmPassword-error" role="alert">
+            {errors.confirmPassword}
+          </div>
+        )}
+      </div>
+
+      <button type="submit">Register</button>
+    </form>
+  );
+}
+
+// Good: Real-time validation
+function EmailField() {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [touched, setTouched] = useState(false);
+
+  const validateEmail = (value) => {
+    if (!value) {
+      return 'Email is required';
+    }
+    if (!value.includes('@')) {
+      return 'Email must contain @';
+    }
+    if (!value.includes('.')) {
+      return 'Email must contain a domain';
+    }
+    return '';
+  };
+
+  const handleBlur = () => {
+    setTouched(true);
+    setError(validateEmail(email));
+  };
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    if (touched) {
+      setError(validateEmail(value));
+    }
+  };
+
+  return (
+    <div>
+      <label htmlFor="email">Email Address</label>
+      <input
+        id="email"
+        type="email"
+        value={email}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        aria-invalid={error ? 'true' : 'false'}
+        aria-describedby={error ? 'email-error' : undefined}
+      />
+      {error && (
+        <div
+          id="email-error"
+          role="alert"
+          style={{ color: '#ef4444', marginTop: '0.25rem' }}
+        >
+          <span aria-hidden="true">⚠️</span> {error}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Good: Server-side error handling
+function LoginForm() {
+  const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [serverError, setServerError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setServerError('');
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials)
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        // Display server error in text
+        setServerError(data.message || 'Login failed. Please try again.');
+      }
+    } catch (err) {
+      setServerError('Network error. Please check your connection.');
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {serverError && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          style={{
+            padding: '1rem',
+            background: '#fee2e2',
+            color: '#991b1b',
+            border: '1px solid #ef4444',
+            borderRadius: '4px',
+            marginBottom: '1rem'
+          }}
+        >
+          <strong>Error:</strong> {serverError}
+        </div>
+      )}
+
+      <div>
+        <label htmlFor="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          value={credentials.email}
+          onChange={(e) =>
+            setCredentials({ ...credentials, email: e.target.value })
+          }
+        />
+      </div>
+
+      <div>
+        <label htmlFor="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          value={credentials.password}
+          onChange={(e) =>
+            setCredentials({ ...credentials, password: e.target.value })
+          }
+        />
+      </div>
+
+      <button type="submit">Sign In</button>
+    </form>
+  );
+}
+
+// Good: File upload error handling
+function FileUpload() {
+  const [error, setError] = useState('');
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File size must be less than 5MB');
+      return;
+    }
+
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      setError('File must be JPEG or PNG format');
+      return;
+    }
+
+    setError('');
+    // Process file
+  };
+
+  return (
+    <div>
+      <label htmlFor="file-upload">Upload Image</label>
+      <input
+        id="file-upload"
+        type="file"
+        accept="image/jpeg,image/png"
+        onChange={handleFileChange}
+        aria-invalid={error ? 'true' : 'false'}
+        aria-describedby={error ? 'file-error' : undefined}
+      />
+      {error && (
+        <div id="file-error" role="alert" style={{ color: '#ef4444' }}>
+          {error}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+**Error Message Best Practices:**
+1. **Identify the field** - Which field has the error?
+2. **Describe the error** - What is wrong?
+3. **Suggest a fix** - How to correct it?
+
+**Good Error Messages:**
+- ✅ "Email is required"
+- ✅ "Password must be at least 8 characters"
+- ✅ "Passwords do not match"
+- ✅ "File size must be less than 5MB"
+- ✅ "Date must be in format MM/DD/YYYY"
+
+**Bad Error Messages:**
+- ❌ "Invalid input" (doesn't identify field or explain what's wrong)
+- ❌ "Error" (not descriptive)
+- ❌ Red border only (not text-based)
+
+**Testing:**
+- [ ] All form validation errors display text messages
+- [ ] Error messages identify which field has error
+- [ ] Error messages describe what is wrong
+- [ ] Error messages are associated with fields (aria-describedby)
+- [ ] Errors announced by screen readers (role="alert")
+- [ ] Test with screen reader to verify errors are announced
+- [ ] Visual error indicators (color, icons) supplemented with text
+- [ ] Error summary provided for multi-field forms
+
+**ARIA Attributes:**
+- `aria-invalid="true"` - Marks field as having error
+- `aria-describedby="error-id"` - Associates error message with field
+- `role="alert"` - Announces error to screen readers
+- `aria-live="assertive"` - For critical errors (form submission failures)
+
+**Common Issues:**
+- Color-only error indication (red border without text)
+- Icon-only errors (X icon without text explanation)
+- Generic error messages ("Invalid input")
+- Errors not associated with fields (aria-describedby missing)
+- Errors not announced to screen readers
+- Error displayed far from the field
+
+**Tools:**
+- Screen reader testing (NVDA, JAWS, VoiceOver)
+- Keyboard navigation (tab through form, trigger errors)
+- axe DevTools (checks for error identification)
+
+---
+
 #### ✅ 3.3.2 Labels or Instructions (Level A)
 
 **Requirement:** Labels or instructions provided when content requires user input.
@@ -2400,6 +5959,219 @@ function Header() {
 - [ ] All form fields have labels
 - [ ] Required fields clearly marked
 - [ ] Instructions provided for complex inputs
+
+---
+
+#### ✅ 3.3.3 Error Suggestion (Level AA) ⭐
+
+**Requirement:** If an input error is automatically detected and suggestions for correction are known, then the suggestions are provided to the user, unless it would jeopardize the security or purpose of the content.
+
+**Why This Matters:**
+Users with cognitive disabilities benefit from helpful suggestions on how to fix errors. Simply telling someone "invalid input" isn't helpful. Provide specific guidance on what's wrong and how to fix it.
+
+**Implementation:**
+```jsx
+// Bad: Generic error without suggestion
+function BadEmailValidation() {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+
+  const validate = (value) => {
+    if (!value.includes('@')) {
+      setError('Invalid email'); // ❌ Not helpful
+    }
+  };
+
+  return (
+    <div>
+      <label htmlFor="email">Email</label>
+      <input id="email" type="email" value={email} onChange={(e) => { setEmail(e.target.value); validate(e.target.value); }} />
+      {error && <div>{error}</div>}
+    </div>
+  );
+}
+
+// Good: Specific error with suggestion
+function GoodEmailValidation() {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+
+  const validate = (value) => {
+    if (!value) {
+      setError('Email is required. Please enter your email address.');
+    } else if (!value.includes('@')) {
+      setError('Email must include an @ symbol. Example: user@example.com');
+    } else if (!value.includes('.')) {
+      setError('Email must include a domain. Example: user@example.com');
+    } else {
+      setError('');
+    }
+  };
+
+  return (
+    <div>
+      <label htmlFor="email">Email</label>
+      <input id="email" type="email" value={email} onChange={(e) => { setEmail(e.target.value); validate(e.target.value); }} aria-invalid={error ? 'true' : 'false'} aria-describedby={error ? 'email-error' : undefined} />
+      {error && <div id="email-error" role="alert">{error}</div>}
+    </div>
+  );
+}
+
+// Good: Password with specific suggestions
+function PasswordFieldWithSuggestions() {
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState([]);
+
+  const validatePassword = (value) => {
+    const newErrors = [];
+    if (value.length < 8) newErrors.push('Password must be at least 8 characters long');
+    if (!/[A-Z]/.test(value)) newErrors.push('Include at least one uppercase letter (A-Z)');
+    if (!/[a-z]/.test(value)) newErrors.push('Include at least one lowercase letter (a-z)');
+    if (!/[0-9]/.test(value)) newErrors.push('Include at least one number (0-9)');
+    if (!/[!@#$%^&*]/.test(value)) newErrors.push('Include at least one special character (!@#$%^&*)');
+    setErrors(newErrors);
+  };
+
+  return (
+    <div>
+      <label htmlFor="password">Password</label>
+      <input id="password" type="password" value={password} onChange={(e) => { setPassword(e.target.value); validatePassword(e.target.value); }} aria-describedby="password-requirements" />
+      <div id="password-requirements">
+        {errors.length > 0 ? (
+          <ul role="alert">
+            {errors.map((error, index) => (<li key={index} style={{ color: '#dc2626' }}>{error}</li>))}
+          </ul>
+        ) : (
+          <p style={{ color: '#059669' }}>✓ Password meets all requirements</p>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+**Error Suggestion Best Practices:**
+1. **Be Specific:** "Email must include @ symbol" vs "Invalid input"
+2. **Provide Examples:** "Date must be MM/DD/YYYY format. Example: 12/31/2025"
+3. **Explain Rules:** "Password must be at least 8 characters and include one uppercase letter"
+4. **Offer Alternatives:** "PDF not supported. Upload JPEG, PNG, or GIF instead"
+
+**Testing:**
+- [ ] All error messages include suggestions for correction
+- [ ] Suggestions are specific and actionable
+- [ ] Examples provided where helpful
+- [ ] Error messages explain what's wrong AND how to fix it
+
+**Security Exception:**
+- Don't suggest valid usernames
+- Don't provide specific password hints that aid attackers
+- Don't reveal which part of authentication failed
+
+---
+
+#### ✅ 3.3.4 Error Prevention (Legal, Financial, Data) (Level AA) ⭐
+
+**Requirement:** For web pages that cause legal commitments or financial transactions, or that modify/delete user data, at least one of the following is true:
+- **Reversible:** Submissions are reversible
+- **Checked:** Data is checked for errors and user can correct them
+- **Confirmed:** User can review, confirm, and correct before finalizing
+
+**Why This Matters:**
+Mistakes in legal, financial, or data operations can have serious consequences. Users need a way to review and confirm before committing to irreversible actions.
+
+**Implementation:**
+
+**Pattern 1: Confirmation Dialog**
+```jsx
+// Good: Confirm before deletion
+function DeleteButton({ item, onDelete }) {
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  if (showConfirm) {
+    return (
+      <div role="alertdialog" aria-labelledby="confirm-title">
+        <h2 id="confirm-title">Confirm Deletion</h2>
+        <p>Are you sure you want to delete "{item.name}"? This cannot be undone.</p>
+        <button onClick={() => { onDelete(item.id); setShowConfirm(false); }}>Yes, Delete</button>
+        <button onClick={() => setShowConfirm(false)}>Cancel</button>
+      </div>
+    );
+  }
+
+  return <button onClick={() => setShowConfirm(true)}>Delete</button>;
+}
+
+// Good: Review before purchase
+function CheckoutFlow() {
+  const [step, setStep] = useState('cart');
+
+  return (
+    <div>
+      {step === 'cart' && <ShoppingCart onContinue={() => setStep('review')} />}
+      {step === 'review' && <OrderReview onEdit={() => setStep('cart')} onConfirm={() => setStep('confirm')} />}
+      {step === 'confirm' && <OrderConfirmation />}
+    </div>
+  );
+}
+
+function OrderReview({ cart, onEdit, onConfirm }) {
+  return (
+    <div>
+      <h2>Review Your Order</h2>
+      <section>
+        <h3>Items</h3>
+        <ul>
+          {cart.items.map(item => (<li key={item.id}>{item.name} - ${item.price} × {item.quantity}</li>))}
+        </ul>
+      </section>
+      <section><h3>Total</h3><p><strong>${cart.total}</strong></p></section>
+      <button onClick={onEdit}>Edit Order</button>
+      <button onClick={onConfirm}>Confirm and Place Order</button>
+    </div>
+  );
+}
+```
+
+**Pattern 2: Undo Mechanism**
+```jsx
+// Good: Undo for data modification
+function EmailWithUndo({ email, onDelete }) {
+  const [deleted, setDeleted] = useState(false);
+
+  const handleDelete = () => {
+    setDeleted(true);
+    setTimeout(() => { if (deleted) onDelete(email.id); }, 5000);
+  };
+
+  if (deleted) {
+    return (
+      <div role="status">
+        <p>Email deleted.</p>
+        <button onClick={() => setDeleted(false)}>Undo</button>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p>{email.subject}</p>
+      <button onClick={handleDelete}>Delete</button>
+    </div>
+  );
+}
+```
+
+**When This Applies:**
+- **Legal commitments:** Contracts, agreements, binding submissions
+- **Financial transactions:** Purchases, transfers, payments, donations
+- **Data modification:** Deleting user data, modifying profile, canceling subscriptions
+
+**Testing:**
+- [ ] Financial transactions have confirmation step
+- [ ] Data deletion has confirmation dialog
+- [ ] Users can edit information before final submission
+- [ ] OR undo mechanism provided for irreversible actions
+- [ ] Confirmation can be canceled
 
 ---
 
