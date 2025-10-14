@@ -1,0 +1,70 @@
+name: Check Standards Updates
+
+# Runs monthly on the 1st at midnight UTC
+# Can also be triggered manually from the Actions tab
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # Monthly on the 1st
+  workflow_dispatch:      # Manual trigger
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run standards scraper
+        run: npm run scrape:update
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code scrapers/CHANGELOG-STANDARDS.md || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request if changes detected
+        if: steps.git-check.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: update WCAG/ARIA standards changelog'
+          title: '🔄 Standards Update Detected'
+          body: |
+            ## Standards Update Detected
+
+            The automated scraper detected changes to WCAG or ARIA documentation.
+
+            **Action Required:**
+            1. Review the changes in `scrapers/CHANGELOG-STANDARDS.md`
+            2. Determine if documentation needs updating
+            3. Update relevant files if needed
+            4. Merge this PR when ready
+
+            **Files to check:**
+            - `standards/WCAG-2.2-LEVEL-AA.md`
+            - `standards/WCAG-2.2-LEVEL-AAA-TIER1.md`
+            - Component implementations
+            - Test suites
+
+            ---
+            🤖 Automated by [scrape-standards workflow](.github/workflows/scrape-standards.yml)
+          branch: standards-update
+          delete-branch: true
+          labels: |
+            wcag-2.2
+            automated
+            documentation
+
+      - name: No changes detected
+        if: steps.git-check.outputs.changed != 'true'
+        run: echo "✅ No changes detected in WCAG/ARIA standards"

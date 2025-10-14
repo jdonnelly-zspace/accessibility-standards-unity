@@ -517,6 +517,6 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 **Built with ❤️ for accessible web**
 
-**Version:** 1.0.0
-**Last Updated:** October 2025
+**Version:** 1.1.0
+**Last Updated:** October 2024
 **WCAG Version:** 2.2 (October 2023)
