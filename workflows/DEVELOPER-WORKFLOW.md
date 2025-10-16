@@ -1,47 +1,81 @@
-# Developer Workflow - Accessibility Implementation
+# Developer Workflow - zSpace Accessibility Implementation
 
-This guide shows developers how to integrate accessibility into their daily workflow using tools and patterns from this framework.
+This guide shows Unity developers how to integrate accessibility into their daily workflow for zSpace applications using WCAG 2.2 Level AA and W3C XAUR standards.
+
+**Target Platform:** zSpace (stereoscopic 3D desktop + stylus + tracked glasses)
+**Unity Version:** 2021.3 LTS or newer
+**Language:** C#
 
 ---
 
-## Quick Start (5 Minutes)
+## Quick Start (10 Minutes)
 
-### 1. Install Tools
+### 1. Install zSpace Unity SDK
+
 ```bash
-# ESLint accessibility plugin
-npm install --save-dev eslint eslint-plugin-jsx-a11y @eslint/js globals
+# Download from zSpace Developer Portal
+# https://developer.zspace.com/
 
-# Testing tools
-npm install --save-dev @playwright/test @axe-core/playwright
+# Import into Unity project:
+# 1. Download zSpace Unity SDK .unitypackage
+# 2. Unity → Assets → Import Package → Custom Package
+# 3. Select all files → Import
 ```
 
-### 2. Copy Configuration
-```bash
-# From accessibility-standards repository
-cp implementation/development/eslint-a11y-config.js ./eslint.config.js
-cp implementation/testing/playwright-setup/playwright.config.js ./
-cp implementation/testing/playwright-setup/accessibility.spec.js ./tests/e2e/
+### 2. Install Unity Accessibility Module
+
+```
+Unity Editor:
+1. Window → Package Manager
+2. Click "+" → Add package by name
+3. Enter: com.unity.modules.accessibility
+4. Click "Add"
 ```
 
-### 3. Copy Components
-```bash
-# Reusable accessible components demonstrating WCAG 2.2 compliance
-cp implementation/development/components/Tooltip.jsx ./src/components/
-cp implementation/development/components/AccessibleAuthForm.jsx ./src/components/
-cp implementation/development/components/ConsistentHelp.jsx ./src/components/
-cp implementation/development/components/DraggableList.jsx ./src/components/
+### 3. Install Recommended Unity Packages
+
+```
+Package Manager (Window → Package Manager):
+- TextMeshPro (for accessible text rendering)
+- Input System (keyboard/stylus input alternatives)
+- Unity Test Framework (for accessibility testing)
 ```
 
-### 4. Run Linter & Validators
-```bash
-npm run lint
-# Fix auto-fixable issues
-npm run lint -- --fix
+### 4. Copy zSpace Accessibility Scripts (When Available - Phase 3)
 
-# W3C validation (HTML, CSS, Links)
-npm run validate:html ./dist/index.html
-npm run validate:css ./dist/styles.css
-npm run check:links https://your-site.com
+```bash
+# From accessibility-standards-unity repository
+# Future Phase 3 implementation:
+cp implementation/unity/scripts/* ./Assets/Scripts/Accessibility/
+cp implementation/unity/prefabs/* ./Assets/Prefabs/Accessibility/
+cp implementation/unity/editor/* ./Assets/Editor/Accessibility/
+cp implementation/unity/tests/* ./Assets/Tests/Accessibility/
+```
+
+### 5. Verify zSpace SDK Setup
+
+```csharp
+// Create test script: Assets/Scripts/ZSpaceTest.cs
+using UnityEngine;
+using zSpace.Core;
+
+public class ZSpaceTest : MonoBehaviour
+{
+    private ZCore zCore;
+
+    void Start()
+    {
+        zCore = FindObjectOfType<ZCore>();
+        if (zCore != null)
+        {
+            Debug.Log("✓ zSpace SDK initialized successfully");
+        }
+        else
+        {
+            Debug.LogError("✗ zSpace SDK not found - check installation");
+        }
+    }
+}
 ```
 
 ---
@@ -52,924 +86,913 @@ npm run check:links https://your-site.com
 
 **Review Requirements**
 - [ ] Check if design includes accessibility annotations
-- [ ] Identify interactive elements that need keyboard support
-- [ ] Note any custom components that need ARIA
-- [ ] Review WCAG 2.2 new criteria (focus visibility, target size, dragging alternatives)
-- [ ] Check if forms need autocomplete attributes (SC 3.3.7)
-- [ ] Verify authentication doesn't require cognitive tests (SC 3.3.8)
+- [ ] Identify interactive elements that need keyboard alternatives to stylus
+- [ ] Note which UI elements need screen reader support (NVDA, Narrator, JAWS)
+- [ ] Review depth perception alternatives (10-15% of users can't see stereoscopic 3D)
+- [ ] Check that all interactive elements have minimum target size (24x24px for desktop)
+- [ ] Verify stylus interactions have keyboard/mouse alternatives
+- [ ] Plan haptic feedback for stylus interactions
 
-**Set Up Linting**
-- [ ] Install ESLint with jsx-a11y plugin
-- [ ] Configure VS Code to show lint errors inline
-- [ ] Enable auto-fix on save (optional)
+**zSpace-Specific Checklist:**
+- [ ] Are stylus buttons mapped to keyboard keys?
+- [ ] Can application run without stereoscopic 3D enabled?
+- [ ] Is spatial audio accessible from desktop speakers?
+- [ ] Can all tasks be completed with keyboard only?
+- [ ] Are focus indicators visible in 3D space?
 
-**VS Code Settings:**
-```json
-{
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ]
-}
+**Set Up Unity Project Structure**
+```
+Assets/
+├── Scripts/
+│   ├── Accessibility/      ← zSpace accessibility components
+│   ├── Input/              ← Stylus + keyboard input managers
+│   └── UI/                 ← Accessible UI components
+├── Prefabs/
+│   └── Accessibility/      ← Reusable accessible prefabs
+├── Editor/
+│   └── Accessibility/      ← Validation tools, inspectors
+└── Tests/
+    ├── PlayMode/           ← Runtime accessibility tests
+    └── EditMode/           ← Editor-time validation
 ```
 
 ---
 
 ### Phase 2: During Development
 
-#### Use Semantic HTML First
+#### Use Unity UI Accessibility APIs
 
-**✅ Good:**
-```jsx
-<button onClick={handleClick}>Submit</button>
-<a href="/page">Go to page</a>
-<nav aria-label="Main navigation">...</nav>
-<main id="main-content">...</main>
-```
+**✅ Good - Accessible Unity UI:**
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Accessibility; // Unity's accessibility module
+using zSpace.Core;
 
-**❌ Bad:**
-```jsx
-<div onClick={handleClick}>Submit</div>  {/* Not keyboard accessible */}
-<div>Go to page</div>  {/* Not recognized as link */}
-<div className="nav">...</div>  {/* No semantic meaning */}
-```
+public class AccessibleButton : MonoBehaviour
+{
+    [SerializeField] private Button button;
+    [SerializeField] private string accessibleLabel = "Submit";
+    [SerializeField] private KeyCode keyboardAlternative = KeyCode.Space;
 
-#### Add ARIA Only When Necessary
+    private ZCore zCore;
+    private bool isHovered = false;
 
-```jsx
-// Icon-only button (needs aria-label)
-<button aria-label="Close menu">
-  <XIcon />
-</button>
+    void Start()
+    {
+        zCore = FindObjectOfType<ZCore>();
 
-// Expandable section
-<button
-  aria-expanded={isOpen}
-  aria-controls="menu-panel"
-  onClick={toggleMenu}
->
-  Menu
-</button>
+        // Configure button for accessibility
+        button.onClick.AddListener(OnButtonClick);
 
-// Blog card with context
-<a
-  href={`/blog/${slug}`}
-  aria-label={`Read article: ${title}. ${excerpt}`}
->
-  <img src={image} alt="" />
-  <h3>{title}</h3>
-</a>
-```
+        // Add screen reader support (Windows)
+        #if UNITY_STANDALONE_WIN
+        AccessibilityManager.RegisterNode(gameObject, accessibleLabel, "button");
+        #endif
+    }
 
-#### Follow Keyboard Patterns
+    void Update()
+    {
+        // Keyboard alternative to stylus click
+        if (Input.GetKeyDown(keyboardAlternative))
+        {
+            button.onClick.Invoke();
+        }
+    }
 
-```jsx
-function Modal({ isOpen, onClose, children }) {
-  // ESC key closes modal (WCAG 2.1.2)
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
+    private void OnButtonClick()
+    {
+        // Provide haptic feedback if stylus is active
+        if (zCore != null && zCore.IsStylusInView())
+        {
+            zCore.VibrateStylus(0.3f, 100); // 30% intensity, 100ms
+        }
 
-  if (!isOpen) return null;
+        // Announce to screen reader
+        AnnounceToScreenReader($"{accessibleLabel} activated");
+    }
 
-  return (
-    <div role="dialog" aria-modal="true">
-      {children}
-    </div>
-  );
+    private void AnnounceToScreenReader(string message)
+    {
+        #if UNITY_STANDALONE_WIN
+        // Use Windows UI Automation (requires Unity 2021.3+)
+        AccessibilityManager.Announce(message);
+        #endif
+    }
 }
 ```
 
-#### Run ESLint Continuously
-
-```bash
-# Watch mode - shows errors as you code
-npm run lint -- --watch
-
-# Fix auto-fixable issues
-npm run lint -- --fix
+**❌ Bad - Not Accessible:**
+```csharp
+// NO keyboard alternative
+// NO screen reader support
+// NO haptic feedback
+// NO focus indicators
+public class BadButton : MonoBehaviour
+{
+    void OnMouseDown()
+    {
+        DoAction(); // Only works with mouse, not keyboard or stylus
+    }
+}
 ```
-
-**Common ESLint jsx-a11y Warnings:**
-| Rule | Issue | Fix |
-|------|-------|-----|
-| `alt-text` | Missing alt on `<img>` | Add `alt="description"` or `alt=""` for decorative |
-| `aria-props` | Invalid ARIA attribute | Use valid ARIA attributes (aria-label, aria-expanded, etc.) |
-| `click-events-have-key-events` | onClick without keyboard handler | Add onKeyDown handler or use `<button>` |
-| `label-has-associated-control` | Form label not associated | Add matching `htmlFor`/`id` pair |
 
 ---
 
-### Phase 3: Manual Testing
+#### Implement Stylus + Keyboard Input Alternatives
+
+**Pattern: Dual Input Support (Stylus + Keyboard)**
+```csharp
+using UnityEngine;
+using zSpace.Core;
+
+public class AccessibleInteractable : MonoBehaviour
+{
+    [Header("Input Alternatives")]
+    [SerializeField] private KeyCode primaryKey = KeyCode.Space;      // Stylus Button 0
+    [SerializeField] private KeyCode secondaryKey = KeyCode.E;        // Stylus Button 1
+    [SerializeField] private KeyCode tertiaryKey = KeyCode.R;         // Stylus Button 2
+
+    [Header("Accessibility")]
+    [SerializeField] private string objectName = "Interactive Object";
+    [SerializeField] private bool showFocusIndicator = true;
+    [SerializeField] private Material focusMaterial;
+
+    private ZCore zCore;
+    private ZStylusSelector stylusSelector;
+    private Renderer objRenderer;
+    private Material originalMaterial;
+    private bool isFocused = false;
+
+    void Start()
+    {
+        zCore = FindObjectOfType<ZCore>();
+        stylusSelector = GetComponent<ZStylusSelector>();
+        objRenderer = GetComponent<Renderer>();
+        originalMaterial = objRenderer.material;
+    }
+
+    void Update()
+    {
+        // Check for keyboard input (alternative to stylus)
+        if (Input.GetKeyDown(primaryKey))
+        {
+            OnPrimaryAction();
+        }
+
+        if (Input.GetKeyDown(secondaryKey))
+        {
+            OnSecondaryAction();
+        }
+
+        // Update focus indicator
+        if (showFocusIndicator)
+        {
+            UpdateFocusIndicator();
+        }
+    }
+
+    private void OnPrimaryAction()
+    {
+        Debug.Log($"{objectName}: Primary action");
+        ProvideFeedback("Primary action");
+    }
+
+    private void OnSecondaryAction()
+    {
+        Debug.Log($"{objectName}: Secondary action");
+        ProvideFeedback("Secondary action");
+    }
+
+    private void ProvideFeedback(string action)
+    {
+        // 1. Haptic feedback (if stylus active)
+        if (zCore != null && zCore.IsStylusInView())
+        {
+            zCore.VibrateStylus(0.3f, 100);
+        }
+
+        // 2. Audio feedback
+        // AudioSource.PlayOneShot(interactionSound);
+
+        // 3. Visual feedback
+        // StartCoroutine(FlashFeedback());
+
+        // 4. Screen reader announcement
+        #if UNITY_STANDALONE_WIN
+        AccessibilityManager.Announce($"{objectName}: {action}");
+        #endif
+    }
+
+    private void UpdateFocusIndicator()
+    {
+        // Show focus when object is targeted by stylus or selected via keyboard
+        bool shouldShowFocus = IsStylusHovering() || isFocused;
+
+        if (shouldShowFocus && objRenderer.material != focusMaterial)
+        {
+            objRenderer.material = focusMaterial;
+        }
+        else if (!shouldShowFocus && objRenderer.material != originalMaterial)
+        {
+            objRenderer.material = originalMaterial;
+        }
+    }
+
+    private bool IsStylusHovering()
+    {
+        return stylusSelector != null && stylusSelector.IsHovered;
+    }
+
+    // Called by keyboard navigation system
+    public void SetFocus(bool focused)
+    {
+        isFocused = focused;
+
+        if (focused)
+        {
+            AnnounceToScreenReader($"Focused: {objectName}");
+        }
+    }
+
+    private void AnnounceToScreenReader(string message)
+    {
+        #if UNITY_STANDALONE_WIN
+        AccessibilityManager.Announce(message);
+        #endif
+    }
+}
+```
+
+---
+
+#### Implement Depth Perception Alternatives
+
+**CRITICAL: 10-15% of users cannot perceive stereoscopic 3D**
+
+```csharp
+using UnityEngine;
+using zSpace.Core;
+
+public class DepthCueManager : MonoBehaviour
+{
+    [Header("Depth Alternative Cues")]
+    [SerializeField] private bool enableSizeCues = true;
+    [SerializeField] private bool enableShadows = true;
+    [SerializeField] private bool enableAudioCues = true;
+    [SerializeField] private bool enableHapticCues = true;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private float maxVolume = 1.0f;
+    [SerializeField] private float minVolume = 0.2f;
+
+    private ZCore zCore;
+    private Camera mainCamera;
+
+    void Start()
+    {
+        zCore = FindObjectOfType<ZCore>();
+        mainCamera = Camera.main;
+    }
+
+    void Update()
+    {
+        if (enableAudioCues)
+        {
+            UpdateAudioDepthCue();
+        }
+    }
+
+    // Audio volume increases as object gets closer (depth cue)
+    private void UpdateAudioDepthCue()
+    {
+        if (audioSource == null || mainCamera == null) return;
+
+        float distance = Vector3.Distance(transform.position, mainCamera.transform.position);
+        float normalizedDistance = Mathf.Clamp01(distance / 10f); // 10 units = max distance
+
+        // Closer = louder
+        audioSource.volume = Mathf.Lerp(maxVolume, minVolume, normalizedDistance);
+    }
+
+    // Provide haptic intensity based on depth
+    public void ProvideHapticDepthCue(float depth)
+    {
+        if (!enableHapticCues || zCore == null) return;
+
+        // Closer objects = stronger haptic
+        float intensity = Mathf.Clamp01(1.0f - depth / 10f);
+        zCore.VibrateStylus(intensity, 50);
+    }
+
+    // Scale object based on depth (size cue for non-stereoscopic viewers)
+    public void ApplySizeDepthCue(float depth)
+    {
+        if (!enableSizeCues) return;
+
+        float scale = Mathf.Lerp(1.5f, 0.5f, depth / 10f);
+        transform.localScale = Vector3.one * scale;
+    }
+
+    // Shadows provide depth information
+    private void EnableShadowDepthCues()
+    {
+        if (!enableShadows) return;
+
+        // Ensure all renderers cast shadows
+        foreach (Renderer renderer in GetComponentsInChildren<Renderer>())
+        {
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+        }
+    }
+}
+```
+
+---
+
+#### Create Accessible zSpace Menus
+
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+using zSpace.Core;
+
+public class AccessibleZSpaceMenu : MonoBehaviour
+{
+    [Header("Menu Items")]
+    [SerializeField] private Button[] menuButtons;
+
+    [Header("Navigation")]
+    [SerializeField] private KeyCode upKey = KeyCode.UpArrow;
+    [SerializeField] private KeyCode downKey = KeyCode.DownArrow;
+    [SerializeField] private KeyCode selectKey = KeyCode.Return;
+    [SerializeField] private KeyCode cancelKey = KeyCode.Escape;
+
+    private int currentIndex = 0;
+    private ZCore zCore;
+
+    void Start()
+    {
+        zCore = FindObjectOfType<ZCore>();
+
+        if (menuButtons.Length > 0)
+        {
+            SelectMenuItem(0);
+        }
+    }
+
+    void Update()
+    {
+        // Keyboard navigation
+        if (Input.GetKeyDown(upKey))
+        {
+            NavigateMenu(-1);
+        }
+        else if (Input.GetKeyDown(downKey))
+        {
+            NavigateMenu(1);
+        }
+        else if (Input.GetKeyDown(selectKey))
+        {
+            ActivateCurrentItem();
+        }
+        else if (Input.GetKeyDown(cancelKey))
+        {
+            CloseMenu();
+        }
+    }
+
+    private void NavigateMenu(int direction)
+    {
+        int newIndex = currentIndex + direction;
+
+        if (newIndex < 0) newIndex = menuButtons.Length - 1;
+        if (newIndex >= menuButtons.Length) newIndex = 0;
+
+        SelectMenuItem(newIndex);
+
+        // Haptic feedback for navigation
+        if (zCore != null && zCore.IsStylusInView())
+        {
+            zCore.VibrateStylus(0.2f, 30);
+        }
+    }
+
+    private void SelectMenuItem(int index)
+    {
+        // Deselect previous
+        if (currentIndex >= 0 && currentIndex < menuButtons.Length)
+        {
+            menuButtons[currentIndex].GetComponent<Image>().color = Color.white;
+        }
+
+        currentIndex = index;
+
+        // Select new
+        menuButtons[currentIndex].GetComponent<Image>().color = Color.yellow; // Focus indicator
+        menuButtons[currentIndex].Select();
+
+        // Announce to screen reader
+        string buttonText = menuButtons[currentIndex].GetComponentInChildren<Text>().text;
+        AnnounceToScreenReader($"Menu item {currentIndex + 1} of {menuButtons.Length}: {buttonText}");
+    }
+
+    private void ActivateCurrentItem()
+    {
+        if (currentIndex >= 0 && currentIndex < menuButtons.Length)
+        {
+            menuButtons[currentIndex].onClick.Invoke();
+
+            // Haptic confirmation
+            if (zCore != null && zCore.IsStylusInView())
+            {
+                zCore.VibrateStylus(0.5f, 100);
+            }
+        }
+    }
+
+    private void CloseMenu()
+    {
+        gameObject.SetActive(false);
+        AnnounceToScreenReader("Menu closed");
+    }
+
+    private void AnnounceToScreenReader(string message)
+    {
+        #if UNITY_STANDALONE_WIN
+        AccessibilityManager.Announce(message);
+        #endif
+    }
+}
+```
+
+---
+
+### Phase 3: Testing
 
 #### Keyboard Testing (Daily)
 
-**Test Every Interactive Element:**
+**Test Every zSpace Interactive Element:**
 ```
-1. Tab       → Move to next element
-2. Shift+Tab → Move to previous element
-3. Enter     → Activate button/link
-4. Space     → Activate button, toggle checkbox
-5. Escape    → Close modal/dropdown
-6. Arrows    → Navigate menu/list (if applicable)
+1. Tab         → Move to next UI element
+2. Shift+Tab   → Move to previous UI element
+3. Space       → Activate button (Stylus Button 0 alternative)
+4. Enter       → Submit form, activate button
+5. E           → Secondary action (Stylus Button 1 alternative)
+6. R           → Tertiary action (Stylus Button 2 alternative)
+7. Escape      → Close menu/modal
+8. Arrow keys  → Navigate menus/lists
 ```
 
 **Checklist:**
-- [ ] All buttons/links reachable via Tab
-- [ ] Focus indicator clearly visible (SC 2.4.11 - not obscured by sticky headers)
-- [ ] Tab order matches visual order
+- [ ] All stylus interactions have keyboard alternatives
+- [ ] Focus indicator clearly visible in 3D space
+- [ ] Tab order matches logical interaction order
 - [ ] No keyboard traps (can always Tab away)
-- [ ] Modals close with Escape
-- [ ] Interactive elements at least 24x24px (SC 2.5.8)
-- [ ] Draggable interfaces have keyboard alternatives (SC 2.5.7)
-
-#### Use Browser DevTools
-
-**Chrome Lighthouse (Quick Check):**
-1. Open DevTools (F12)
-2. Lighthouse tab
-3. Select "Accessibility" only
-4. Run audit
-5. Target score: **95+**
-
-**Chrome Accessibility Tree:**
-1. DevTools → Elements tab
-2. Click "Accessibility" sub-tab
-3. Verify elements have proper roles/names
+- [ ] ESC closes all menus/modals
+- [ ] Interactive elements at least 24x24 pixels (desktop standard)
+- [ ] Application runs without zSpace glasses (stereoscopic 3D disabled)
 
 ---
 
-### Phase 4: Automated Testing
+#### Screen Reader Testing (Windows Desktop)
 
-#### Write Accessibility Tests
+**Test with NVDA (Free):**
+```
+1. Download NVDA: https://www.nvaccess.org/
+2. Install NVDA
+3. Run Unity application
+4. Launch NVDA (Ctrl + Alt + N)
+5. Navigate UI with Tab key
+6. Verify NVDA announces:
+   - Button names
+   - Menu items
+   - Focus changes
+   - State changes (selected, expanded, etc.)
+```
 
-**Example Test (Playwright + axe-core):**
-```javascript
-// tests/e2e/accessibility.spec.js
-import { test } from '@playwright/test';
-import { injectAxe, checkA11y } from '@axe-core/playwright';
+**Test with Windows Narrator (Built-in):**
+```
+1. Win + Ctrl + Enter → Start Narrator
+2. Tab through Unity UI
+3. Verify announcements
+4. Win + Ctrl + Enter → Stop Narrator
+```
 
-test('homepage is accessible', async ({ page }) => {
-  await page.goto('/');
-  await injectAxe(page);
-  await checkA11y(page, null, {
-    detailedReport: true
-  });
-});
+---
 
-test('modal is keyboard accessible', async ({ page }) => {
-  await page.goto('/');
+#### Unity Test Framework Tests
 
-  // Open modal
-  await page.click('[aria-haspopup="dialog"]');
-  const modal = page.locator('[role="dialog"]');
-  await expect(modal).toBeVisible();
+**Create Accessibility Tests:**
+```csharp
+// Assets/Tests/PlayMode/AccessibilityTests.cs
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+using System.Collections;
+using zSpace.Core;
 
-  // Close with ESC
-  await page.keyboard.press('Escape');
-  await expect(modal).not.toBeVisible();
-});
+public class ZSpaceAccessibilityTests
+{
+    [UnityTest]
+    public IEnumerator StylusHasKeyboardAlternative()
+    {
+        // Arrange
+        var testObject = new GameObject();
+        var accessible = testObject.AddComponent<AccessibleInteractable>();
+        accessible.primaryKey = KeyCode.Space;
+
+        // Act
+        yield return null; // Wait one frame
+
+        // Simulate keyboard press
+        // (Unity Input System testing)
+
+        // Assert
+        Assert.IsNotNull(accessible);
+        // Add specific assertions for keyboard input
+    }
+
+    [Test]
+    public void AllInteractiveElementsHaveMinimumSize()
+    {
+        // Find all buttons in scene
+        var buttons = Object.FindObjectsOfType<Button>();
+
+        foreach (var button in buttons)
+        {
+            RectTransform rect = button.GetComponent<RectTransform>();
+
+            // Assert minimum 24x24px (WCAG 2.5.8)
+            Assert.GreaterOrEqual(rect.rect.width, 24f, $"Button {button.name} width too small");
+            Assert.GreaterOrEqual(rect.rect.height, 24f, $"Button {button.name} height too small");
+        }
+    }
+
+    [UnityTest]
+    public IEnumerator AppRunsWithoutStereoscopic3D()
+    {
+        // Arrange
+        var zCore = Object.FindObjectOfType<ZCore>();
+
+        // Act - Disable stereoscopic mode
+        if (zCore != null)
+        {
+            zCore.EnableStereo = false;
+        }
+
+        yield return new WaitForSeconds(2f);
+
+        // Assert - App still functions
+        Assert.IsTrue(Application.isPlaying, "App should run without stereoscopic 3D");
+    }
+
+    [Test]
+    public void DepthCuesProvidedForNonStereoscopicUsers()
+    {
+        var depthCueManagers = Object.FindObjectsOfType<DepthCueManager>();
+
+        Assert.Greater(depthCueManagers.Length, 0, "No depth cue managers found");
+
+        foreach (var manager in depthCueManagers)
+        {
+            // Verify at least one depth cue is enabled
+            bool hasDepthCue = manager.enableSizeCues ||
+                               manager.enableShadows ||
+                               manager.enableAudioCues ||
+                               manager.enableHapticCues;
+
+            Assert.IsTrue(hasDepthCue, $"{manager.gameObject.name} has no depth cues enabled");
+        }
+    }
+}
 ```
 
 **Run Tests:**
-```bash
-# Run all tests
-npx playwright test
-
-# Run accessibility tests only
-npx playwright test accessibility
-
-# Interactive mode
-npx playwright test --ui
+```
+Unity Editor:
+1. Window → General → Test Runner
+2. Select "PlayMode" tab
+3. Click "Run All"
+4. Verify all tests pass
 ```
 
 ---
 
-### Phase 5: Pre-Commit
+### Phase 4: Pre-Commit Validation
 
-**Automated Checks:**
-```bash
-# Run all accessibility checks before committing
-npm run lint
-npm run test:a11y
-
-# W3C validation (HTML, CSS, Links)
-npm run validate:all
+**Manual Checks Before Git Commit:**
+```
+Accessibility Checklist:
+- [ ] All stylus interactions tested with keyboard
+- [ ] Tested with Windows Narrator or NVDA
+- [ ] Tested without zSpace glasses (depth alternatives work)
+- [ ] Focus indicators visible in 3D space
+- [ ] Unity Test Framework accessibility tests pass
+- [ ] No Unity console errors
+- [ ] Minimum target size 24x24px verified
 ```
 
-**Husky Pre-Commit Hook (Optional):**
-```bash
-# Install husky
-npm install --save-dev husky
-npx husky init
-
-# .husky/pre-commit
-#!/usr/bin/env sh
-npm run lint
-npm run test:a11y
+**Unity Editor Validation:**
+```csharp
+// Future: Create Editor validation tool (Phase 3)
+// Assets/Editor/Accessibility/AccessibilityValidator.cs
+// Validates scene for accessibility issues before build
 ```
 
 ---
 
-## Code Patterns Library
+## zSpace-Specific Code Patterns
 
-### Skip Navigation
+### Pattern 1: Stylus Button Mapping
 
-```jsx
-// App.jsx or Layout.jsx
-function Layout({ children }) {
-  return (
-    <>
-      {/* Skip link - first focusable element */}
-      <a
-        href="#main-content"
-        className="skip-link"
-      >
-        Skip to main content
-      </a>
+```csharp
+// Map stylus buttons to keyboard keys
+public class StylusButtonMapper : MonoBehaviour
+{
+    private ZCore zCore;
 
-      <Header />
-
-      <main id="main-content">
-        {children}
-      </main>
-
-      <Footer />
-    </>
-  );
-}
-```
-
-```css
-/* Show skip link only on focus */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 0;
-  background: #6366f1;
-  color: white;
-  padding: 8px 16px;
-  text-decoration: none;
-  z-index: 1000;
-}
-
-.skip-link:focus {
-  top: 0;
-}
-```
-
----
-
-### Focus Management (Modals)
-
-```jsx
-function Modal({ isOpen, onClose, title, children }) {
-  const modalRef = useRef(null);
-  const previousFocus = useRef(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      // Save currently focused element
-      previousFocus.current = document.activeElement;
-
-      // Focus modal
-      modalRef.current?.focus();
-
-      // Prevent body scroll
-      document.body.style.overflow = 'hidden';
-    } else {
-      // Restore focus
-      previousFocus.current?.focus();
-
-      // Restore body scroll
-      document.body.style.overflow = '';
-    }
-  }, [isOpen]);
-
-  // ESC key handler
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+    void Start()
+    {
+        zCore = FindObjectOfType<ZCore>();
     }
 
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
+    void Update()
+    {
+        // Stylus Button 0 OR Spacebar
+        if (IsStylusButton0Pressed() || Input.GetKeyDown(KeyCode.Space))
+        {
+            OnButton0Action();
+        }
 
-  if (!isOpen) return null;
+        // Stylus Button 1 OR E key
+        if (IsStylusButton1Pressed() || Input.GetKeyDown(KeyCode.E))
+        {
+            OnButton1Action();
+        }
 
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
-      ref={modalRef}
-      tabIndex={-1}
-    >
-      <h2 id="modal-title">{title}</h2>
-      {children}
-      <button onClick={onClose}>Close</button>
-    </div>
-  );
+        // Stylus Button 2 OR R key
+        if (IsStylusButton2Pressed() || Input.GetKeyDown(KeyCode.R))
+        {
+            OnButton2Action();
+        }
+    }
+
+    private bool IsStylusButton0Pressed()
+    {
+        return zCore != null && zCore.GetButtonDown(0);
+    }
+
+    private bool IsStylusButton1Pressed()
+    {
+        return zCore != null && zCore.GetButtonDown(1);
+    }
+
+    private bool IsStylusButton2Pressed()
+    {
+        return zCore != null && zCore.GetButtonDown(2);
+    }
+
+    private void OnButton0Action() { /* Primary action */ }
+    private void OnButton1Action() { /* Secondary action */ }
+    private void OnButton2Action() { /* Tertiary action */ }
 }
 ```
 
 ---
 
-### Form Accessibility
+### Pattern 2: Focus Indicators for 3D Objects
 
-```jsx
-function ContactForm() {
-  const [errors, setErrors] = useState({});
+```csharp
+public class ZSpaceFocusIndicator : MonoBehaviour
+{
+    [SerializeField] private Color focusColor = Color.yellow;
+    [SerializeField] private float glowIntensity = 2f;
 
-  return (
-    <form onSubmit={handleSubmit}>
-      {/* Email field with label, required indicator, error */}
-      <div>
-        <label htmlFor="email">
-          Email Address <span className="required" aria-label="required">*</span>
-        </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          required
-          aria-required="true"
-          aria-invalid={!!errors.email}
-          aria-describedby={errors.email ? "email-error" : undefined}
-        />
-        {errors.email && (
-          <span id="email-error" role="alert" className="error">
-            {errors.email}
-          </span>
-        )}
-      </div>
+    private Renderer objRenderer;
+    private Material originalMaterial;
+    private Material focusMaterial;
 
-      <button type="submit">Submit</button>
-    </form>
-  );
+    void Start()
+    {
+        objRenderer = GetComponent<Renderer>();
+        originalMaterial = objRenderer.material;
+
+        // Create focus material with emissive glow
+        focusMaterial = new Material(originalMaterial);
+        focusMaterial.EnableKeyword("_EMISSION");
+        focusMaterial.SetColor("_EmissionColor", focusColor * glowIntensity);
+    }
+
+    public void ShowFocus()
+    {
+        objRenderer.material = focusMaterial;
+    }
+
+    public void HideFocus()
+    {
+        objRenderer.material = originalMaterial;
+    }
 }
 ```
 
 ---
 
-### Reduced Motion Support
+### Pattern 3: Spatial Audio Accessibility
 
-```jsx
-// Respect user's motion preferences
-function AnimatedComponent() {
-  const prefersReducedMotion = useReducedMotion();
+```csharp
+public class AccessibleSpatialAudio : MonoBehaviour
+{
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private bool enableSpatialAudio = true;
+    [SerializeField] private bool provideMonoAlternative = true;
 
-  return (
-    <div
-      className={prefersReducedMotion ? 'no-animation' : 'with-animation'}
-    >
-      Content
-    </div>
-  );
-}
+    void Start()
+    {
+        ConfigureAudioAccessibility();
+    }
 
-// Hook
-function useReducedMotion() {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+    private void ConfigureAudioAccessibility()
+    {
+        if (audioSource == null) return;
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mediaQuery.matches);
+        // Spatial audio from desktop speakers (not headphones)
+        audioSource.spatialBlend = enableSpatialAudio ? 1f : 0f;
 
-    const handler = (e) => setPrefersReducedMotion(e.matches);
-    mediaQuery.addEventListener('change', handler);
-    return () => mediaQuery.removeEventListener('change', handler);
-  }, []);
-
-  return prefersReducedMotion;
-}
-```
-
-```css
-/* Disable animations for users who prefer reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+        // Ensure audio isn't *only* spatial (mono alternative)
+        if (provideMonoAlternative)
+        {
+            // Users can still hear even if spatial perception is limited
+            audioSource.minDistance = 1f;
+            audioSource.maxDistance = 50f;
+            audioSource.rolloffMode = AudioRolloffMode.Linear;
+        }
+    }
 }
 ```
 
 ---
 
+## WCAG 2.2 zSpace-Specific Implementation
+
+### SC 2.1.1: Keyboard (Level A)
+**Requirement:** All stylus functionality available via keyboard.
+
+**zSpace Implementation:**
+- Stylus Button 0 → Spacebar
+- Stylus Button 1 → E key
+- Stylus Button 2 → R key
+- Stylus pointing → Mouse cursor
+- 3D object selection → Tab + Enter
+
 ---
 
-## WCAG 2.2 Specific Requirements
+### SC 2.5.8: Target Size (Minimum) (Level AA)
+**Requirement:** Interactive elements at least 24x24 CSS pixels.
 
-### New in WCAG 2.2 - Developer Checklist
+**zSpace Desktop Implementation:**
+```csharp
+// Unity UI buttons (Canvas)
+public class MinimumTargetSize : MonoBehaviour
+{
+    void OnValidate()
+    {
+        RectTransform rect = GetComponent<RectTransform>();
 
-#### SC 2.4.11: Focus Not Obscured (Level AA)
-**Requirement:** Focused elements must not be completely hidden by sticky/fixed content.
+        // Ensure minimum 24x24 pixels
+        if (rect.rect.width < 24f)
+        {
+            Debug.LogWarning($"{gameObject.name}: Width {rect.rect.width}px < 24px minimum");
+        }
 
-**Implementation:**
-```css
-/* Add scroll padding to account for fixed headers */
-html {
-  scroll-padding-top: 80px; /* Height of fixed header */
-}
-
-/* Fixed header should not obscure focus */
-.fixed-header {
-  position: fixed;
-  top: 0;
-  z-index: 100;
-}
-```
-
-#### SC 2.5.7: Dragging Movements (Level AA)
-**Requirement:** All dragging functionality must have a single-pointer alternative.
-
-**Implementation:**
-```jsx
-// Use the DraggableList component from components/
-import DraggableList from './components/DraggableList';
-
-// Or provide alternative controls
-function SortableItem({ item, onMoveUp, onMoveDown }) {
-  return (
-    <div draggable onDragStart={...}>
-      {item.name}
-      {/* Alternative: buttons for keyboard/touch users */}
-      <button onClick={onMoveUp} aria-label="Move up">↑</button>
-      <button onClick={onMoveDown} aria-label="Move down">↓</button>
-    </div>
-  );
-}
-```
-
-#### SC 2.5.8: Target Size (Minimum) (Level AA)
-**Requirement:** Interactive elements must be at least 24x24 CSS pixels.
-
-**Implementation:**
-```css
-/* Ensure minimum touch target size */
-button,
-a,
-input[type="checkbox"],
-input[type="radio"] {
-  min-width: 24px;
-  min-height: 24px;
-  padding: 12px; /* Or use padding to reach 24x24 */
-}
-
-/* Icon buttons */
-.icon-button {
-  width: 44px;  /* 44x44 is better for mobile */
-  height: 44px;
-  padding: 10px;
-}
-```
-
-#### SC 3.3.7: Redundant Entry (Level A)
-**Requirement:** Don't make users re-enter information already provided.
-
-**Implementation:**
-```jsx
-function CheckoutForm() {
-  const [sameAsBilling, setSameAsBilling] = useState(false);
-
-  return (
-    <form>
-      {/* Billing address */}
-      <AddressFields name="billing" />
-
-      {/* Shipping address with auto-fill option */}
-      <label>
-        <input
-          type="checkbox"
-          checked={sameAsBilling}
-          onChange={(e) => setSameAsBilling(e.target.checked)}
-        />
-        Shipping address same as billing
-      </label>
-
-      {!sameAsBilling && <AddressFields name="shipping" />}
-
-      {/* Autocomplete for common fields */}
-      <input
-        type="email"
-        name="email"
-        autoComplete="email"
-        required
-      />
-      <input
-        type="tel"
-        name="phone"
-        autoComplete="tel"
-        required
-      />
-    </form>
-  );
-}
-```
-
-#### SC 3.3.8: Accessible Authentication (Level AA)
-**Requirement:** Authentication must not require cognitive function tests (memory, puzzles) without alternatives.
-
-**Implementation:**
-```jsx
-// Use the AccessibleAuthForm component from components/
-import AccessibleAuthForm from './components/AccessibleAuthForm';
-
-// Or ensure your login form:
-// 1. Supports password managers (autocomplete attribute)
-// 2. Allows paste (don't block onPaste)
-// 3. Provides alternatives (magic link, SSO, biometric)
-function LoginForm() {
-  return (
-    <form>
-      <input
-        type="email"
-        autoComplete="email"  // ✅ Password manager support
-        required
-      />
-      <input
-        type="password"
-        autoComplete="current-password"  // ✅ Password manager support
-        // ❌ NO: onPaste={(e) => e.preventDefault()}
-        required
-      />
-      <button type="submit">Sign In</button>
-
-      {/* Alternative authentication methods */}
-      <button type="button" onClick={sendMagicLink}>
-        Email me a sign-in link
-      </button>
-    </form>
-  );
+        if (rect.rect.height < 24f)
+        {
+            Debug.LogWarning($"{gameObject.name}: Height {rect.rect.height}px < 24px minimum");
+        }
+    }
 }
 ```
 
 ---
 
-## Level AAA - Tier 1 Quick Wins (Optional)
+### SC 1.4.13: Content on Hover or Focus (Level AA)
+**Requirement:** Tooltips dismissible, hoverable, persistent.
 
-These 5 Level AAA criteria can be implemented quickly (1-2 weeks) for additional accessibility improvements beyond Level AA.
+```csharp
+public class AccessibleTooltip : MonoBehaviour
+{
+    [SerializeField] private GameObject tooltipPanel;
+    [SerializeField] private float showDelay = 0.5f;
 
-### SC 2.2.6: Timeouts (Level AAA)
-**Requirement:** Inform users of session timeout duration to prevent data loss.
+    private bool isHovering = false;
+    private float hoverTimer = 0f;
 
-**Implementation:**
-```jsx
-// Use the SessionTimeout component from components/
-import SessionTimeout from './components/SessionTimeout';
+    void Update()
+    {
+        if (isHovering)
+        {
+            hoverTimer += Time.deltaTime;
 
-function App() {
-  return (
-    <div>
-      <SessionTimeout
-        timeoutMinutes={30}
-        warningMinutes={5}
-        onExtendSession={() => {/* Refresh session */}}
-        onSaveWork={() => {/* Auto-save data */}}
-      />
-      {/* Rest of app */}
-    </div>
-  );
+            if (hoverTimer >= showDelay && !tooltipPanel.activeSelf)
+            {
+                tooltipPanel.SetActive(true);
+            }
+        }
+
+        // ESC key dismisses tooltip (WCAG 1.4.13 - Dismissible)
+        if (Input.GetKeyDown(KeyCode.Escape) && tooltipPanel.activeSelf)
+        {
+            tooltipPanel.SetActive(false);
+        }
+    }
+
+    public void OnPointerEnter()
+    {
+        isHovering = true;
+        hoverTimer = 0f;
+    }
+
+    public void OnPointerExit()
+    {
+        isHovering = false;
+        hoverTimer = 0f;
+        tooltipPanel.SetActive(false);
+    }
 }
-```
-
-**Alternative: Documentation Approach**
-```jsx
-// Display timeout info in footer or help section
-function Footer() {
-  return (
-    <footer>
-      <p>Session expires after 30 minutes of inactivity</p>
-    </footer>
-  );
-}
-```
-
----
-
-### SC 2.3.2: Three Flashes (Level AAA)
-**Requirement:** No content flashes more than 3 times per second.
-
-**Implementation:**
-```css
-/* Ensure animations don't flash rapidly */
-
-/* ✅ GOOD: Slow animation (< 3 flashes/sec) */
-@keyframes safePulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-.pulse {
-  animation: safePulse 0.4s ease-in-out infinite;
-  /* 0.4s = 2.5 flashes per second ✓ */
-}
-
-/* ❌ BAD: Rapid flash (> 3 flashes/sec) */
-.flash-bad {
-  animation: rapidFlash 0.2s ease-in-out infinite;
-  /* 0.2s = 5 flashes per second ✗ */
-}
-```
-
-**Testing:**
-- Calculate: `flashes per second = 1 / animation-duration`
-- Ensure result < 3
-- Use PEAT tool for videos: https://trace.umd.edu/peat/
-
----
-
-### SC 2.4.10: Section Headings (Level AAA)
-**Requirement:** Organize content with descriptive section headings.
-
-**Implementation:**
-```jsx
-// ✅ GOOD: Well-structured content
-function Article() {
-  return (
-    <article>
-      <h1>Main Topic</h1>
-
-      <section>
-        <h2>Introduction</h2>
-        <p>Content here...</p>
-      </section>
-
-      <section>
-        <h2>Key Points</h2>
-        <h3>Point 1</h3>
-        <p>Details...</p>
-
-        <h3>Point 2</h3>
-        <p>Details...</p>
-      </section>
-
-      <section>
-        <h2>Conclusion</h2>
-        <p>Summary...</p>
-      </section>
-    </article>
-  );
-}
-
-// ❌ BAD: No headings - wall of text
-function BadArticle() {
-  return (
-    <article>
-      <p>Lots of content...</p>
-      <p>More content...</p>
-      <p>Even more content...</p>
-      {/* No structure! */}
-    </article>
-  );
-}
-```
-
-**Checklist:**
-- [ ] Long content (>3 paragraphs) has headings
-- [ ] Heading hierarchy is logical (h1 → h2 → h3, no skipping)
-- [ ] Exactly one h1 per page
-- [ ] Headings are descriptive (not "Section 1", "Part A")
-
----
-
-### SC 3.1.4: Abbreviations (Level AAA)
-**Requirement:** Provide expanded forms for abbreviations.
-
-**Implementation:**
-```jsx
-// Pattern 1: Use <abbr> tag
-function Documentation() {
-  return (
-    <p>
-      The{' '}
-      <abbr title="Application Programming Interface">API</abbr>{' '}
-      allows integration with your application.
-    </p>
-  );
-}
-
-// Pattern 2: First use expansion
-function Article() {
-  return (
-    <div>
-      <p>
-        The Web Content Accessibility Guidelines (WCAG) 2.2 specification
-        provides standards for web accessibility.
-      </p>
-      <p>
-        To achieve WCAG Level AA compliance... {/* Can abbreviate after first use */}
-      </p>
-    </div>
-  );
-}
-
-// Pattern 3: Glossary page
-import AbbreviationGlossary from './components/AbbreviationGlossary';
-
-function GlossaryPage() {
-  return <AbbreviationGlossary />;
-}
-```
-
-**CSS for abbr tags:**
-```css
-abbr {
-  text-decoration: underline dotted;
-  cursor: help;
-}
-
-abbr:hover,
-abbr:focus {
-  background-color: #fffbcc;
-  outline: 2px solid #ffd700;
-}
-```
-
----
-
-### SC 3.2.5: Change on Request (Level AAA)
-**Requirement:** User controls all navigation - no automatic redirects or form submissions.
-
-**Implementation:**
-```jsx
-// ✅ GOOD: User-initiated redirect
-function SetupComplete() {
-  const navigate = useNavigate();
-
-  return (
-    <div>
-      <p>Setup complete! Ready to continue?</p>
-      <button onClick={() => navigate('/dashboard')}>
-        Go to Dashboard
-      </button>
-    </div>
-  );
-}
-
-// ❌ BAD: Automatic redirect
-function BadRedirect() {
-  useEffect(() => {
-    setTimeout(() => {
-      window.location.href = '/dashboard'; // ❌ No user control
-    }, 3000);
-  }, []);
-
-  return <p>Redirecting...</p>;
-}
-
-// ✅ GOOD: Form with explicit submit
-function FilterForm() {
-  const [category, setCategory] = useState('all');
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <select
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-        // ❌ NO: onChange={(e) => e.target.form.submit()}
-      >
-        <option value="all">All</option>
-        <option value="tech">Technology</option>
-      </select>
-
-      {/* ✅ Explicit submit button */}
-      <button type="submit">Apply Filter</button>
-    </form>
-  );
-}
-```
-
-**Checklist:**
-- [ ] No `<meta http-equiv="refresh">` tags
-- [ ] No auto-redirects in useEffect/setTimeout
-- [ ] Forms have explicit "Submit" buttons
-- [ ] Select dropdowns don't auto-submit on change
-- [ ] No automatic pop-ups
-
----
-
-### Testing Level AAA Tier 1
-
-**Run automated tests:**
-```bash
-npx playwright test accessibility-aaa-tier1.spec.js
-```
-
-**Manual checklist:**
-- [ ] Session timeout duration is visible somewhere (UI or help docs)
-- [ ] No animations flash more than 3 times per second
-- [ ] All long content has descriptive section headings
-- [ ] Common abbreviations use `<abbr>` tag or glossary exists
-- [ ] No automatic redirects or form submissions
-- [ ] All navigation requires user action (click/tap)
-
-**Quick test commands:**
-```bash
-# Check for meta refresh
-grep -r "http-equiv=\"refresh\"" ./dist
-
-# Check for auto-submit in forms
-grep -r "\.submit()" ./src
-
-# Verify heading structure with HeadingsMap extension
-# Install: https://chrome.google.com/webstore
 ```
 
 ---
 
 ## Common Mistakes & Solutions
 
-### Mistake #1: Using `<div>` as Button
+### Mistake #1: Stylus-Only Interactions
 
 **❌ Bad:**
-```jsx
-<div onClick={handleClick}>Click me</div>
+```csharp
+// Only works with zSpace stylus
+if (zCore.GetButtonDown(0))
+{
+    DoAction();
+}
 ```
 
 **✅ Good:**
-```jsx
-<button onClick={handleClick}>Click me</button>
+```csharp
+// Works with stylus OR keyboard
+if (zCore.GetButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
+{
+    DoAction();
+}
 ```
 
 ---
 
-### Mistake #2: Missing Alt Text
+### Mistake #2: No Depth Perception Alternatives
 
 **❌ Bad:**
-```jsx
-<img src="photo.jpg" />
+```csharp
+// App requires stereoscopic 3D vision
+// No alternatives for 10-15% who can't perceive depth
 ```
 
 **✅ Good:**
-```jsx
-<img src="photo.jpg" alt="Team celebrating product launch" />
+```csharp
+// Provide multiple depth cues:
+// - Size (closer = larger)
+// - Shadows
+// - Occlusion
+// - Spatial audio (closer = louder)
+// - Haptic feedback (closer = stronger vibration)
 ```
 
 ---
 
-### Mistake #3: Icon-Only Buttons Without Labels
+### Mistake #3: No Screen Reader Support
 
 **❌ Bad:**
-```jsx
-<button>
-  <XIcon />
-</button>
+```csharp
+// Silent UI - screen readers can't announce anything
 ```
 
 **✅ Good:**
-```jsx
-<button aria-label="Close menu">
-  <XIcon />
-</button>
-```
-
----
-
-### Mistake #4: Generic Link Text
-
-**❌ Bad:**
-```jsx
-<a href="/article">Read more</a>
-```
-
-**✅ Good:**
-```jsx
-<a href="/article" aria-label="Read article: Getting Started with React">
-  Read more
-</a>
+```csharp
+#if UNITY_STANDALONE_WIN
+AccessibilityManager.RegisterNode(gameObject, "Submit Button", "button");
+AccessibilityManager.Announce("Button activated");
+#endif
 ```
 
 ---
 
 ## Resources
 
-- **Component Library:** `/implementation/development/components/`
-- **ESLint Config:** `/implementation/development/eslint-a11y-config.js`
-- **Test Templates:** `/implementation/testing/playwright-setup/`
-- **WCAG Checklist:** `/standards/WCAG-2.2-LEVEL-AA.md`
+- **zSpace Developer Docs:** https://developer.zspace.com/docs/
+- **Unity Accessibility Module:** https://docs.unity3d.com/Manual/com.unity.modules.accessibility.html
+- **WCAG 2.2 Checklist:** `/standards/ZSPACE-ACCESSIBILITY-CHECKLIST.md`
+- **zSpace Accessibility Requirements:** `/standards/XR-ACCESSIBILITY-REQUIREMENTS.md`
+- **NVDA Screen Reader:** https://www.nvaccess.org/ (free)
+- **Windows Narrator:** Built into Windows 10/11
 
 ---
 
@@ -977,14 +1000,17 @@ grep -r "\.submit()" ./src
 
 **Questions?**
 - Review WCAG 2.2 standards in `/standards/`
-- Check code patterns in this workflow
-- Search ARIA APG: https://www.w3.org/WAI/ARIA/apg/
+- Check zSpace code patterns in this workflow
+- zSpace Developer Community: https://dev-community.zspace.com/
 
 **Found an Issue?**
-- Run ESLint to catch common problems
-- Test with keyboard navigation
-- Run Playwright accessibility tests
+- Test with keyboard-only navigation
+- Test with Windows Narrator or NVDA
+- Run Unity Test Framework accessibility tests
+- Test without stereoscopic 3D enabled
 
 ---
 
 **Last Updated:** October 2025
+**Platform:** zSpace + Unity 2021.3+
+**Standards:** WCAG 2.2 Level AA + W3C XAUR (zSpace-adapted)

@@ -1,834 +1,971 @@
-# Designer Workflow - Accessible Design
+# Designer Workflow - zSpace Accessible Design
 
-This guide shows designers how to create accessible designs that meet WCAG 2.2 Level AA standards.
+This guide shows designers how to create accessible zSpace applications that meet WCAG 2.2 Level AA standards for stereoscopic 3D desktop platforms.
+
+**Target Platform:** zSpace (stereoscopic 3D desktop + stylus + tracked glasses)
+**Design Context:** Unity 3D UI + stereoscopic 3D objects
 
 ---
 
 ## Quick Reference
 
-**Must-Haves for Every Design:**
-1. ✅ Color contrast ≥ 4.5:1 for text
+**Must-Haves for Every zSpace Design:**
+1. ✅ Color contrast ≥ 4.5:1 for text (desktop standards)
 2. ✅ Color contrast ≥ 3:1 for UI components
-3. ✅ Visible focus states for all interactive elements
-4. ✅ **🆕 WCAG 2.2: Focus not obscured by sticky headers (SC 2.4.11)**
-5. ✅ Keyboard interaction patterns specified
-6. ✅ ARIA labels documented for icon-only elements
-7. ✅ **🆕 WCAG 2.2: Interactive elements ≥ 24x24px minimum (44x44px recommended)**
-8. ✅ **🆕 WCAG 2.2: Draggable interfaces have button alternatives**
+3. ✅ Visible focus states for all interactive elements **in 3D space**
+4. ✅ Keyboard alternatives to **all stylus interactions**
+5. ✅ **Depth perception alternatives** (10-15% can't see stereoscopic 3D)
+6. ✅ Interactive elements ≥ 24x24 pixels (desktop standard, NOT 44px VR standard)
+7. ✅ Stylus button functions documented with keyboard mappings
+8. ✅ Application works without stereoscopic 3D enabled
 
 **Tools:**
 - WebAIM Contrast Checker: https://webaim.org/resources/contrastchecker/
-- Figma A11y plugin (free)
+- Unity Editor (for 3D UI design)
+- Figma/Adobe XD (for 2D UI mockups that will be implemented in Unity)
 - Color blindness simulator
-- Chrome DevTools (color picker with contrast)
+- zSpace hardware for testing
 
 ---
 
-## Design Principles
+## zSpace Platform Fundamentals
+
+### Hardware Understanding
+
+**zSpace System:**
+- **Display:** 24" stereoscopic 3D desktop screen (NOT a headset)
+- **Glasses:** Lightweight tracked glasses (similar to 3D movie glasses)
+- **Stylus:** 3-button stylus with LED, vibration (haptic feedback)
+- **Environment:** Seated desktop, keyboard/mouse available
+
+**User Posture:**
+- Seated at desk (ergonomic position)
+- Eyes ~24-30 inches from screen
+- Stylus held like a pen
+- Can remove glasses anytime (CRITICAL: app must work without 3D)
+
+---
+
+### Platform Differences from VR Headsets
+
+| Feature | VR Headsets | zSpace |
+|---------|-------------|--------|
+| **Display** | Head-mounted (HMD) | 24" desktop screen |
+| **Input** | Hand controllers | Stylus + keyboard/mouse |
+| **Target Size** | 44px (arm's length) | 24px (desktop viewing) |
+| **Locomotion** | Teleport, smooth movement | None (seated/fixed view) |
+| **Motion Sickness** | High risk | Low risk |
+| **Screen Readers** | TalkBack, VoiceOver (mobile) | NVDA, Narrator, JAWS (desktop) |
+| **Environment** | Isolated, immersive | Desktop, collaborative |
+
+---
+
+## Design Principles for zSpace
 
 ### Principle 1: Perceivable
 
-**Users must be able to perceive information and UI components.**
+**Users must perceive UI in stereoscopic 3D AND 2D modes.**
 
 #### Color Contrast (WCAG 1.4.3 - Level AA) ⭐
 
-**Requirements:**
+**Requirements (Desktop Standards):**
 - **Normal text:** 4.5:1 minimum
 - **Large text (18pt+ or 14pt+ bold):** 3:1 minimum
 - **UI components (borders, icons):** 3:1 minimum
 
-**Testing:**
-1. Use WebAIM Contrast Checker
-2. Enter foreground color (text)
-3. Enter background color
-4. Verify ratio meets requirements
+**Testing in Unity:**
+1. Use WebAIM Contrast Checker for UI colors
+2. Test against background colors in Unity scene
+3. Verify contrast in **both stereoscopic and 2D modes**
+4. Test with glasses off (non-stereoscopic view)
 
-**Figma Workflow:**
-1. Install "Able – Friction-free Accessibility" plugin
-2. Select text layer
-3. Plugin shows contrast ratio
-4. Adjust colors until passing
-
-**Common Mistakes:**
+**Example Colors (Desktop):**
 ```
-❌ Light gray on white: 2.5:1 (fails)
-✅ Dark gray (#404040) on white: 10.4:1 (passes)
+✅ White text on dark gray (#1F2937): 12.63:1 - Excellent
+✅ Blue UI (#3B82F6) on dark: 5.42:1 - Good
+✅ Gray UI elements (#6B7280) on dark: 4.54:1 - Passes
 
-❌ Purple (#9333EA) on dark background (#1A1A1A): 3.2:1 (fails for text)
-✅ Light purple (#A78BFA) on dark: 5.9:1 (passes)
-
-❌ Placeholder text too light: 2.3:1 (fails)
-✅ Placeholder text #6B7280: 4.6:1 (passes)
+❌ Light gray (#CCCCCC) on white: 1.61:1 - Fails
 ```
 
-**Example Passing Colors (from My Web App):**
-- Navbar buttons: #FFFFFF on rgba(17,24,39,0.1) = **16.32:1** ✅
-- Indigo-400 text: #6366F1 on #1A1A1A = **5.95:1** ✅
-- Secondary text: gray-400 on dark = **6.99:1** ✅
+**zSpace-Specific Consideration:**
+- Colors must work in **both eyes' views** of stereoscopic display
+- Test with polarized glasses on AND off
+- Avoid relying on stereoscopic depth alone to distinguish UI
 
 ---
 
-#### Use of Color (WCAG 1.4.1 - Level A)
+#### Depth Perception Alternatives (CRITICAL for zSpace)
 
-**Requirement:** Don't use color alone to convey information.
+**Problem:** 10-15% of users cannot perceive stereoscopic 3D.
 
-**Examples:**
+**Design Requirement:** Every 3D depth cue must have 2D alternatives.
 
-**❌ Bad:**
-- Error message in red text only
-- Required field marked with red asterisk only (no label "required")
-- Chart with color-coded segments (no labels/patterns)
+**Depth Cue Strategy:**
 
-**✅ Good:**
+**✅ Good - Multiple Cues:**
 ```
-Error Messages:
-  Icon + Color + Text
-  [!] Error: Email is required
-
-Required Fields:
-  Asterisk + Label + aria-required
-  Email Address *
-
-Charts:
-  Colors + Patterns + Labels
-  [Blue stripes] Category A: 45%
-  [Green dots] Category B: 30%
+3D Object at Depth:
+1. Stereoscopic 3D (primary - only works for 85-90%)
+2. Size (closer = larger) ← Works for everyone
+3. Shadow (distance from surface) ← Works for everyone
+4. Occlusion (objects overlap) ← Works for everyone
+5. Spatial audio (closer = louder) ← Works for everyone
+6. Haptic feedback (closer = stronger vibration) ← Works for everyone
 ```
 
-**Links:**
-- Must be underlined OR have 3:1 contrast with surrounding text PLUS additional indicator on hover/focus
+**❌ Bad - Stereoscopic Only:**
+```
+3D Object Depth:
+1. Stereoscopic 3D only
+   ❌ Fails for 10-15% of users
+   ❌ No alternatives provided
+```
+
+**Design Checklist:**
+- [ ] All depth information has size cues
+- [ ] Objects cast shadows to show distance
+- [ ] Spatial audio provides auditory depth cues
+- [ ] Haptic feedback varies with depth
+- [ ] Application tested with glasses off
+
+**Unity Implementation Notes:**
+```
+Document for Developers:
+• Enable shadow casting for all 3D objects
+• Scale objects based on distance (size cue)
+• Add AudioSource with distance attenuation
+• Provide haptic feedback via stylus vibration
+```
+
+---
+
+#### Text Readability in 3D Space
+
+**Requirements:**
+- **Minimum font size:** 14pt for body text, 18pt for headings
+- **Text distance:** Readable from 24-30 inches (typical viewing distance)
+- **Text contrast:** 4.5:1 minimum
+- **Text background:** Solid or semi-transparent with sufficient contrast
+
+**Unity UI Canvas Modes:**
+
+**Option 1: Screen Space (2D Overlay)**
+```
+Best for: Menus, HUD, always-visible UI
+Appears: Flat on screen, not in 3D space
+Benefits:
+  ✅ Always readable
+  ✅ Consistent size
+  ✅ Screen reader compatible
+```
+
+**Option 2: World Space (3D UI)**
+```
+Best for: 3D labels, tooltips, in-world UI
+Appears: In 3D space, can be rotated
+Considerations:
+  ⚠️ Must be large enough to read at distance
+  ⚠️ Provide zoom option
+  ⚠️ Ensure text faces user (billboarding)
+```
+
+**Design Specifications:**
+```
+Unity Canvas Settings:
+• Screen Space Canvas: Font size 14-18px minimum
+• World Space Canvas: Font size 0.1 - 0.2 world units (adjust for distance)
+• TextMeshPro preferred (better rendering)
+• Font: Sans-serif, medium-bold weight
+```
 
 ---
 
 ### Principle 2: Operable
 
-**Users must be able to operate UI components with keyboard.**
+**Users must operate UI with stylus AND keyboard.**
 
-#### Focus Indicators (WCAG 2.4.7 - Level AA) ⭐
+#### Stylus + Keyboard Input Alternatives (CRITICAL)
 
-**Requirement:** Visible focus indicator with 3:1 contrast.
+**WCAG 2.1.1 Requirement:** All stylus functionality available via keyboard.
 
-**Design Focus States for:**
-- Buttons
-- Links
-- Form inputs
-- Custom controls (dropdowns, tabs, accordions)
-
-**Examples:**
-
-**Option 1: Outline**
+**Stylus Button Mapping:**
 ```
-Default state:
-  [Button] gray-500 border
-
-Focus state:
-  [Button] blue-600 outline, 2-3px thick
-  Color contrast: 5:1 (passes)
+Stylus Button 0 → Spacebar (primary action)
+Stylus Button 1 → E key (secondary action)
+Stylus Button 2 → R key (tertiary action)
+Stylus pointing → Mouse cursor
 ```
 
-**Option 2: Background Change**
-```
-Default:
-  Button: purple-600 background
+**Design Pattern: Dual Input Support**
 
-Focus:
-  Button: purple-500 background + darker border
-  Visual difference clearly visible
+**✅ Good Design:**
+```
+Action: Select 3D Object
+• Stylus: Point stylus at object + press Button 0
+• Keyboard: Tab to object + press Spacebar
+• Mouse: Click object
+
+Action: Rotate Object
+• Stylus: Drag with Button 1 held
+• Keyboard: Q/E keys to rotate
+• Mouse: Click + drag with right button
+
+Action: Open Menu
+• Stylus: Press Button 2
+• Keyboard: Press M key
+• Mouse: Right-click
 ```
 
-**Option 3: Box Shadow**
+**❌ Bad Design:**
 ```
-Focus:
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5)
-  Creates blue glow around element
+Action: Select Object
+• Stylus only: Point + Button 0
+  ❌ No keyboard alternative
+  ❌ Violates WCAG 2.1.1
 ```
 
-**Figma Annotations:**
-Create separate "Focus State" frame or component variant showing:
-- Border color
-- Background color
-- Shadow/glow
-- Any size changes
+**Annotations for Developers:**
+```
+Design Spec: Object Selection
+
+Interaction Methods:
+1. Stylus: Point + Button 0 → Select
+2. Keyboard: Tab → Focus, Spacebar → Select
+3. Mouse: Click → Select
+
+Visual Feedback:
+• Hover: Yellow outline (pre-selection)
+• Focus: Blue glow (keyboard navigation)
+• Selected: Green highlight + haptic pulse
+
+Haptic: 30% intensity, 100ms duration
+Audio: Selection "click" sound
+```
 
 ---
 
-#### Keyboard Interaction Patterns
+#### Focus Indicators in 3D Space (WCAG 2.4.7 - Level AA)
 
-**For Every Interactive Element, Specify:**
+**Requirement:** Visible focus indicator with 3:1 contrast **in stereoscopic 3D**.
 
-**Buttons:**
-- Tab: Move focus to button
-- Enter or Space: Activate button
-- Escape: Close modal (if modal trigger)
+**Challenge:** Focus must be visible in 3D space, not just on flat UI.
 
-**Dropdowns:**
-- Tab: Move to dropdown trigger
-- Enter or Space: Open dropdown
-- Arrow Up/Down: Navigate options
-- Escape: Close dropdown
-- Tab: Close dropdown and move to next element
+**Design Solutions:**
 
-**Modals:**
-- Enter on trigger: Open modal
-- Escape: Close modal
-- Tab: Cycle through modal elements (trap focus)
-
-**Annotations in Figma:**
-Add text layer near interactive element:
+**Option 1: Emissive Glow**
 ```
-Keyboard:
-• Tab - Focus button
-• Enter - Open modal
-• Escape - Close modal
+Default State:
+  Material: Standard
+  Color: Object base color
+
+Focus State:
+  Material: Standard + Emission enabled
+  Emission Color: Yellow (#FFEB3B)
+  Emission Intensity: 2.0
+  Result: Object glows visibly in 3D
+```
+
+**Option 2: Outline Shader**
+```
+Default State:
+  Standard material
+
+Focus State:
+  Outline shader applied
+  Outline Color: Blue (#2196F3)
+  Outline Width: 0.05 units
+  Result: Blue outline around 3D object
+```
+
+**Option 3: Floating Indicator**
+```
+Focus State:
+  Ring or halo floats above object
+  Rotates slowly
+  Visible from all angles
+```
+
+**Design Specification Template:**
+```
+Component: Interactive 3D Button
+
+Visual States:
+• Default: Gray (#9E9E9E)
+• Hover (Stylus): Yellow outline (#FFC107)
+• Focus (Keyboard): Blue glow (#2196F3), emission 2.0
+• Active/Pressed: Scale down 0.9x
+• Disabled: Gray (#616161), 50% opacity
+
+Focus Indicator:
+  Type: Emissive glow
+  Color: #2196F3 (blue)
+  Intensity: 2.0
+  Contrast vs background: 5.1:1 ✅
+
+Animations:
+  Hover: Scale up 1.1x (duration 0.2s)
+  Press: Scale down 0.9x (duration 0.1s)
+  Focus: Glow pulse (1s cycle)
+```
+
+---
+
+#### Target Size for zSpace Desktop
+
+**WCAG 2.5.8 - Target Size (Minimum) - Level AA**
+
+**Requirement:** Interactive elements ≥ 24x24 CSS pixels.
+
+**zSpace Context:** Desktop viewing distance (NOT VR arm's length)
+
+**Target Sizes:**
+- **Minimum:** 24x24 pixels (WCAG 2.2 Level AA - desktop)
+- **Recommended:** 36x36 pixels (comfortable for stylus)
+- **NOT Required:** 44px (that's for VR headsets)
+
+**Unity UI (2D Canvas):**
+```
+Button Sizes:
+  Minimum: 24x24 pixels (RectTransform)
+  Recommended: 40x40 pixels
+  Ideal: 48x48 pixels (Material Design)
+
+Examples:
+  ✅ Close button: 32x32px
+  ✅ Menu button: 40x40px
+  ✅ Icon button: 36x36px with 4px padding
+  ❌ Tiny icon: 16x16px (too small!)
+```
+
+**Unity 3D Objects (World Space):**
+```
+3D Button Collider Sizes:
+  Minimum: 0.5 x 0.5 world units (at 1 unit distance)
+  Recommended: 0.75 x 0.75 world units
+
+Visual size should be slightly smaller than collider
+(provides forgiveness for targeting)
+```
+
+**Measurement in Figma/Design:**
+```
+Mockup annotations:
+  [Button] 40x40px @ 96 DPI
+  Unity Implementation: 40x40 RectTransform
+
+[3D Button] 0.75 x 0.75 world units
+BoxCollider: 0.8 x 0.8 (10% larger for easier targeting)
 ```
 
 ---
 
 ### Principle 3: Understandable
 
-**Information and operation must be understandable.**
+**Information and operation must be understandable in 3D context.**
 
-#### Clear Labels (WCAG 3.3.2 - Level A)
+#### Clear Labels and Instructions
 
-**Forms:**
-- Every input has visible label
-- Required fields marked visually
-- Helper text provided when needed
+**Screen Reader Compatibility (Desktop):**
+- NVDA (free, Windows)
+- Windows Narrator (built-in)
+- JAWS (commercial, industry standard)
 
-**Figma Example:**
+**Design Requirement:** All UI elements need accessible names for screen readers.
+
+**Unity UI Annotations:**
 ```
-[Label] Email Address *
-[Input] user@example.com
-[Helper] We'll never share your email
+Button: "Submit Form"
+  AccessibleLabel: "Submit Form"
+  Role: Button
+  Screen Reader: "Submit Form, button"
+
+Icon-Only Button: [X]
+  AccessibleLabel: "Close Menu"
+  Role: Button
+  Screen Reader: "Close Menu, button"
+
+Toggle: [☑] Show Grid
+  AccessibleLabel: "Show Grid"
+  Role: Toggle
+  State: Checked / Unchecked
+  Screen Reader: "Show Grid, toggle, checked"
 ```
 
-**Icon-only Buttons:**
-- Document accessible name
-- Add annotation with aria-label
-
-```
-Figma Annotation:
-[X icon button]
-aria-label: "Close menu"
-```
+**Design Handoff Checklist:**
+- [ ] All buttons have descriptive labels
+- [ ] Icon-only elements have aria-label specified
+- [ ] Toggle states documented
+- [ ] Menu structure documented for keyboard navigation
 
 ---
 
-#### Consistent Navigation (WCAG 3.2.3 - Level AA)
+#### Consistent Interaction Patterns
 
-**Requirement:** Navigation appears in same order on all pages.
+**zSpace Standard Patterns:**
 
-**Design:**
-- Navigation menu same position/order on all pages
-- Footer links same position/order on all pages
-- Consistent button placement (e.g., "Back" always on left)
+**Pattern 1: Object Selection**
+```
+Standard Across All Objects:
+  Stylus: Point + Button 0
+  Keyboard: Tab + Spacebar
+  Visual: Blue glow on focus
+  Audio: Selection click
+  Haptic: 30% pulse
+```
+
+**Pattern 2: Object Manipulation**
+```
+Standard Across All Objects:
+  Rotate: Stylus drag OR Q/E keys
+  Scale: Stylus Button 1 + drag OR +/- keys
+  Move: Stylus Button 0 + drag OR Arrow keys
+  Reset: Stylus Button 2 OR R key
+```
+
+**Pattern 3: Menu Navigation**
+```
+Standard Menu Behavior:
+  Open: M key OR Stylus Button 2
+  Navigate: Arrow keys OR Stylus hover
+  Select: Enter OR Spacebar OR Stylus Button 0
+  Close: Escape OR Stylus Button 2
+```
+
+**Design Specification:**
+```
+Document for team:
+
+"zSpace Interaction Standards"
+
+All interactive objects must support:
+1. Stylus pointing + Button 0 (select)
+2. Keyboard Tab navigation + Spacebar (select)
+3. Mouse click (select)
+
+All menus must support:
+1. Arrow key navigation
+2. Enter/Spacebar to activate
+3. Escape to close
+4. Stylus hover + Button 0 click
+```
 
 ---
 
 ### Principle 4: Robust
 
-**Content must work with assistive technologies.**
+**Content must work with desktop assistive technologies.**
 
-#### ARIA Annotations
+#### Desktop Screen Reader Support
 
-**When to Add ARIA:**
-1. Icon-only buttons
-2. Decorative vs. meaningful images
-3. Custom components (tabs, accordions, carousels)
-4. Visually hidden text for screen readers
-5. Live regions (success messages, loading states)
+**Unity Implementation Requirements:**
 
-**Figma Workflow:**
-Create "Accessibility Notes" layer:
+**Windows UI Automation:**
 ```
-[Icon Button - Hamburger Menu]
-ARIA:
-• role="button"
-• aria-label="Open navigation menu"
-• aria-expanded="false" (closed state)
-• aria-expanded="true" (open state)
+Unity Accessibility API (2021.3+):
+• AccessibilityManager.RegisterNode(gameObject, label, role)
+• AccessibilityManager.Announce(message)
 
-Keyboard:
-• Enter - Toggle menu
-• Escape - Close menu
+Design Documentation:
+  All UI elements need:
+  • Accessible Name (label)
+  • Role (button, toggle, slider, etc.)
+  • State (if applicable: checked, expanded, selected)
+```
+
+**Design Annotations:**
+```
+Component: Settings Menu
+
+Hierarchy:
+  Menu (role: menu)
+  ├─ Audio Settings (role: menuitem)
+  │  ├─ Volume Slider (role: slider, value: 75%)
+  │  └─ Mute Toggle (role: toggle, state: unchecked)
+  ├─ Graphics Settings (role: menuitem)
+  └─ Accessibility Settings (role: menuitem)
+
+Screen Reader Announcements:
+  • On menu open: "Settings menu opened, 3 items"
+  • On item focus: "Audio Settings, menu item 1 of 3"
+  • On slider change: "Volume 75%"
+  • On toggle: "Mute, toggle, unchecked"
+```
+
+---
+
+## zSpace-Specific Design Patterns
+
+### Pattern 1: 3D Object with Keyboard Focus
+
+**Visual Design:**
+```
+State Progression:
+┌─────────────┐
+│   Default   │  Gray material, no glow
+└─────────────┘
+
+┌─────────────┐
+│ Stylus Hover│  Yellow outline, scale 1.05x
+└─────────────┘
+
+┌─────────────┐
+│Keyboard Focus│ Blue emissive glow (2.0 intensity)
+└─────────────┘  Pulsing animation (1s cycle)
+
+┌─────────────┐
+│  Selected   │  Green highlight, haptic pulse
+└─────────────┘  Scale 1.1x, rotation enabled
+```
+
+**Unity Material Specifications:**
+```
+Default Material:
+  Shader: Standard
+  Color: #9E9E9E (gray)
+  Metallic: 0.2
+  Smoothness: 0.5
+
+Focus Material:
+  Shader: Standard
+  Color: #9E9E9E (gray)
+  Emission: Enabled
+  Emission Color: #2196F3 (blue)
+  Emission Intensity: 2.0
+  HDR: Enabled
+
+Selected Material:
+  Shader: Standard
+  Color: #4CAF50 (green)
+  Emission: Enabled
+  Emission Color: #81C784 (light green)
+  Emission Intensity: 1.5
+```
+
+---
+
+### Pattern 2: zSpace Menu (3D Spatial Menu)
+
+**Layout:**
+```
+Menu Panel (World Space Canvas):
+┌────────────────────┐
+│   Settings Menu    │ ← Title (18pt bold)
+├────────────────────┤
+│ [🔊] Audio      [▶]│ ← Item 1 (40px height)
+│ [🎨] Graphics   [▶]│ ← Item 2 (40px height)
+│ [♿] Accessibility[▶]│ ← Item 3 (40px height)
+│ [ℹ️] About       [▶]│ ← Item 4 (40px height)
+└────────────────────┘
+
+Positioning:
+  World Space at 1.0 units from camera
+  Always faces camera (billboarding)
+  Scale: 0.002 units (readable at distance)
+```
+
+**Interaction:**
+```
+Navigation:
+  Stylus: Hover over item + Button 0 click
+  Keyboard: Up/Down arrows, Enter to select
+  Mouse: Click item
+
+Visual Feedback:
+  Current Item:
+    Background: Blue (#2196F3, 20% opacity)
+    Border: Blue (#2196F3, 2px)
+
+  Hover:
+    Background: Gray (#9E9E9E, 10% opacity)
+
+  Active (Click):
+    Background: Blue (#2196F3, 40% opacity)
+    Scale: 0.95x (press effect)
+```
+
+---
+
+### Pattern 3: Depth-Aware Tooltip
+
+**Design Challenge:** Tooltips in 3D space must be readable from all angles.
+
+**Solution: Billboarded Tooltip**
+```
+Tooltip Design:
+┌───────────────────┐
+│  Rotate Object    │ ← Text (14pt)
+│  Press E or drag  │ ← Subtext (12pt)
+└───────────────────┘
+      ▼              ← Arrow points to object
+
+Properties:
+  Type: World Space Canvas
+  Always faces camera (billboarding)
+  Floats 0.3 units above object
+  Background: Semi-transparent (#000000, 80% opacity)
+  Text: White (#FFFFFF)
+  Contrast: 15:1 ✅
+  Border: 1px white (#FFFFFF)
+
+Behavior:
+  Appears: On hover after 0.5s delay
+  Dismissible: Press Escape
+  Persistent: Stays while hovering
+  (WCAG 1.4.13 compliant)
+```
+
+---
+
+### Pattern 4: Depth Perception Alternatives Visualization
+
+**Design Documentation:**
+```
+3D Object: Interactive Molecule Model
+
+Depth Cues Provided:
+1. Stereoscopic 3D (primary, 85-90% of users)
+   → zSpace glasses enabled
+
+2. Size (works for 100% of users)
+   → Atoms closer to camera are 1.2x larger
+   → Atoms farther away are 0.8x smaller
+
+3. Shadow (works for 100% of users)
+   → All atoms cast shadows on virtual table surface
+   → Shadow distance indicates height/depth
+
+4. Occlusion (works for 100% of users)
+   → Front atoms partially hide back atoms
+   → Layering is visible
+
+5. Spatial Audio (works for 100% of users)
+   → Audio cue when atom is selected
+   → Volume louder when atom is closer
+   → Volume quieter when atom is farther
+
+6. Haptic Feedback (works for 100% of users)
+   → Stylus vibration intensity varies with depth
+   → Closer atoms = 50% vibration
+   → Farther atoms = 20% vibration
+
+Testing Requirement:
+  ✅ Application tested with zSpace glasses OFF
+  ✅ All depth information still perceivable via cues 2-6
 ```
 
 ---
 
 ## Design Handoff Checklist
 
-**Before Handoff to Developers:**
+**Before Handoff to Unity Developers:**
 
 ### Visual Design
 - [ ] All text colors verified with contrast checker (4.5:1+)
 - [ ] UI component colors verified (borders, icons 3:1+)
-- [ ] Links distinguishable (underline or high contrast)
-- [ ] Error states designed (form validation)
-- [ ] Loading states designed
-- [ ] Empty states designed
+- [ ] Materials specified for 3D objects (color, emission, metallic)
+- [ ] Focus states designed for all interactive objects
+- [ ] Focus indicators visible in 3D space (glow, outline, ring)
 
-### Focus States
-- [ ] Focus indicators designed for all buttons
-- [ ] Focus indicators designed for all links
-- [ ] Focus indicators designed for all form inputs
-- [ ] Focus indicators designed for custom controls
-- [ ] Focus contrast verified (3:1+)
+### Depth Perception
+- [ ] **CRITICAL:** Depth alternatives documented for all 3D elements
+- [ ] Size cues specified (closer = larger)
+- [ ] Shadow casting enabled for all 3D objects
+- [ ] Spatial audio cues documented
+- [ ] Haptic feedback patterns specified
+- [ ] Application tested without stereoscopic 3D
 
-### Keyboard Patterns
-- [ ] Tab order annotated
-- [ ] Keyboard shortcuts documented (if any)
-- [ ] Modal behavior specified (open/close with keyboard)
-- [ ] Dropdown behavior specified (Arrow keys, Escape)
+### Input Methods
+- [ ] All stylus interactions have keyboard alternatives documented
+- [ ] Stylus button mappings specified (Button 0 → Space, etc.)
+- [ ] Mouse alternatives provided
+- [ ] Tab navigation order specified
+- [ ] Keyboard shortcuts documented
 
-### ARIA Documentation
+### zSpace-Specific
+- [ ] Target sizes ≥ 24x24 pixels (desktop, NOT 44px VR)
+- [ ] 3D object colliders sized for easy stylus targeting
+- [ ] Haptic feedback patterns documented (intensity, duration)
+- [ ] World Space UI readable from 24-30 inches
+- [ ] Screen Space UI font sizes ≥ 14pt
+
+### Accessibility Documentation
+- [ ] All UI elements have accessible labels specified
 - [ ] Icon-only buttons have aria-label annotations
-- [ ] Image alt text guidance provided
-- [ ] Custom components have ARIA pattern specified
-- [ ] Required fields marked (visual + aria-required noted)
+- [ ] Screen reader announcements documented
+- [ ] Menu structure documented for keyboard navigation
+- [ ] Focus management specified (modals, menus)
 
-### Responsive
-- [ ] Mobile designs include touch targets ≥ 44x44px (≥ 24x24px minimum per WCAG 2.2)
-- [ ] Content reflows at 320px width
-- [ ] Zoom to 200% considered
-- [ ] Breakpoints specified
-
-### WCAG 2.2 Specific
-- [ ] **SC 2.4.11:** Fixed headers don't obscure focused elements
-- [ ] **SC 2.5.7:** Draggable elements have button/keyboard alternatives
-- [ ] **SC 2.5.8:** All interactive elements ≥ 24x24 CSS pixels
-- [ ] **SC 3.3.7:** Forms designed to avoid redundant entry (auto-fill patterns)
-- [ ] **SC 3.3.8:** Authentication designed with password manager support
+### Testing Requirements
+- [ ] Designed for Windows screen readers (NVDA, Narrator, JAWS)
+- [ ] Keyboard-only interaction documented
+- [ ] Works without zSpace glasses (2D mode)
+- [ ] Works with keyboard only (no stylus)
+- [ ] Works with mouse only (no stylus)
 
 ---
 
-## WCAG 2.2 New Requirements for Designers
+## Tools & Resources
 
-### SC 2.4.11: Focus Not Obscured (Minimum) - Level AA
+### Design Tools
 
-**Problem:** Sticky/fixed headers can hide focused elements when users tab through page.
+**Figma/Adobe XD (for 2D UI Mockups):**
+- Design 2D UI elements (buttons, menus, HUD)
+- Export to Unity as sprites or reference
+- Plugins: Able, Stark (accessibility checking)
 
-**Design Solution:**
+**Unity Editor (for 3D Design):**
+- Design World Space UI directly in Unity
+- Test stereoscopic 3D appearance
+- Prototype interactions with zSpace SDK
 
-**Option 1: Leave Space for Focus**
-```
-Design Layout:
-┌─────────────────────┐
-│ Fixed Header (60px) │
-├─────────────────────┤
-│                     │ ← Ensure 10-20px buffer
-│ [Focused Button]    │ ← Focus ring visible
-│                     │
-│ Content             │
-│                     │
-└─────────────────────┘
-```
+**Color Contrast Tools:**
+- WebAIM Contrast Checker: https://webaim.org/resources/contrastchecker/
+- Colour Contrast Analyser (desktop app)
+- Chrome DevTools color picker
 
-**Option 2: Transparent/Semi-Transparent Header**
-```
-Fixed Header:
-  Background: rgba(255,255,255,0.9)
-  Backdrop-filter: blur(10px)
+### zSpace-Specific Tools
 
-Note: Focused elements partially visible through header
-```
+**zSpace Hardware:**
+- Test designs on actual zSpace system
+- Verify stereoscopic appearance
+- Test stylus interaction ergonomics
 
-**Figma Annotation:**
-```
-Fixed Header (z-index: 100)
-⚠️ Developer Note: Add scroll-padding-top: 80px to prevent focus being hidden
-```
+**zSpace Unity SDK:**
+- Developers use for implementation
+- Provides stylus input, stereoscopic rendering
+- Documentation: https://developer.zspace.com/
 
 ---
 
-### SC 2.5.7: Dragging Movements - Level AA
+## Design Annotation Template
 
-**Requirement:** All drag-and-drop must have non-dragging alternatives.
+**Create specification document for each component:**
 
-**Design Patterns:**
-
-**Pattern 1: Sortable List**
 ```
-Item Layout:
-┌─────────────────────────┐
-│ ⋮⋮ Task Name        [↑] │
-│                     [↓] │
-└─────────────────────────┘
+Component: Interactive 3D Button
 
-Annotations:
-• Drag handle (⋮⋮) for mouse users
-• Up/Down buttons for keyboard/touch users
-• Keyboard: Ctrl+Arrow to reorder
-```
+Description:
+  3D button for starting simulation
+  Appears in world space, 1.5 units from user
 
-**Pattern 2: File Upload**
-```
-❌ Bad:
-  "Drag and drop files here"
+Visual Specifications:
+  Dimensions: 0.5 x 0.3 x 0.1 world units
+  Material: Standard shader
+  Color: #2196F3 (blue)
+  Emission: None (default), #64B5F6 (focus)
 
-✅ Good:
-  "Drag and drop files here or"
-  [Choose Files] button
-```
+Collider:
+  BoxCollider: 0.55 x 0.35 x 0.15 (10% larger than visual)
+  Purpose: Easier stylus targeting
 
-**Pattern 3: Slider**
-```
-Slider Design:
-[──────●──────] 50%
-[-]         [+]
-[Text Input: 50]
+States:
+  Default:
+    Color: #2196F3
+    Emission: Off
+    Scale: 1.0
 
-Alternatives provided:
-• Drag slider thumb
-• Click track to jump
-• +/- buttons
-• Direct number input
-```
+  Hover (Stylus):
+    Color: #2196F3
+    Emission: Off
+    Scale: 1.05
+    Outline: Yellow, 0.02 units
 
----
+  Focus (Keyboard):
+    Color: #2196F3
+    Emission: Enabled, #64B5F6, Intensity 2.0
+    Scale: 1.0
+    Animation: Glow pulse (1s cycle)
 
-### SC 2.5.8: Target Size (Minimum) - Level AA
+  Active (Pressed):
+    Color: #1976D2 (darker blue)
+    Emission: Off
+    Scale: 0.95
+    Audio: Click sound
+    Haptic: 50% intensity, 100ms
 
-**Requirement:** Interactive elements must be ≥ 24x24 CSS pixels.
+Interactions:
+  Stylus:
+    • Hover: Show outline
+    • Button 0: Activate
+    • Haptic: 50% intensity, 100ms
 
-**Updated Guidelines:**
-- **Minimum:** 24x24px (WCAG 2.2 Level AA)
-- **Recommended:** 44x44px (better usability, especially mobile)
-- **Ideal:** 48x48px (Material Design guideline)
+  Keyboard:
+    • Tab: Focus (show glow)
+    • Spacebar: Activate
 
-**Design Examples:**
+  Mouse:
+    • Hover: Show outline
+    • Click: Activate
 
-**Icon Buttons:**
-```
-❌ Too Small:
-  Icon: 16x16px
-  Button: 20x20px
-  ❌ Fails WCAG 2.2
+Accessibility:
+  Accessible Label: "Start Simulation Button"
+  Role: Button
+  Screen Reader: "Start Simulation, button"
 
-✅ Minimum:
-  Icon: 20x20px
-  Button: 24x24px with 2px padding
-  ✅ Passes (24x24 total)
+  Depth Cues:
+    • Size: Same size as other buttons
+    • Shadow: Casts shadow on background plane
+    • Audio: Click sound (not spatialized)
+    • Haptic: 50% vibration on press
 
-✅ Recommended:
-  Icon: 24x24px
-  Button: 44x44px with 10px padding
-  ✅ Excellent usability
-```
+Keyboard Alternative:
+  • S key also starts simulation (alternative to stylus/mouse)
 
-**Form Controls:**
-```
-Checkbox:
-  Visible box: 18x18px
-  Click area: 24x24px (add padding)
-  Label: "Remember me" (clicking label also works)
+Target Size:
+  Visual: 0.5 x 0.3 units
+  Collider: 0.55 x 0.35 units ✅ (exceeds minimum)
+  At 1.5 units distance ≈ 45px visual angle ✅
 
-Radio Button:
-  Same as checkbox
-```
-
-**Spacing Exception:**
-```
-If elements have ≥ 24px spacing between them,
-they can be smaller than 24x24px.
-
-Example: Pagination
-[ 1 ] [ 2 ] [ 3 ] [ 4 ]
-  ↑     ↑     ↑     ↑
- 20px  28px  28px  20px spacing
-
-20x20 buttons OK because spacing > 24px
-```
-
-**Figma Measurement:**
-```
-Layer Annotations:
-Button: 44x44px ✅ WCAG 2.2 AA
-Icon: 24x24px
-Padding: 10px all sides
+Contrast:
+  Text: White (#FFFFFF) on blue (#2196F3) = 4.68:1 ✅
+  Focus glow: #64B5F6 on dark background = 5.2:1 ✅
 ```
 
 ---
 
-### SC 3.3.7: Redundant Entry - Level A
+## Common Design Mistakes (zSpace)
 
-**Requirement:** Don't make users re-enter information.
+### Mistake #1: Stereoscopic 3D Only (No Depth Alternatives)
 
-**Design Patterns:**
-
-**Pattern 1: Multi-Step Forms**
+**❌ Bad:**
 ```
-Step 1: Contact Info
-  Email: _____________
-  Phone: _____________
-
-Step 2: Shipping Address
-  Email: user@example.com (pre-filled from Step 1)
-
-Note to Developer:
-  • Auto-populate email from Step 1
-  • Use autocomplete="email"
+Design: 3D objects at different depths
+Depth cue: Stereoscopic 3D only
+Problem: 10-15% of users can't perceive depth
+Result: WCAG failure
 ```
 
-**Pattern 2: Billing = Shipping**
+**✅ Good:**
 ```
-Billing Address:
-  Street: _____________
-  City: _____________
-  ...
-
-Shipping Address:
-  ☐ Same as billing address
-
-  [If checked, fields auto-fill]
-```
-
-**Pattern 3: Form Draft Saving**
-```
-Long Form Design:
-  "Your progress is automatically saved"
-
-  If user leaves and returns:
-  • Form data restored
-  • User can continue where they left off
-```
-
-**Annotations:**
-```
-Form Fields:
-• Email: autocomplete="email"
-• Phone: autocomplete="tel"
-• Address: autocomplete="street-address"
-• City: autocomplete="address-level2"
-• ZIP: autocomplete="postal-code"
+Design: 3D objects at different depths
+Depth cues:
+  1. Stereoscopic 3D (primary)
+  2. Size (closer = larger)
+  3. Shadows (show distance)
+  4. Spatial audio (closer = louder)
+  5. Haptic (closer = stronger vibration)
+Result: WCAG compliant, works for 100% of users
 ```
 
 ---
 
-### SC 3.3.8: Accessible Authentication (Minimum) - Level AA
+### Mistake #2: Stylus-Only Interactions
 
-**Requirement:** No cognitive function tests without alternatives.
-
-**Design Patterns:**
-
-**Pattern 1: Password Field with Manager Support**
+**❌ Bad:**
 ```
-Login Form:
-  Email: _____________
-         autocomplete="email"
-
-  Password: ●●●●●●●● [👁️]
-            autocomplete="current-password"
-            [Paste is allowed]
-
-  [Sign In]
-
-Annotations:
-⚠️ Developer: DO NOT block paste on password field
-⚠️ Developer: DO NOT use autocomplete="off"
+Action: Select molecule atom
+Input: Stylus Button 0 only
+Problem: No keyboard alternative
+Result: WCAG 2.1.1 failure
 ```
 
-**Pattern 2: Alternative Authentication**
+**✅ Good:**
 ```
-Sign In Options:
-
-  Tab 1: Password
-    [Email and Password fields]
-
-  Tab 2: Magic Link
-    [Email only - sends login link]
-
-  Tab 3: Social Login
-    [Continue with Google]
-    [Continue with Microsoft]
-```
-
-**Pattern 3: Password Reset**
-```
-❌ Bad CAPTCHA:
-  "Type the text you see: gR8k2p"
-  (Requires transcription = cognitive test)
-
-✅ Good Alternative:
-  "Check your email for reset link"
-  (No cognitive test required)
-```
-
-**Pattern 4: Show/Hide Password**
-```
-Password Field:
-  [●●●●●●●●●] [👁️ Show]
-
-When clicked:
-  [mypassword] [👁️‍🗨️ Hide]
-
-Purpose:
-  • Helps users verify password
-  • Reduces cognitive load (remembering)
-  • Supports accessibility
+Action: Select molecule atom
+Inputs:
+  • Stylus Button 0
+  • Keyboard: Tab + Spacebar
+  • Mouse: Click
+Result: WCAG compliant
 ```
 
 ---
 
-## Tools & Plugins
+### Mistake #3: Using VR Target Sizes (44px)
 
-### Figma Plugins (Free)
-
-#### 1. Able – Friction-free Accessibility
-**Features:**
-- Real-time contrast checking
-- Color blindness simulation
-- Focus order visualization
-- Touch target size checking
-
-**Usage:**
-1. Install from Figma Community
-2. Select text layer
-3. Plugin shows pass/fail for contrast
-
----
-
-#### 2. A11y - Color Contrast Checker
-**Features:**
-- Bulk contrast checking
-- Generates report of issues
-- Suggests compliant alternatives
-
----
-
-#### 3. Stark
-**Features:**
-- Contrast checker
-- Color blindness simulator
-- Generate accessible color palettes
-- (Free tier available, Pro features paid)
-
----
-
-### Color Tools
-
-#### WebAIM Contrast Checker (Web)
-**URL:** https://webaim.org/resources/contrastchecker/
-**Best for:** Quick one-off checks
-
-#### Colour Contrast Analyser (Desktop App)
-**URL:** https://www.tpgi.com/color-contrast-checker/
-**Best for:** Eyedropper tool to sample colors from designs
-
----
-
-## Design Patterns Library
-
-### Button States
-
+**❌ Wrong:**
 ```
-Default State:
-  Background: purple-600
-  Text: white
-  Border: none
+Platform: zSpace (desktop)
+Target size: 44x44 pixels (VR standard)
+Problem: Oversized for desktop viewing
+Result: Wastes screen space
+```
 
-Hover State:
-  Background: purple-500 (lighter)
-  Text: white
-  Border: none
-  Cursor: pointer
-
-Focus State:
-  Background: purple-600
-  Text: white
-  Border: 2px solid purple-300
-  Outline: 2px solid purple-400, offset 2px
-
-Active/Pressed State:
-  Background: purple-700 (darker)
-  Text: white
-  Border: none
-
-Disabled State:
-  Background: gray-300
-  Text: gray-500
-  Cursor: not-allowed
-  Note: Contrast doesn't matter for disabled (WCAG exception)
+**✅ Correct:**
+```
+Platform: zSpace (desktop)
+Target size: 24-36 pixels (desktop standard)
+Reasoning: Desktop viewing distance, not VR arm's length
+Result: Appropriate sizing, WCAG compliant
 ```
 
 ---
 
-### Form Fields
+### Mistake #4: Mobile Screen Readers
 
+**❌ Wrong:**
 ```
-Default State:
-  Border: gray-300, 1px
-  Background: white
-  Label: gray-700, 14px
-  Placeholder: gray-400 (contrast 4.6:1)
+Screen readers: TalkBack, VoiceOver
+Problem: zSpace is Windows desktop
+Result: Wrong assistive technology
+```
 
-Focus State:
-  Border: blue-500, 2px
-  Background: white
-  Box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1)
-
-Error State:
-  Border: red-500, 2px
-  Background: red-50
-  Icon: [!] Error icon (not color only!)
-  Message: "Email is required" below input
-  aria-invalid="true"
-  aria-describedby="email-error"
-
-Success State:
-  Border: green-500, 1px
-  Icon: [✓] Success icon
-  Message: "Looks good!" below input
+**✅ Correct:**
+```
+Screen readers: NVDA, Windows Narrator, JAWS
+Platform: Windows desktop
+Result: Appropriate for zSpace platform
 ```
 
 ---
 
-### Modal Dialog
+### Mistake #5: No Focus Indicators in 3D
 
+**❌ Bad:**
 ```
-Overlay:
-  Background: rgba(0,0,0,0.7)
-  Covers entire viewport
-
-Modal Container:
-  Background: white
-  Border-radius: 8px
-  Box-shadow: large
-  Max-width: 600px
-  Padding: 24px
-
-Close Button:
-  Position: top-right
-  aria-label: "Close dialog"
-  Keyboard: Escape key closes modal
-  Icon: X (with accessible label)
-
-Annotations:
-  • Focus trapped within modal
-  • Escape closes modal
-  • Focus returns to trigger on close
-  • role="dialog"
-  • aria-modal="true"
+3D Button Focus:
+  No visual change
+  Keyboard user can't tell what's focused
+Result: WCAG 2.4.7 failure
 ```
 
----
-
-### Cards (Blog Posts, Products)
-
+**✅ Good:**
 ```
-Card Structure:
-  [Image]
-  [Title - H3]
-  [Excerpt text]
-  [Category tag]
-
-Link Wrapper:
-  aria-label: "Read article: {title}. {excerpt}"
-  Note: Provides full context for screen readers
-
-Hover State:
-  Border changes color
-  Slight scale transform
-  Cursor: pointer
-
-Focus State:
-  Border: blue-600, 2px
-  Box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2)
-
-Keyboard:
-  • Tab - Focus card
-  • Enter - Navigate to article
+3D Button Focus:
+  Emissive glow (blue, intensity 2.0)
+  Pulsing animation
+  Visible in stereoscopic 3D
+  Contrast: 5:1 ✅
+Result: WCAG compliant
 ```
-
----
-
-## Annotations Template
-
-**Create annotation layer in Figma:**
-
-```
-[Component Name]
-
-Visual:
-• Text color: {hex} on {hex} = {ratio}:1 ✅ WCAG AA
-• Border: {hex} on {hex} = {ratio}:1 ✅ UI Component
-• Touch target: 48x48px ✅
-
-Keyboard:
-• Tab - Focus element
-• Enter - Activate
-• Escape - Close (if applicable)
-
-ARIA:
-• role="{role}"
-• aria-label="{label}" (if icon-only)
-• aria-expanded="{state}" (if expandable)
-
-Notes:
-• {Any special considerations}
-```
-
----
-
-## Common Design Mistakes
-
-### Mistake #1: Low Contrast Placeholder Text
-**❌ Problem:** `color: #CCCCCC` on white = 1.6:1
-**✅ Solution:** `color: #6B7280` on white = 4.6:1
-
----
-
-### Mistake #2: Color-Only Error States
-**❌ Problem:** Red border only indicates error
-**✅ Solution:** Red border + Error icon + Error text
-
----
-
-### Mistake #3: No Focus Indicators
-**❌ Problem:** Default browser focus removed with `outline: none`
-**✅ Solution:** Custom focus state with 2-3px visible border/outline
-
----
-
-### Mistake #4: Small Touch Targets
-**❌ Problem:** 20x20px button
-**✅ Solution:** 24x24px minimum (WCAG 2.2), 44x44px recommended
-
----
-
-### Mistake #5: Icon Buttons Without Labels
-**❌ Problem:** [X] button with no label
-**✅ Solution:** Annotate with `aria-label="Close menu"`
 
 ---
 
 ## Resources
 
-- **WCAG Quick Reference:** https://www.w3.org/WAI/WCAG22/quickref/
+- **zSpace Developer Portal:** https://developer.zspace.com/
+- **WCAG 2.2 Quick Reference:** https://www.w3.org/WAI/WCAG22/quickref/
+- **Unity Accessibility:** https://docs.unity3d.com/Manual/com.unity.modules.accessibility.html
 - **WebAIM Contrast Checker:** https://webaim.org/resources/contrastchecker/
-- **ARIA Patterns:** https://www.w3.org/WAI/ARIA/apg/patterns/
-- **Material Design Accessibility:** https://m3.material.io/foundations/accessible-design
-- **Apple Human Interface Guidelines - Accessibility:** https://developer.apple.com/design/human-interface-guidelines/accessibility
+- **W3C XAUR (XR Accessibility):** https://www.w3.org/TR/xaur/
+- **NVDA Screen Reader:** https://www.nvaccess.org/ (free)
 
 ---
 
 ## Collaboration
 
 **With Developers:**
-- Provide design files with accessibility annotations
-- Specify keyboard interactions
-- Document ARIA requirements
-- Be available for questions during implementation
+- Provide Unity-compatible specifications (materials, world units, collider sizes)
+- Document keyboard alternatives for all stylus interactions
+- Specify depth perception alternatives
+- Provide accessible labels for all UI elements
+- Test designs on zSpace hardware together
 
 **With QA:**
-- Review accessibility test results
-- Adjust designs if contrast/usability issues found
-- Iterate based on screen reader testing feedback
+- Review accessibility test results (keyboard, screen reader, depth alternatives)
+- Test without stereoscopic 3D (glasses off)
+- Verify haptic feedback feels appropriate
+- Iterate based on user feedback
 
 **With Product:**
-- Include accessibility requirements in acceptance criteria
+- Include zSpace accessibility requirements in acceptance criteria
 - Ensure timelines account for accessible design
-- Advocate for accessibility in feature prioritization
+- Advocate for testing with users who can't perceive stereoscopic 3D
+- Budget for zSpace hardware testing
 
 ---
 
 **Last Updated:** October 2025
+**Platform:** zSpace (stereoscopic 3D desktop)
+**Standards:** WCAG 2.2 Level AA + W3C XAUR (zSpace-adapted)
