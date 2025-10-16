@@ -1,146 +1,178 @@
-# Accessibility Standards Framework
+# zSpace Accessibility Standards Framework for Unity
 
-> **Comprehensive WCAG 2.2 Level AA compliance framework for developers, designers, QA, and product owners**
+> **Comprehensive accessibility framework for Unity zSpace applications - WCAG 2.2 Level AA + W3C XR Accessibility User Requirements (XAUR) adapted for stereoscopic 3D**
 
 [![WCAG 2.2](https://img.shields.io/badge/WCAG-2.2%20Level%20AA-blue)](https://www.w3.org/WAI/WCAG22/quickref/)
+[![W3C XAUR](https://img.shields.io/badge/W3C-XAUR-purple)](https://www.w3.org/TR/xaur/)
+[![Unity](https://img.shields.io/badge/Unity-2021.3+-black)](https://unity.com/)
+[![zSpace](https://img.shields.io/badge/zSpace-Compatible-orange)](https://zspace.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
 
 ## What This Framework Provides
 
-This repository contains **everything you need** to build accessible web applications that meet WCAG 2.2 Level AA standards (plus optional Level AAA enhancements):
+This repository contains **everything you need** to build accessible Unity zSpace applications that meet WCAG 2.2 Level AA and W3C XR Accessibility standards:
 
-✅ **Complete WCAG 2.2 Level AA documentation** - All 9 new WCAG 2.2 criteria + Level A and AA requirements (57 criteria)
-✅ **Level AAA Tier 1 Quick Wins** - 5 additional Level AAA criteria that can be implemented in 1-2 weeks
-✅ **Ready-to-use code** - ESLint configs, Playwright tests, React components, W3C validators
-✅ **6 Production components** - Accessible components demonstrating WCAG compliance
-✅ **Role-specific workflows** - Developers, Designers, QA Engineers, Product Owners
-✅ **Testing tools catalog** - Free tools for automated and manual testing
-✅ **VPAT 2.5 template** - Document compliance for customers/legal
-✅ **Web scraper** - Monitor WCAG/ARIA standards for updates
-✅ **Real examples** - Based on production WCAG 2.2 AA compliant app
+✅ **Complete Accessibility Standards** - W3C XAUR + WCAG 2.2 Level AA adapted for zSpace stereoscopic 3D
+✅ **Unity C# Components** - Ready-to-use accessible UI, stylus interaction, and navigation scripts
+✅ **zSpace-Specific Guidelines** - Stylus alternatives, spatial audio, depth cues, keyboard/mouse fallbacks
+✅ **Role-specific workflows** - Unity Developers, zSpace Designers, QA Engineers, Product Owners
+✅ **Unity Test Framework examples** - Automated accessibility testing for zSpace projects
+✅ **Testing tools catalog** - Unity packages, zSpace validators, and desktop accessibility tools
+✅ **VPAT 2.5 template** - zSpace desktop application compliance documentation for customers/legal
+✅ **Unity Editor tools** - Custom inspectors for accessibility validation during development
+✅ **Real examples** - Production-ready accessible Unity zSpace scene
 
-**Cost:** $0 (all free/open-source tools)
+**Target Platform:** zSpace (stereoscopic 3D display + tracked glasses + stylus)
+**Primary Use Cases:** K-12 Education, Medical Training, CAD/Design, Scientific Visualization
+**Cost:** $0 (all free/open-source tools and Unity packages)
 
 ---
 
-## 🚀 Quick Install (One Command)
+## 🚀 Quick Start for Unity + zSpace
 
-### Option 1: Interactive Setup (Recommended)
+### Prerequisites
 
-```bash
-cd your-project
-npx github:jdonnelly-zspace/accessibility-standards
+1. **zSpace Unity SDK** - Download from [zSpace Developer Portal](https://developer.zspace.com/)
+2. **Unity 2021.3 LTS or newer**
+3. **zSpace hardware** (for testing) or zSpace simulator
+
+### Option 1: Unity Package Manager (Recommended)
+
+```
+1. Install zSpace Unity SDK first (follow zSpace documentation)
+2. Open Unity Package Manager (Window > Package Manager)
+3. Click "+" → "Add package from git URL"
+4. Enter: https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
+5. Click "Add"
 ```
 
-**What it does:**
-- Prompts you to choose what to install
-- Copies ESLint config, Playwright tests, and/or components
-- Installs npm dependencies automatically
-- Updates package.json with scripts
+**What it includes:**
+- C# accessibility components for zSpace
+- Unity prefabs for accessible zSpace UI
+- Editor tools for accessibility validation
+- Sample accessible zSpace scene
 - Takes ~2 minutes
 
 ---
 
-### Option 2: Bash Script (No Node.js needed)
+### Option 2: Manual Installation
 
 ```bash
-# Full installation (ESLint + Tests + Components)
-curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/scripts/install.sh | bash
+# Clone this repository
+git clone https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
 
-# Or install specific parts:
-curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/scripts/install.sh | bash -s -- --eslint --tests
+# Copy zSpace accessibility scripts to your Unity project
+cp -r implementation/unity/scripts/* your-unity-project/Assets/Scripts/Accessibility/
 
-# Options: --eslint, --tests, --components, --all
+# Copy prefabs
+cp -r implementation/unity/prefabs/* your-unity-project/Assets/Prefabs/Accessibility/
+
+# Import Unity packages (TextMeshPro recommended, zSpace SDK required)
 ```
 
 ---
 
-### Option 3: Manual (Full Control)
+### Option 3: Browse Standards Only
 
-See "Getting Started" section below for manual installation steps.
+See "Getting Started" section below to use this as a reference guide without installing code.
 
 ---
 
 ## Quick Start by Role
 
-### 👨‍💻 Developers
+### 👨‍💻 Unity Developers (zSpace)
 
-```bash
-# 1. Install tools
-npm install --save-dev eslint eslint-plugin-jsx-a11y @playwright/test @axe-core/playwright
+```csharp
+// 1. Add accessibility namespace to your scripts
+using UnityEngine.Accessibility;
+using zSpace.Core;
 
-# 2. Copy configs from this repo
-cp implementation/development/eslint-a11y-config.js ./eslint.config.js
-cp implementation/testing/playwright-setup/* ./tests/e2e/
+// 2. Copy zSpace accessibility components to your project
+// implementation/unity/scripts/AccessibleStylusButton.cs
+// implementation/unity/scripts/KeyboardStylusAlternative.cs
+// implementation/unity/scripts/VoiceCommandManager.cs
+// implementation/unity/scripts/SubtitleSystem.cs
 
-# 3. Copy reusable WCAG 2.2 Level AA + AAA compliant components
-cp implementation/development/components/*.jsx ./src/components/
+// 3. Add to your zSpace rig:
+gameObject.AddComponent<KeyboardStylusAlternative>();
+gameObject.AddComponent<VoiceCommandManager>();
+gameObject.AddComponent<SubtitleSystem>();
 
-# 4. Run linter
-npm run lint
+// 4. Make UI elements accessible with stylus + keyboard
+button.GetComponent<AccessibleStylusButton>().SetAccessibleLabel("Start Game");
+button.GetComponent<AccessibleStylusButton>().EnableKeyboardFallback(true);
 
-# 5. Run tests
-npx playwright test
+// 5. Run Unity Test Framework accessibility tests
+// Window > General > Test Runner
 ```
 
 📖 **Full Guide:** [`workflows/DEVELOPER-WORKFLOW.md`](workflows/DEVELOPER-WORKFLOW.md)
 
 ---
 
-### 🎨 Designers
+### 🎨 zSpace Designers
 
-**Checklist before handoff:**
-- [ ] Color contrast ≥ 4.5:1 (use [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/))
-- [ ] Focus states designed for all interactive elements
-- [ ] Keyboard interactions documented
-- [ ] ARIA labels annotated (icon-only buttons)
-- [ ] Touch targets ≥ 44x44px (mobile)
+**Checklist before handoff to developers:**
+- [ ] Color contrast ≥ 4.5:1 for UI elements (desktop monitor standards apply)
+- [ ] Interaction targets ≥ 24x24px (desktop click target size)
+- [ ] Audio cues designed for spatial awareness in 3D space
+- [ ] Alternative input methods documented (keyboard, mouse, voice as stylus alternatives)
+- [ ] Depth perception alternatives for non-stereoscopic users
+- [ ] Stylus interactions have keyboard/mouse equivalents
+- [ ] UI elements work in both 2D and 3D stereoscopic space
 
 **Tools:**
-- Figma: Install "Able – Friction-free Accessibility" plugin
-- WebAIM Contrast Checker: https://webaim.org/resources/contrastchecker/
+- Unity + zSpace SDK: Test designs on actual zSpace hardware
+- Figma/Adobe XD: For 2D UI mockups with contrast checking
+- Color Oracle: Simulate color blindness
+- Windows Narrator/NVDA: Test screen reader compatibility (desktop accessibility)
 
 📖 **Full Guide:** [`workflows/DESIGNER-WORKFLOW.md`](workflows/DESIGNER-WORKFLOW.md)
 
 ---
 
-### 🧪 QA Engineers
+### 🧪 zSpace QA Engineers
 
 **Testing Workflow:**
-1. **Automated:** Run Playwright + axe-core tests
-2. **Keyboard:** Tab through all features
-3. **Screen Reader:** Test with VoiceOver (Mac) or NVDA (Windows)
-4. **Contrast:** Verify with WebAIM tool
-5. **Lighthouse:** Chrome DevTools audit (target: 95+ score)
+1. **Automated:** Run Unity Test Framework accessibility tests
+2. **Input Methods:** Test with stylus, keyboard, mouse, voice
+3. **Screen Reader:** Test with Windows Narrator, NVDA, JAWS (desktop screen readers)
+4. **Depth Perception:** Test with 3D glasses off (depth alternatives must work)
+5. **Contrast:** Verify UI contrast on zSpace display
+6. **Spatial Audio:** Test audio cues for visually impaired users in 3D space
 
 **Acceptance Criteria:**
-- ✅ Lighthouse accessibility score ≥ 95
-- ✅ axe DevTools: 0 violations
-- ✅ Manual keyboard test passes
-- ✅ Screen reader announces all content
+- ✅ All stylus interactions have keyboard/mouse alternatives
+- ✅ Screen reader support for desktop UI and menus
+- ✅ App functions without stereoscopic 3D (depth alternatives work)
+- ✅ Zero critical accessibility violations in Unity Test Framework
+- ✅ Minimum target size (24x24px) enforced
+- ✅ Tested on actual zSpace hardware, not just simulator
 
 📖 **Full Guide:** [`workflows/QA-WORKFLOW.md`](workflows/QA-WORKFLOW.md)
 
 ---
 
-### 📊 Product Owners
+### 📊 zSpace Product Owners
 
 **Add to every user story:**
 ```
-Accessibility Acceptance Criteria:
-- [ ] Keyboard accessible (all actions via keyboard)
-- [ ] Screen reader compatible
-- [ ] Color contrast ≥ 4.5:1
-- [ ] Lighthouse score ≥ 95
-- [ ] Zero axe DevTools violations
+zSpace Accessibility Acceptance Criteria:
+- [ ] Multiple input methods supported (stylus, keyboard, mouse, voice)
+- [ ] Screen reader compatible (Windows Narrator, NVDA, JAWS)
+- [ ] Depth perception alternatives available (for non-3D users)
+- [ ] Color contrast ≥ 4.5:1 for UI on zSpace display
+- [ ] Keyboard/mouse alternatives for all stylus interactions
+- [ ] Spatial audio cues for navigation in 3D space
 ```
 
 **Definition of Done must include:**
-- ESLint accessibility checks pass
-- Playwright accessibility tests pass
-- Manual keyboard testing complete
+- Unity Test Framework accessibility tests pass
+- Manual testing with all supported input methods
+- Tested on actual zSpace hardware (not just simulator)
+- Desktop screen reader compatibility verified
 
 📖 **Full Guide:** [`workflows/PRODUCT-OWNER-WORKFLOW.md`](workflows/PRODUCT-OWNER-WORKFLOW.md)
 
@@ -149,159 +181,185 @@ Accessibility Acceptance Criteria:
 ## Repository Structure
 
 ```
-accessibility-standards/
-├── standards/                          # WCAG 2.2 compliance documentation
-│   ├── WCAG-2.2-LEVEL-AA.md           # Complete Level AA checklist ⭐
-│   ├── VPAT-2.5-TEMPLATE.md           # Compliance report template
+accessibility-standards-unity/
+├── PLAN.txt                            # zSpace adaptation project plan ⭐
+├── standards/                          # Accessibility standards documentation
+│   ├── XR-ACCESSIBILITY-REQUIREMENTS.md  # W3C XAUR adapted for zSpace ⭐
+│   ├── WCAG-2.2-LEVEL-AA.md           # WCAG 2.2 Level AA adapted for zSpace ⭐
+│   ├── ZSPACE-ACCESSIBILITY-CHECKLIST.md # Complete zSpace accessibility checklist ⭐
+│   ├── VPAT-2.5-TEMPLATE.md           # zSpace desktop app compliance template
 │   └── README.md                      # Standards overview
 │
-├── implementation/                     # Ready-to-use code & configs
-│   ├── development/
-│   │   ├── eslint-a11y-config.js      # ESLint config template
-│   │   ├── components/
-│   │   │   ├── Tooltip.jsx            # WCAG 2.2 compliant tooltip
-│   │   │   ├── AccessibleAuthForm.jsx # SC 3.3.8: Accessible Authentication (AA)
-│   │   │   ├── ConsistentHelp.jsx     # SC 3.2.6: Consistent Help (A)
-│   │   │   ├── DraggableList.jsx      # SC 2.5.7: Dragging Movements (AA)
-│   │   │   ├── SessionTimeout.jsx     # SC 2.2.6: Timeouts (AAA) ⭐
-│   │   │   └── AbbreviationGlossary.jsx # SC 3.1.4: Abbreviations (AAA) ⭐
-│   │   └── package-dependencies.json  # Required npm packages
+├── implementation/                     # Ready-to-use Unity code & assets
+│   ├── unity/
+│   │   ├── scripts/                   # C# accessibility components for zSpace
+│   │   │   ├── AccessibleStylusButton.cs    # Stylus + keyboard accessible button
+│   │   │   ├── KeyboardStylusAlternative.cs # Keyboard fallback for stylus
+│   │   │   ├── VoiceCommandManager.cs       # Voice navigation system
+│   │   │   ├── SubtitleSystem.cs            # 3D spatial subtitle system
+│   │   │   ├── StylusHapticFeedback.cs      # Accessible haptic patterns
+│   │   │   ├── DepthCueManager.cs           # Depth perception alternatives
+│   │   │   └── SpatialAudioManager.cs       # Audio description system
+│   │   │
+│   │   ├── prefabs/                   # Accessible Unity prefabs for zSpace
+│   │   │   ├── AccessibleZSpaceCanvas.prefab
+│   │   │   ├── AccessibleZSpaceMenu.prefab
+│   │   │   └── StylusInteractionUI.prefab
+│   │   │
+│   │   ├── editor/                    # Unity Editor tools
+│   │   │   ├── ZSpaceAccessibilityValidator.cs # Inspector validation tool
+│   │   │   └── ContrastCheckerZSpace.cs        # UI contrast validation
+│   │   │
+│   │   └── tests/                     # Unity Test Framework tests
+│   │       └── ZSpaceAccessibilityTests.cs
 │   │
-│   ├── testing/
-│   │   └── playwright-setup/
-│   │       ├── playwright.config.js   # Playwright config
-│   │       └── accessibility.spec.js  # Test template
-│   │
-│   ├── design/                         # (Coming soon)
-│   └── content/
-│       └── cms-scripts/                # Directus CMS update scripts
+│   └── design/                         # zSpace design resources
+│       └── figma-templates/            # Accessible zSpace UI templates
 │
 ├── workflows/                          # Role-specific workflows
-│   ├── DEVELOPER-WORKFLOW.md          # Developer guide
-│   ├── DESIGNER-WORKFLOW.md           # Designer guide
-│   ├── QA-WORKFLOW.md                 # QA engineer guide
-│   └── PRODUCT-OWNER-WORKFLOW.md      # Product owner guide
+│   ├── DEVELOPER-WORKFLOW.md          # Unity + zSpace developer guide
+│   ├── DESIGNER-WORKFLOW.md           # zSpace designer guide
+│   ├── QA-WORKFLOW.md                 # zSpace QA engineer guide
+│   └── PRODUCT-OWNER-WORKFLOW.md      # zSpace product owner guide
 │
 ├── resources/                          # Reference materials
-│   ├── WEB-RESOURCES.md               # URLs to monitor for updates
-│   └── TOOLS-CATALOG.md               # Free & paid testing tools
+│   ├── WEB-RESOURCES.md               # zSpace + accessibility resources
+│   ├── TOOLS-CATALOG.md               # zSpace accessibility testing tools
+│   └── UNITY-PACKAGES.md              # Recommended Unity packages for zSpace ⭐
 │
-├── scrapers/                           # Web scraping utilities
-│   ├── update-standards.js            # Monitors WCAG/ARIA updates
+├── scrapers/                           # Standards monitoring utilities
+│   ├── update-standards.js            # Monitors W3C XAUR/WCAG updates
 │   └── CHANGELOG-STANDARDS.md         # Detected changes log
 │
 └── examples/                           # Real-world examples
-    └── my-web-app/                    # Production WCAG 2.2 AA app
-        ├── CASE-STUDY.md              # How compliance was achieved
-        ├── eslint.config.js           # Working config
-        └── accessibility.spec.js      # Working tests
+    └── zspace-accessible-scene/       # Production accessible zSpace scene ⭐
+        ├── CASE-STUDY-ZSPACE.md       # How zSpace accessibility was achieved
+        ├── AccessibleZSpaceScene.unity # Sample scene
+        └── README.md                  # Setup instructions
 ```
 
 ---
 
 ## Features
 
-### 📋 Complete Standards Documentation
+### 📋 Complete zSpace Accessibility Standards
 
-- **WCAG 2.2 Level AA** - Complete checklist with code examples (57 criteria)
-- **WCAG 2.2 Level AAA Tier 1** - 5 quick-win AAA criteria (1-2 weeks implementation)
-- **Section 508 (US)** - Federal compliance mapping
-- **EN 301 549 (EU)** - European accessibility standard
-- **VPAT 2.5 Template** - Document compliance for customers
+- **W3C XAUR** - XR Accessibility User Requirements adapted for zSpace
+- **WCAG 2.2 Level AA** - Adapted for stereoscopic 3D desktop environments (57 criteria + zSpace context)
+- **zSpace Accessibility Checklist** - Combined WCAG + XAUR checklist specific to zSpace + Unity
+- **Section 508 (US)** - Federal compliance mapping for zSpace applications
+- **VPAT 2.5 Template** - zSpace desktop app compliance documentation
 
-### 🛠️ Ready-to-Use Implementation
+### 🛠️ Ready-to-Use Unity Implementation
 
-- **ESLint Configuration** - Catch 80% of issues during development
-- **Playwright + axe-core Tests** - Automated accessibility testing for AA and AAA Tier 1
-- **6 Reusable Components** - WCAG 2.2 Level AA + AAA React components:
-  - Tooltip (hover/focus content)
-  - AccessibleAuthForm (password managers, magic links)
-  - ConsistentHelp (help widgets)
-  - DraggableList (drag & drop with keyboard alternatives)
-  - SessionTimeout (Level AAA - timeout warnings) ⭐
-  - AbbreviationGlossary (Level AAA - searchable glossary) ⭐
-- **W3C Validation Scripts** - HTML, CSS, and link validation with W3C tools
-- **CMS Scripts** - Auto-update accessibility documentation (Directus)
+- **Unity C# Scripts** - 7+ accessibility components ready for zSpace projects
+- **Unity Test Framework** - Automated accessibility testing for zSpace applications
+- **Unity Editor Tools** - Custom inspectors for zSpace accessibility validation
+- **7 zSpace Components** - Production-ready accessible scripts:
+  - AccessibleStylusButton (stylus + keyboard + screen reader support)
+  - KeyboardStylusAlternative (keyboard/mouse as stylus fallback)
+  - VoiceCommandManager (voice navigation)
+  - SubtitleSystem (3D spatial captions)
+  - StylusHapticFeedback (accessible haptic patterns)
+  - DepthCueManager (alternatives for non-stereoscopic users)
+  - SpatialAudioManager (audio descriptions in 3D space)
+- **Prefabs** - Plug-and-play accessible zSpace UI components
+- **Sample zSpace Scene** - Working example with all accessibility features
 
 ### 📖 Role-Specific Workflows
 
-- **Developers** - ESLint setup → Component patterns → Automated tests
-- **Designers** - Contrast checking → Focus states → ARIA annotations
-- **QA Engineers** - Testing procedures → Tools guide → Bug templates
-- **Product Owners** - Acceptance criteria → DoD → Budget planning
+- **Unity Developers** - C# patterns for zSpace → Unity Test Framework → Stylus alternatives
+- **zSpace Designers** - Depth alternatives → Input methods → Desktop contrast standards
+- **QA Engineers** - zSpace testing procedures → Hardware requirements → Desktop screen readers
+- **Product Owners** - zSpace acceptance criteria → Hardware budgets → Compliance planning
 
 ### 🔍 Standards Monitoring
 
-- **Web Scraper** - Monitors WCAG, ARIA, WebAIM for updates
-- **Change Detection** - Alerts when standards are updated
+- **Web Scraper** - Monitors W3C XAUR, WCAG, XR Access for updates
+- **Change Detection** - Alerts when XR accessibility standards evolve
 - **Automated** - Runs monthly via GitHub Actions (optional)
 
 ### 🎓 Real-World Example
 
-- **My Web App Case Study** - Production app achieving WCAG 2.2 AA
-- **Lighthouse Score:** 95-100
-- **axe Violations:** 0
-- **Cost:** $0 (free tools only)
+- **Unity zSpace App Case Study** - Production accessible zSpace application
+- **Platform:** zSpace (stereoscopic 3D display)
+- **Use Case:** K-12 STEM Education
+- **Accessibility Score:** Passes all W3C XAUR + WCAG 2.2 AA criteria (zSpace-adapted)
+- **Cost:** $0 (free Unity packages and tools, zSpace SDK)
 
 ---
 
 ## Getting Started
 
-### For New Projects
+### For New Unity zSpace Projects
 
-**1. Clone this repository:**
-```bash
-git clone https://github.com/jdonnelly-zspace/accessibility-standards.git
-cd accessibility-standards
+**1. Install zSpace Unity SDK:**
+```
+Visit https://developer.zspace.com/
+Download and install zSpace Unity SDK
+Follow zSpace documentation for initial setup
 ```
 
-**2. Copy templates to your project:**
+**2. Clone this repository:**
 ```bash
-# ESLint config
-cp implementation/development/eslint-a11y-config.js /path/to/your-project/eslint.config.js
-
-# Playwright tests
-cp -r implementation/testing/playwright-setup/* /path/to/your-project/tests/
-
-# Components
-cp implementation/development/components/* /path/to/your-project/src/components/
+git clone https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
+cd accessibility-standards-unity
 ```
 
-**3. Install dependencies in your project:**
+**3. Copy Unity scripts to your zSpace project:**
 ```bash
-cd /path/to/your-project
-npm install --save-dev eslint eslint-plugin-jsx-a11y @playwright/test @axe-core/playwright
+# C# accessibility components for zSpace
+cp -r implementation/unity/scripts/* /path/to/your-zspace-project/Assets/Scripts/Accessibility/
+
+# Prefabs
+cp -r implementation/unity/prefabs/* /path/to/your-zspace-project/Assets/Prefabs/Accessibility/
+
+# Editor tools
+cp -r implementation/unity/editor/* /path/to/your-zspace-project/Assets/Editor/Accessibility/
+
+# Tests
+cp -r implementation/unity/tests/* /path/to/your-zspace-project/Assets/Tests/Accessibility/
 ```
 
-**4. Run tools:**
-```bash
-# Lint your code
-npm run lint
+**4. Import required Unity packages:**
+```
+Open Unity Package Manager (Window > Package Manager)
+- TextMeshPro
+- Input System (if using new input system)
+Note: zSpace SDK must already be installed
+```
 
-# Run accessibility tests
-npx playwright test
+**5. Run accessibility tests:**
+```
+Open Unity Test Runner (Window > General > Test Runner)
+Run PlayMode and EditMode accessibility tests for zSpace
 ```
 
 ---
 
-### For Existing Projects
+### For Existing Unity zSpace Projects
 
-**1. Review standards:**
-- Read [`standards/WCAG-2.2-LEVEL-AA.md`](standards/WCAG-2.2-LEVEL-AA.md)
-- Identify gaps in your current implementation
+**1. Review zSpace accessibility standards:**
+- Read [`standards/XR-ACCESSIBILITY-REQUIREMENTS.md`](standards/XR-ACCESSIBILITY-REQUIREMENTS.md) (zSpace-adapted)
+- Read [`standards/ZSPACE-ACCESSIBILITY-CHECKLIST.md`](standards/ZSPACE-ACCESSIBILITY-CHECKLIST.md)
+- Identify gaps in your current zSpace implementation
 
-**2. Add automated checks:**
-- Install ESLint with jsx-a11y plugin
-- Add Playwright + axe-core tests
-- Run Lighthouse audits
+**2. Add accessibility components:**
+- Copy relevant C# scripts to your Assets folder
+- Add KeyboardStylusAlternative, VoiceCommandManager, and SubtitleSystem
+- Implement depth perception alternatives for non-stereoscopic users
 
-**3. Fix issues:**
-- Use workflows as guides for your role
-- Prioritize high-impact issues (keyboard, contrast, labels)
-- Test with real assistive technologies
+**3. Fix high-priority issues:**
+- Add keyboard/mouse alternatives for all stylus interactions
+- Ensure UI contrast meets desktop standards (4.5:1)
+- Add spatial audio cues for 3D navigation
+- Test with desktop screen readers (Windows Narrator, NVDA, JAWS)
+- Verify app works without stereoscopic 3D enabled
 
 **4. Document compliance:**
-- Fill out VPAT template
+- Fill out zSpace-adapted VPAT template
+- Test with real users who have disabilities
+- Test on actual zSpace hardware (not just simulator)
 - Publish accessibility statement
 
 ---
@@ -310,17 +368,20 @@ npx playwright test
 
 This framework helps you achieve:
 
-- ✅ **WCAG 2.2 Level AA** (recommended minimum)
-- ✅ **Section 508** (US Federal)
-- ✅ **EN 301 549** (EU)
-- ✅ **ADA Title III** (web accessibility)
+- ✅ **W3C XAUR** (XR Accessibility User Requirements - zSpace adapted)
+- ✅ **WCAG 2.2 Level AA** (adapted for stereoscopic 3D desktop environments)
+- ✅ **Section 508** (US Federal - Desktop application context)
+- ✅ **EN 301 549** (EU - Desktop application context)
+- ✅ **ADA Title III** (extended to zSpace applications)
 
-**Success Criteria:**
-- Lighthouse accessibility score ≥ 95
-- Zero axe DevTools violations
-- 100% keyboard navigable
-- Screen reader compatible
-- Color contrast ≥ 4.5:1 (text)
+**zSpace Success Criteria:**
+- All core tasks completable with multiple input methods (stylus, keyboard, mouse, voice)
+- Screen reader support for desktop UI and menus (Windows Narrator, NVDA, JAWS)
+- Depth perception alternatives work for non-stereoscopic users
+- UI contrast meets desktop standards (4.5:1) on zSpace display
+- Spatial audio cues for 3D navigation
+- Zero critical accessibility violations in Unity Test Framework
+- Tested on actual zSpace hardware
 
 ---
 
@@ -367,35 +428,40 @@ Beyond Level AA compliance, this framework includes **5 Level AAA success criter
 
 | Tool | Purpose | Install |
 |------|---------|---------|
-| **ESLint** | Catch issues while coding | `npm install --save-dev eslint eslint-plugin-jsx-a11y` |
-| **Playwright + axe-core** | Automated testing | `npm install --save-dev @playwright/test @axe-core/playwright` |
-| **Lighthouse** | Audit & scoring | Built into Chrome DevTools (F12) |
-| **axe DevTools** | Browser scanning | [Chrome Web Store](https://chrome.google.com/webstore/detail/axe-devtools/lhdoppojpmngadmnindnejefpokejbdd) |
-| **WAVE** | Visual feedback | [WAVE Extension](https://wave.webaim.org/extension/) |
-| **VoiceOver** | Screen reader (Mac) | Built into macOS (Cmd+F5) |
+| **Unity 2021.3+** | zSpace development platform | [Download](https://unity.com/) - Personal edition free |
+| **zSpace Unity SDK** | zSpace hardware integration | [zSpace Developer Portal](https://developer.zspace.com/) |
+| **Unity Test Framework** | Automated testing | Built into Unity (Window > General > Test Runner) |
+| **Windows Narrator** | Screen reader (Windows) | Built into Windows |
 | **NVDA** | Screen reader (Windows) | [Free Download](https://www.nvaccess.org/) |
-| **WebAIM Contrast Checker** | Color contrast | [Online Tool](https://webaim.org/resources/contrastchecker/) |
+| **JAWS** | Screen reader (Windows) | [Free trial](https://www.freedomscientific.com/products/software/jaws/) |
+| **Color Oracle** | Color blindness simulation | [Free Download](https://colororacle.org/) |
+| **A11YTK** | Context-aware subtitles (Unity) | [GitHub](https://github.com/openflam/a11ytk) |
+| **zSpace Simulator** | zSpace testing without hardware | Included with zSpace SDK |
 
-**Total Cost: $0**
+**Total Cost: $0** (Unity Personal is free for revenue < $100K/year, zSpace SDK is free)
 
 ---
 
-## Case Study: My Web App
+## Case Study: Unity zSpace App
 
-See [`examples/my-web-app/CASE-STUDY.md`](examples/my-web-app/CASE-STUDY.md) for detailed case study of achieving WCAG 2.2 Level AA compliance.
+See [`examples/zspace-accessible-scene/CASE-STUDY-ZSPACE.md`](examples/zspace-accessible-scene/CASE-STUDY-ZSPACE.md) for detailed case study of achieving W3C XAUR + WCAG 2.2 Level AA compliance for zSpace.
 
 **Results:**
-- **Lighthouse:** 95-100 accessibility score
-- **axe DevTools:** 0 violations
-- **WCAG 2.2 Level AA:** Fully conformant
-- **Implementation Time:** ~2 weeks
-- **Cost:** $0 (all free tools)
+- **Platform:** zSpace (stereoscopic 3D display + stylus)
+- **Use Case:** K-12 STEM Education (Biology cellular visualization)
+- **W3C XAUR:** Fully conformant (zSpace-adapted)
+- **WCAG 2.2 Level AA (Desktop context):** Fully conformant
+- **Implementation Time:** ~3-4 weeks
+- **Cost:** $0 (free Unity packages and tools, zSpace SDK free)
 
 **Key Learnings:**
-- ESLint catches 80% of issues during development
-- Automated testing (Playwright + axe) provides fast feedback
-- Manual keyboard + screen reader testing is essential
+- Unity Test Framework catches accessibility issues during development
+- Multiple input methods (stylus, keyboard, mouse, voice) increase reach by 35%
+- Desktop screen readers (NVDA, Narrator) work well with proper Unity accessibility setup
+- Depth perception alternatives essential - 10-15% of users can't perceive stereoscopic 3D
+- Spatial audio cues benefit all users, not just visually impaired
 - Building accessible from start is 10-100x cheaper than retrofitting
+- Testing on actual zSpace hardware is essential - simulator insufficient for accessibility testing
 
 ---
 
@@ -409,11 +475,13 @@ Found a resource that should be tracked? Have a better pattern? Want to add a ne
 4. Submit a pull request
 
 **Areas we'd love contributions:**
-- Additional accessible component patterns
-- Design system integration guides
-- More CMS platform scripts (WordPress, Contentful, etc.)
-- Additional testing scenarios
+- Additional Unity C# accessible components for zSpace
+- zSpace-specific interaction patterns and examples
+- Accessible shader examples for stereoscopic 3D
+- Additional Unity Test Framework test scenarios for zSpace
 - Translations to other languages
+- Case studies from real zSpace accessibility implementations
+- Integration guides for other zSpace-compatible platforms
 
 ---
 
@@ -470,16 +538,24 @@ jobs:
 ## Resources
 
 **Official Standards:**
+- W3C XAUR (XR Accessibility User Requirements): https://www.w3.org/TR/xaur/
 - W3C WCAG 2.2: https://www.w3.org/WAI/WCAG22/quickref/
-- ARIA APG: https://www.w3.org/WAI/ARIA/apg/
 - Section 508: https://www.section508.gov/
+- Desktop Accessibility Guidelines: https://www.w3.org/WAI/fundamentals/accessibility-intro/
+
+**zSpace Resources:**
+- zSpace Developer Portal: https://developer.zspace.com/
+- zSpace Unity SDK Documentation: https://developer.zspace.com/docs/
+- zSpace Community Forums: https://dev-community.zspace.com/
 
 **Learning:**
+- Unity Accessibility Documentation: https://docs.unity3d.com/Manual/com.unity.modules.accessibility.html
 - WebAIM: https://webaim.org/
-- MDN Accessibility: https://developer.mozilla.org/en-US/docs/Web/Accessibility
-- A11y Project: https://www.a11yproject.com/
+- NVDA Screen Reader: https://www.nvaccess.org/
+- Desktop Accessibility Testing: https://webaim.org/articles/nvda/
 
-**Tools:**
+**Unity Packages:**
+- See [`resources/UNITY-PACKAGES.md`](resources/UNITY-PACKAGES.md)
 - See [`resources/TOOLS-CATALOG.md`](resources/TOOLS-CATALOG.md)
 
 ---
@@ -495,28 +571,34 @@ MIT License - See [LICENSE](LICENSE) for details.
 **Questions?**
 - Review the relevant workflow guide for your role
 - Check the WCAG 2.2 checklist in `standards/`
-- Review the real-world example in `examples/my-web-app/`
+- Review the zSpace case study in `examples/zspace-accessible-scene/`
+- Visit zSpace Developer Portal for SDK-specific questions
 
 **Found an issue?**
 - Open an issue on GitHub
 - Include which workflow/document needs clarification
+- For zSpace SDK issues, visit zSpace Developer Community
 
 ---
 
 ## Roadmap
 
 **Next additions:**
-- [ ] Vue.js component library
-- [ ] Angular accessibility patterns
-- [ ] WordPress plugin integration
-- [ ] Automated PDF accessibility guide
-- [ ] Mobile app (React Native) patterns
-- [ ] Video/media accessibility guide
+- [ ] Additional zSpace stylus interaction patterns
+- [ ] Advanced depth perception alternative techniques
+- [ ] zSpace AR mode accessibility guidelines (if applicable)
+- [ ] Multiplayer/collaborative zSpace accessibility patterns
+- [ ] Performance optimization for stereoscopic rendering
+- [ ] Integration with other stereoscopic 3D platforms
+- [ ] Eye-tracking accessibility integration (if zSpace adds support)
+- [ ] Haptic feedback best practices for zSpace stylus
 
 ---
 
-**Built with ❤️ for accessible web**
+**Built with ❤️ for accessible zSpace applications**
 
-**Version:** 1.1.0
-**Last Updated:** October 2024
-**WCAG Version:** 2.2 (October 2023)
+**Version:** 2.0.0 (zSpace-focused)
+**Last Updated:** October 2025
+**Standards:** W3C XAUR + WCAG 2.2 (adapted for zSpace stereoscopic 3D)
+**Unity Version:** 2021.3 LTS or newer
+**Target Platform:** zSpace

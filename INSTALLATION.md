@@ -1,118 +1,111 @@
-# Installation Guide
+# Installation Guide - Unity zSpace Accessibility Framework
 
-This guide shows all the ways to install the Accessibility Standards Framework into your projects.
+This guide shows how to install the zSpace Accessibility Standards Framework into your Unity projects.
+
+**Prerequisites:**
+- Unity 2021.3 LTS or newer
+- zSpace Unity SDK (download from https://developer.zspace.com/)
+- zSpace hardware (for testing) or zSpace simulator
 
 ---
 
-## Quick Install Methods
+## Quick Install Methods for Unity
 
-### Method 1: Interactive CLI (Recommended) ⭐
+### Method 1: Unity Package Manager (Recommended) ⭐
 
-**Best for:** Interactive setup with choices
+**Best for:** Quick setup with automatic updates
 
-```bash
-cd your-project
-npx github:jdonnelly-zspace/accessibility-standards
+**Prerequisites:** zSpace Unity SDK must be installed first
+
+```
+1. Open Unity Package Manager (Window > Package Manager)
+2. Click "+" → "Add package from git URL"
+3. Enter: https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
+4. Click "Add"
 ```
 
-**What happens:**
-1. Prompts you to choose what to install:
-   - ESLint accessibility config? (Y/n)
-   - Playwright + axe-core tests? (Y/n)
-   - Reusable components? (Y/n)
-   - Install dependencies automatically? (Y/n)
-
-2. Copies files to your project
-3. Installs npm dependencies
-4. Updates package.json with scripts
+**What it includes:**
+- C# accessibility components for zSpace
+- Unity prefabs for accessible UI
+- Editor tools for accessibility validation
+- Sample accessible zSpace scene
+- Unity Test Framework tests
 
 **Time:** ~2 minutes
 
 ---
 
-### Method 2: Bash Script (No Node.js)
+### Method 2: Manual Installation (Full Control)
 
-**Best for:** CI/CD pipelines, quick setup
+**Best for:** Existing Unity projects, custom setup
 
-```bash
-# Full installation
-curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/scripts/install.sh | bash
+#### Step 1: Install zSpace Unity SDK
 
-# ESLint only
-curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/scripts/install.sh | bash -s -- --eslint
-
-# Tests only
-curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/scripts/install.sh | bash -s -- --tests
-
-# Components only
-curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/scripts/install.sh | bash -s -- --components
-
-# Everything
-curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/scripts/install.sh | bash -s -- --all
+```
+1. Visit https://developer.zspace.com/
+2. Download zSpace Unity SDK
+3. Import SDK into your Unity project
+4. Follow zSpace documentation for initial setup
+5. Verify zSpace SDK working (test scene compiles)
 ```
 
-**Script options:**
-- `--eslint` - Install ESLint accessibility config
-- `--tests` - Install Playwright + axe-core tests
-- `--components` - Install reusable accessible components
-- `--all` - Install everything (default)
-- `--project-path <path>` - Target project (default: current directory)
-- `--help` - Show help
+#### Step 2: Clone Accessibility Framework
+
+```bash
+git clone https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
+cd accessibility-standards-unity
+```
+
+#### Step 3: Copy Files to Unity Project
+
+```bash
+# Copy C# accessibility scripts
+cp -r implementation/unity/scripts/* /path/to/your-unity-project/Assets/Scripts/Accessibility/
+
+# Copy prefabs
+cp -r implementation/unity/prefabs/* /path/to/your-unity-project/Assets/Prefabs/Accessibility/
+
+# Copy editor tools
+cp -r implementation/unity/editor/* /path/to/your-unity-project/Assets/Editor/Accessibility/
+
+# Copy Unity Test Framework tests
+cp -r implementation/unity/tests/* /path/to/your-unity-project/Assets/Tests/Accessibility/
+```
+
+#### Step 4: Import Required Unity Packages
+
+```
+Open Unity Package Manager (Window > Package Manager)
+- TextMeshPro (for accessible text)
+- Input System (if using new input system - recommended)
+```
+
+**Time:** ~5-10 minutes
 
 ---
 
-### Method 3: Manual Installation
+### Method 3: Reference Only (No Code Installation)
 
-**Best for:** Full control, learning
-
-#### Step 1: Install ESLint Config
+**Best for:** Consultingstandards, learning, team training
 
 ```bash
-# Copy config
-curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/implementation/development/eslint-a11y-config.js -o eslint.config.js
+# Clone repo to reference location
+git clone https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
+cd accessibility-standards-unity
 
-# Install dependencies
-npm install --save-dev eslint eslint-plugin-jsx-a11y @eslint/js globals
+# Browse standards documentation
+open standards/ZSPACE-ACCESSIBILITY-CHECKLIST.md
+open standards/XR-ACCESSIBILITY-REQUIREMENTS.md
+open standards/WCAG-2.2-LEVEL-AA.md
 
-# Add script to package.json
-npm pkg set scripts.lint="eslint ."
-
-# Run
-npm run lint
+# Browse workflows
+open workflows/DEVELOPER-WORKFLOW.md
+open workflows/DESIGNER-WORKFLOW.md
+open workflows/QA-WORKFLOW.md
+open workflows/PRODUCT-OWNER-WORKFLOW.md
 ```
 
-#### Step 2: Install Playwright Tests
-
-```bash
-# Create test directory
-mkdir -p tests/e2e
-
-# Copy config
-curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/implementation/testing/playwright-setup/playwright.config.js -o playwright.config.js
-
-# Copy test
-curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/implementation/testing/playwright-setup/accessibility.spec.js -o tests/e2e/accessibility.spec.js
-
-# Install dependencies
-npm install --save-dev @playwright/test @axe-core/playwright
-npx playwright install
-
-# Add script
-npm pkg set scripts.test:a11y="playwright test"
-
-# Run
-npm run test:a11y
-```
-
-#### Step 3: Install Components
-
-```bash
-# Create components directory (adjust path for your project)
-mkdir -p src/components
-
-# Copy Tooltip
-curl -fsSL https://raw.githubusercontent.com/jdonnelly-zspace/accessibility-standards/main/implementation/development/components/Tooltip.jsx -o src/components/Tooltip.jsx
-```
+Use this repository as a reference guide without installing any code into your project.
 
 ---
 
@@ -137,145 +130,174 @@ ls docs/a11y/workflows/
 
 ## After Installation
 
-### Verify Installation
+### Verify Unity Installation
 
-Check that files were created:
+Check that files were imported:
 
-```bash
-# ESLint
-ls eslint.config.js
-npm run lint
+1. **In Unity Project window:**
+   - `Assets/Scripts/Accessibility/` - C# accessibility components
+   - `Assets/Prefabs/Accessibility/` - Accessible UI prefabs
+   - `Assets/Editor/Accessibility/` - Editor validation tools
+   - `Assets/Tests/Accessibility/` - Unity Test Framework tests
 
-# Playwright
-ls playwright.config.js tests/e2e/accessibility.spec.js
-npx playwright install
-npm run test:a11y
-
-# Components
-ls src/components/Tooltip.jsx
-```
+2. **Verify zSpace SDK Integration:**
+   ```
+   - Check for zSpace namespace in scripts (using zSpace.Core;)
+   - Verify ZCore component available
+   - Test stylus tracking in Play mode
+   ```
 
 ---
 
 ### Next Steps
 
-1. **Run ESLint:**
-   ```bash
-   npm run lint
+1. **Run Unity Test Framework:**
    ```
-   Fix any accessibility issues reported.
-
-2. **Run Playwright Tests:**
-   ```bash
-   npm run test:a11y
+   Window > General > Test Runner
+   Select "PlayMode" tab
+   Run All Tests
    ```
-   Ensure all tests pass.
+   Verify all accessibility tests pass.
 
-3. **Run Lighthouse Audit:**
-   - Open page in Chrome
-   - DevTools (F12) → Lighthouse tab
-   - Run accessibility audit
-   - Target score: **95+**
+2. **Test with Desktop Screen Readers:**
+   - **Windows Narrator:** Win + Ctrl + Enter
+   - **NVDA:** Download from https://www.nvaccess.org/
+   - Tab through UI and verify announcements
 
-4. **Review Workflows:**
-   - Developers: [`workflows/DEVELOPER-WORKFLOW.md`](workflows/DEVELOPER-WORKFLOW.md)
-   - Designers: [`workflows/DESIGNER-WORKFLOW.md`](workflows/DESIGNER-WORKFLOW.md)
-   - QA: [`workflows/QA-WORKFLOW.md`](workflows/QA-WORKFLOW.md)
+3. **Test Keyboard Accessibility:**
+   - Disconnect zSpace stylus
+   - Complete all application tasks using keyboard only (Tab, Space, Enter, Arrows, ESC)
+   - Verify focus indicators visible
+
+4. **Test Depth Perception Alternatives:**
+   - Remove zSpace glasses
+   - View application in 2D mode
+   - Verify all tasks completable without stereoscopic 3D
+
+5. **Review Workflows:**
+   - Unity Developers: [`workflows/DEVELOPER-WORKFLOW.md`](workflows/DEVELOPER-WORKFLOW.md)
+   - zSpace Designers: [`workflows/DESIGNER-WORKFLOW.md`](workflows/DESIGNER-WORKFLOW.md)
+   - QA Engineers: [`workflows/QA-WORKFLOW.md`](workflows/QA-WORKFLOW.md)
    - Product Owners: [`workflows/PRODUCT-OWNER-WORKFLOW.md`](workflows/PRODUCT-OWNER-WORKFLOW.md)
 
-5. **Review Standards:**
-   - WCAG 2.2 Checklist: [`standards/WCAG-2.2-LEVEL-AA.md`](standards/WCAG-2.2-LEVEL-AA.md)
+6. **Review Standards:**
+   - zSpace Accessibility Checklist: [`standards/ZSPACE-ACCESSIBILITY-CHECKLIST.md`](standards/ZSPACE-ACCESSIBILITY-CHECKLIST.md)
+   - WCAG 2.2 Level AA: [`standards/WCAG-2.2-LEVEL-AA.md`](standards/WCAG-2.2-LEVEL-AA.md)
+   - W3C XAUR (zSpace-adapted): [`standards/XR-ACCESSIBILITY-REQUIREMENTS.md`](standards/XR-ACCESSIBILITY-REQUIREMENTS.md)
 
 ---
 
-## Project-Specific Setup
+## Unity Project-Specific Setup
 
-### React (Create React App or Vite)
+### New Unity zSpace Project
 
-```bash
-cd my-react-app
-npx github:jdonnelly-zspace/accessibility-standards
-
-# Component directory will be detected as src/components/
+```
+1. Create new Unity project (Unity 2021.3 LTS or newer)
+2. Install zSpace Unity SDK
+3. Add accessibility framework via Unity Package Manager
+4. Import sample scene from examples/zspace-accessible-scene/
+5. Test on zSpace hardware
 ```
 
-### Next.js
+### Existing Unity Project (Adding zSpace)
 
-```bash
-cd my-nextjs-app
-npx github:jdonnelly-zspace/accessibility-standards
-
-# Adjust Playwright config if using custom ports
+```
+1. Back up existing project
+2. Install zSpace Unity SDK (may require Unity version update)
+3. Manually copy accessibility scripts to Assets/
+4. Update existing scripts to use keyboard alternatives
+5. Add AccessibilityNode components to interactive objects
+6. Test keyboard-only navigation
 ```
 
-### Vue.js
+### Unity 3D → zSpace Migration
 
-```bash
-cd my-vue-app
-npx github:jdonnelly-zspace/accessibility-standards
+If migrating from traditional Unity 3D game to zSpace:
 
-# ESLint config works with Vue
-# Playwright tests work out of the box
+```
+1. Review input system (replace mouse/controller with stylus + keyboard)
+2. Add depth perception alternatives (audio, haptics, size cues)
+3. Update UI to work on zSpace display
+4. Add screen reader support (Windows Narrator, NVDA)
+5. Test without stereoscopic 3D enabled
 ```
 
 ---
 
 ## Troubleshooting
 
-### "command not found: npx"
+### "The type or namespace name 'zSpace' could not be found"
 
-Install Node.js 14+ from https://nodejs.org/
+**Solution:** Install zSpace Unity SDK first:
+1. Download from https://developer.zspace.com/
+2. Import .unitypackage into project
+3. Verify SDK installed: Look for zSpace namespace in Project window
 
-### "Cannot find module"
+### "AccessibilityNode not found"
 
-Run after installation:
-```bash
-npm install
-npx playwright install
+**Solution:** Unity Accessibility module may not be enabled:
+1. Go to Edit > Project Settings > Player
+2. Under "Other Settings", ensure "Active Input Handling" is set
+3. Restart Unity Editor
+
+### Scripts show compilation errors
+
+**Solution:** Check Unity version:
+```
+- Required: Unity 2021.3 LTS or newer
+- Recommended: Unity 2022.3 LTS
+- zSpace SDK must match Unity version
 ```
 
-### "EACCES: permission denied"
+### Unity Test Framework tests fail
 
-Don't use sudo. Fix npm permissions:
-```bash
-mkdir ~/.npm-global
-npm config set prefix '~/.npm-global'
-export PATH=~/.npm-global/bin:$PATH
-```
+**Solution:**
+1. Verify zSpace SDK installed and working
+2. Check Test Runner is in PlayMode (not EditMode)
+3. Verify ZCore component present in scene
+4. Some tests require zSpace hardware connected
 
-### Scripts don't run in existing project
+### Focus indicators not visible in zSpace
 
-Check `package.json` scripts section was updated:
-```json
-{
-  "scripts": {
-    "lint": "eslint .",
-    "test:a11y": "playwright test"
-  }
-}
-```
+**Solution:**
+1. Check Post-Processing stack settings
+2. Verify Outline/Glow shaders imported
+3. Test focus visibility against different backgrounds
+4. Adjust focus indicator contrast in settings
+
+### Screen reader not announcing Unity UI
+
+**Solution:**
+1. Verify Windows Narrator enabled (Win + Ctrl + Enter)
+2. Check AccessibilityNode components added to UI elements
+3. Ensure Unity Accessibility APIs exposed to Windows
+4. Test with NVDA as alternative screen reader
 
 ---
 
 ## Uninstalling
 
-Remove files:
-```bash
-rm eslint.config.js
-rm playwright.config.js
-rm -rf tests/e2e/accessibility.spec.js
-rm src/components/Tooltip.jsx
+### Remove from Unity Project
+
+```
+1. In Unity Project window, delete:
+   - Assets/Scripts/Accessibility/
+   - Assets/Prefabs/Accessibility/
+   - Assets/Editor/Accessibility/
+   - Assets/Tests/Accessibility/
+
+2. Remove package (if installed via Package Manager):
+   - Open Unity Package Manager
+   - Find "zSpace Accessibility Standards"
+   - Click "Remove"
+
+3. Clean up:
+   - Remove any AccessibilityNode components from GameObjects
+   - Remove "using UnityEngine.Accessibility" from scripts
+   - Delete any accessibility-related prefab instances
 ```
 
-Remove dependencies:
-```bash
-npm uninstall eslint eslint-plugin-jsx-a11y @eslint/js globals
-npm uninstall @playwright/test @axe-core/playwright
-```
-
-Remove scripts from `package.json`:
-- Remove `"lint"` script
-- Remove `"test:a11y"` script
+**Note:** This does NOT uninstall zSpace Unity SDK (uninstall separately if needed).
 
 ---
 
@@ -283,31 +305,78 @@ Remove scripts from `package.json`:
 
 ### Update Framework
 
+**Via Package Manager:**
+```
+1. Unity Package Manager → Find "zSpace Accessibility Standards"
+2. Click "Update" button (if available)
+3. Or remove and re-add package to get latest version
+```
+
+**Manual Update:**
 ```bash
-# Re-run installer (overwrites files)
-cd your-project
-npx github:jdonnelly-zspace/accessibility-standards
+# Pull latest changes
+cd accessibility-standards-unity
+git pull origin main
+
+# Re-copy files to Unity project
+cp -r implementation/unity/scripts/* /path/to/your-unity-project/Assets/Scripts/Accessibility/
 ```
 
 ### Check for Standards Updates
 
 ```bash
-# In accessibility-standards repo
+# In accessibility-standards-unity repo
+npm install
 npm run scrape:update
 
 # Check changelog
 cat scrapers/CHANGELOG-STANDARDS.md
 ```
 
+**What gets updated:**
+- WCAG 2.2 changes
+- W3C XAUR updates
+- zSpace SDK compatibility updates
+- New accessibility components
+
+---
+
+## zSpace Hardware Requirements
+
+**Minimum:**
+- zSpace system (any model with Unity SDK support)
+- Windows 10/11 (64-bit)
+- Unity 2021.3 LTS or newer
+
+**Recommended:**
+- zSpace 300 or newer
+- Windows 11 (64-bit)
+- Unity 2022.3 LTS
+- 16GB RAM
+- Dedicated GPU
+
+**For Accessibility Testing:**
+- Desktop screen reader (NVDA free, JAWS commercial)
+- Standard keyboard and mouse
+- Access to zSpace simulator (for testing without hardware)
+
 ---
 
 ## Support
 
 **Issues?**
-- GitHub Issues: https://github.com/jdonnelly-zspace/accessibility-standards/issues
-- Review workflows for your role
-- Check WCAG checklist in `standards/`
+- GitHub Issues: https://github.com/jdonnelly-zspace/accessibility-standards-unity/issues
+- zSpace SDK Issues: https://dev-community.zspace.com/
+- Review workflows for your role in `workflows/`
+- Check zSpace checklist in `standards/ZSPACE-ACCESSIBILITY-CHECKLIST.md`
+
+**Resources:**
+- zSpace Developer Portal: https://developer.zspace.com/
+- Unity Accessibility: https://docs.unity3d.com/Manual/com.unity.modules.accessibility.html
+- NVDA Screen Reader: https://www.nvaccess.org/
 
 ---
 
+**Document Version:** 2.0 (zSpace-adapted)
 **Last Updated:** October 2025
+**Platform:** zSpace + Unity 2021.3+

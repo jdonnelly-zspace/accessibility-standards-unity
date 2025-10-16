@@ -1,0 +1,305 @@
+# zSpace Accessibility Framework Adaptation Plan
+
+## Project Overview
+Adapt accessibility-standards-unity from VR/AR headsets (Meta Quest, Vive, PSVR)
+to zSpace stereoscopic 3D desktop platform.
+
+**Repository:** https://github.com/jdonnelly-zspace/accessibility-standards-unity
+**Target Platform:** zSpace (stereoscopic 3D display + tracked glasses + stylus)
+**Standards:** WCAG 2.2 Level AA + W3C XAUR (adapted for zSpace)
+**Version Goal:** 2.0.0 (major platform change)
+
+---
+
+## Key Platform Differences
+
+### zSpace Platform:
+- 24" stereoscopic 3D desktop display
+- Tracked glasses (not HMD/headset)
+- Stylus with 3 buttons, LED, vibration
+- Seated desktop experience
+- Keyboard/mouse available
+- Primary use: K-12 education, medical training, CAD/design
+- Less motion sickness risk (no locomotion)
+- Multi-user viewing possible (screen visible to others)
+
+### VR Headsets (Original Framework):
+- Head-mounted displays (Meta Quest, Vive, PSVR)
+- Hand controllers or hand tracking
+- Immersive locomotion (teleport, smooth movement)
+- High motion sickness risk
+- Single-user experience
+
+---
+
+## Phase 1: Documentation & Standards Update ⬜ NOT STARTED
+
+### Status: IN PROGRESS
+Started: [Date will be added when started]
+Completed: [Date will be added when completed]
+
+### Tasks:
+[ ] 1.1 Create PLAN.txt in repo root (THIS FILE)
+[ ] 1.2 Update README.md
+      - Replace platform references (Meta Quest → zSpace)
+      - Update "What This Framework Provides" section
+      - Revise Quick Start for zSpace Unity SDK
+      - Update target platforms section
+      - Update badges and links
+[ ] 1.3 Update standards/XR-ACCESSIBILITY-REQUIREMENTS.md
+      - Replace VR-specific examples with zSpace stylus interactions
+      - Remove/adapt motion sickness sections
+      - Add stylus-specific accessibility considerations
+      - Update Unity code examples for zSpace SDK
+[ ] 1.4 Create standards/ZSPACE-ACCESSIBILITY-CHECKLIST.md
+      - zSpace-specific WCAG 2.2 Level AA checklist
+      - Stylus interaction accessibility patterns
+      - Desktop + 3D display hybrid considerations
+[ ] 1.5 Update INSTALLATION.md
+      - Add zSpace Unity SDK installation steps
+      - Update Unity package requirements for zSpace
+      - Remove VR-specific package requirements
+
+### Completion Criteria:
+- All documentation references zSpace, not VR headsets
+- Installation guide includes zSpace SDK setup
+- New zSpace checklist created
+- No broken links
+
+---
+
+## Phase 2: Remove VR-Specific Content ⬜ NOT STARTED
+
+### Status: NOT STARTED
+Started: [Date will be added when started]
+Completed: [Date will be added when completed]
+
+### Tasks:
+[ ] 2.1 Audit and mark VR-only components as N/A
+      - ComfortSettingsManager.cs (motion sickness)
+      - HandTrackingAccessibility.cs (no hand tracking)
+      - VR locomotion systems
+[ ] 2.2 Update workflows/DEVELOPER-WORKFLOW.md
+      - Remove VR-specific code patterns
+      - Focus on desktop + 3D stereoscopic patterns
+      - Update React/web examples to Unity C# where applicable
+[ ] 2.3 Update workflows/DESIGNER-WORKFLOW.md
+      - Replace VR design guidelines with zSpace guidelines
+      - Update target size calculations (screen vs VR arm's length)
+      - Add stylus interaction design patterns
+[ ] 2.4 Update workflows/QA-WORKFLOW.md
+      - Replace VR headset testing with zSpace hardware testing
+      - Update input method testing (stylus + keyboard/mouse)
+      - Add desktop screen reader testing procedures
+[ ] 2.5 Clean up examples/my-web-app/ (if web-specific)
+      - Determine if this should be removed or adapted
+
+### Completion Criteria:
+- No references to VR headsets in workflows
+- VR-only components clearly marked
+- All workflows reference zSpace hardware
+
+---
+
+## Phase 3: Add zSpace-Specific Components ⬜ NOT STARTED
+
+### Status: NOT STARTED
+Started: [Date will be added when started]
+Completed: [Date will be added when completed]
+
+### Tasks:
+[ ] 3.1 Create implementation/unity/ directory structure
+      - scripts/
+      - prefabs/
+      - editor/
+      - tests/
+[ ] 3.2 Create new zSpace-specific C# scripts
+      - AccessibleStylusButton.cs
+      - KeyboardStylusAlternative.cs
+      - StylusHapticFeedback.cs
+      - DepthCueManager.cs
+      - AccessibleMenuZSpace.cs
+[ ] 3.3 Adapt existing component concepts to zSpace
+      - SubtitleSystem.cs (spatial subtitles)
+      - SpatialAudioManager.cs (audio cues)
+      - VoiceCommandManager.cs (voice as stylus alternative)
+      - AccessibleButton.cs (zSpace target sizes)
+[ ] 3.4 Create Unity prefabs
+      - AccessibleZSpaceCanvas.prefab
+      - AccessibleZSpaceMenu.prefab
+      - StylusInteractionUI.prefab
+[ ] 3.5 Create Unity Editor tools
+      - ZSpaceAccessibilityValidator.cs
+      - ContrastCheckerZSpace.cs
+
+### Completion Criteria:
+- At least 4 new zSpace-specific scripts created
+- All scripts compile without zSpace SDK installed (graceful fallback)
+- Prefabs documented with usage instructions
+
+---
+
+## Phase 4: Update Testing & Tools ⬜ NOT STARTED
+
+### Status: NOT STARTED
+Started: [Date will be added when started]
+Completed: [Date will be added when completed]
+
+### Tasks:
+[ ] 4.1 Create Unity Test Framework tests
+      - implementation/unity/tests/ZSpaceAccessibilityTests.cs
+      - Test stylus + keyboard input methods
+      - Test depth perception alternatives
+      - Test screen reader compatibility
+[ ] 4.2 Update resources/TOOLS-CATALOG.md
+      - Add zSpace-specific testing tools
+      - Remove VR headset tools (SeeingVR, Meta Quest Hub)
+      - Add desktop accessibility tools (NVDA, JAWS, Windows Narrator)
+      - Add zSpace Developer Hub reference
+[ ] 4.3 Create example zSpace Unity scene
+      - examples/zspace-accessible-scene/
+      - AccessibleZSpaceScene.unity
+      - README.md with setup instructions
+      - CASE-STUDY-ZSPACE.md
+[ ] 4.4 Update existing Playwright/web tests
+      - Determine if web tests are applicable
+      - Remove or adapt as needed
+
+### Completion Criteria:
+- Unity Test Framework tests created
+- Tools catalog updated for zSpace
+- Example scene documented
+
+---
+
+## Phase 5: Update Workflows & Final Polish ⬜ NOT STARTED
+
+### Status: NOT STARTED
+Started: [Date will be added when started]
+Completed: [Date will be added when completed]
+
+### Tasks:
+[ ] 5.1 Update workflows/PRODUCT-OWNER-WORKFLOW.md
+      - zSpace accessibility user stories
+      - Hardware requirements (zSpace system)
+      - Budget considerations (desktop vs VR)
+[ ] 5.2 Update resources/WEB-RESOURCES.md
+      - Add zSpace developer documentation links
+      - Add stereoscopic 3D accessibility resources
+      - Keep W3C WCAG 2.2 links (still applicable)
+[ ] 5.3 Update CONTRIBUTING.md
+      - Call for zSpace-specific contributions
+      - Update contribution examples
+[ ] 5.4 Update standards/VPAT-2.5-TEMPLATE.md
+      - Adapt for zSpace desktop application context
+      - Update platform-specific sections
+[ ] 5.5 Final README review
+      - Update badges and version
+      - Update "Built for zSpace" tagline
+      - Verify all links work
+      - Update case study section
+
+### Completion Criteria:
+- All workflow files reference zSpace
+- Resources updated with zSpace links
+- VPAT template adapted
+- README fully polished
+
+---
+
+## Phase 6: Validation & Repository Finalization ⬜ NOT STARTED
+
+### Status: NOT STARTED
+Started: [Date will be added when started]
+Completed: [Date will be added when completed]
+
+### Tasks:
+[ ] 6.1 Run repository-wide checks
+      - npm run check:links (verify no broken links)
+      - Search for remaining "Meta Quest", "Vive", "PSVR" references
+      - Ensure all code examples are zSpace-compatible
+[ ] 6.2 Update version and changelog
+      - Version 2.0.0 (major change: zSpace focus)
+      - Create CHANGELOG.md documenting VR → zSpace migration
+      - Update package.json version
+[ ] 6.3 Test Unity components (if zSpace SDK available)
+      - Import into test Unity project with zSpace SDK
+      - Verify all scripts compile
+      - Test example scene on zSpace hardware
+[ ] 6.4 Update package.json
+      - Update description for zSpace
+      - Update keywords (add "zspace", "stereoscopic-3d")
+      - Update repository URLs if needed
+      - Update author/maintainer info
+[ ] 6.5 Final documentation review
+      - Spell check all markdown files
+      - Verify code syntax highlighting
+      - Check all checklists are formatted correctly
+      - Review file structure makes sense
+
+### Completion Criteria:
+- Zero broken links
+- Version 2.0.0 published
+- CHANGELOG.md complete
+- All documentation spell-checked
+- Repository ready for public use
+
+---
+
+## Additional Recommendations
+
+### Future Enhancements (Post-Launch):
+1. zSpace Developer Portal Integration Guide
+2. Stylus Input Best Practices (dedicated document)
+3. Desktop Screen Reader Integration Guide (NVDA/JAWS/Narrator)
+4. Visual Depth Alternatives Guide (for non-stereoscopic users)
+5. Multi-User Accessibility Patterns (collaborative viewing)
+6. AR Foundation integration (if zSpace supports AR mode)
+7. zSpace + WebXR bridge patterns
+
+### Documentation to Consider:
+- Migration guide for teams moving from VR to zSpace
+- Performance optimization for stereoscopic rendering
+- Unity Asset Store package submission
+- Video tutorials for zSpace accessibility setup
+
+---
+
+## Progress Tracking
+
+### Overall Progress: 0% Complete
+
+Phase 1: ⬜⬜⬜⬜⬜ 0/5 tasks complete (0%)
+Phase 2: ⬜⬜⬜⬜⬜ 0/5 tasks complete (0%)
+Phase 3: ⬜⬜⬜⬜⬜ 0/5 tasks complete (0%)
+Phase 4: ⬜⬜⬜⬜ 0/4 tasks complete (0%)
+Phase 5: ⬜⬜⬜⬜⬜ 0/5 tasks complete (0%)
+Phase 6: ⬜⬜⬜⬜⬜ 0/5 tasks complete (0%)
+
+### Execution Strategy:
+✅ One phase at a time
+✅ Update this file with completion status after each task
+✅ Auto-compact conversation after each phase
+✅ Review and approve before moving to next phase
+
+---
+
+## Notes & Decisions
+
+### Date: [Current Date]
+- Project initiated
+- PLAN.txt created
+- Beginning Phase 1
+
+---
+
+## Contact & Support
+Repository: https://github.com/jdonnelly-zspace/accessibility-standards-unity
+Issues: https://github.com/jdonnelly-zspace/accessibility-standards-unity/issues
+zSpace Developer Portal: https://developer.zspace.com/
+
+---
+
+Last Updated: [Current Date]
+Current Phase: Phase 1 - Documentation & Standards Update
+Next Milestone: Complete Phase 1 (5 tasks)

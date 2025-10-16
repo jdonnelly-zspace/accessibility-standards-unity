@@ -1,7 +1,7 @@
 {
-  "name": "accessibility-standards",
-  "version": "1.1.0",
-  "description": "Comprehensive accessibility standards framework for WCAG 2.2 Level AA compliance across all projects",
+  "name": "accessibility-standards-unity",
+  "version": "1.0.0",
+  "description": "Comprehensive accessibility standards framework for Unity XR applications - WCAG 2.2 Level AA + W3C XR Accessibility User Requirements (XAUR) compliance",
   "main": "index.js",
   "type": "module",
   "bin": {
@@ -10,34 +10,40 @@
   "scripts": {
     "setup": "node bin/setup.js",
     "scrape:update": "node scrapers/update-standards.js",
-    "validate:html": "./scripts/validate-html.sh",
-    "validate:css": "./scripts/validate-css.sh",
-    "check:links": "./scripts/check-links.sh",
-    "validate:all": "npm run validate:html && npm run validate:css",
     "test": "echo \"No tests yet\" && exit 0"
   },
   "keywords": [
     "accessibility",
+    "unity",
+    "unity3d",
+    "xr",
+    "vr",
+    "ar",
+    "virtual-reality",
+    "augmented-reality",
+    "mixed-reality",
     "wcag",
-    "a11y",
-    "section-508",
-    "aria",
-    "vpat",
     "wcag-2.2",
+    "xaur",
+    "w3c",
+    "a11y",
+    "vpat",
     "level-aa",
-    "testing",
-    "standards"
+    "immersive",
+    "spatial-computing",
+    "game-accessibility",
+    "xr-access"
   ],
   "author": "jPdonnelly",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jdonnelly-zspace/accessibility-standards.git"
+    "url": "https://github.com/jdonnelly-zspace/accessibility-standards-unity.git"
   },
   "bugs": {
-    "url": "https://github.com/jdonnelly-zspace/accessibility-standards/issues"
+    "url": "https://github.com/jdonnelly-zspace/accessibility-standards-unity/issues"
   },
-  "homepage": "https://github.com/jdonnelly-zspace/accessibility-standards#readme",
+  "homepage": "https://github.com/jdonnelly-zspace/accessibility-standards-unity#readme",
   "dependencies": {
     "axios": "^1.12.2",
     "cheerio": "^1.0.0",
