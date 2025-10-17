@@ -1,10 +1,82 @@
-# Web Resources for Accessibility Standards
+# Accessibility Resources (zSpace Unity + Web Standards)
 
-This document contains authoritative web resources that should be monitored for accessibility standards updates.
+This document contains authoritative resources for accessibility standards updates.
+
+**Target Platform:** zSpace (stereoscopic 3D desktop + Unity)
+**Standards:** WCAG 2.2 Level AA + W3C XAUR (adapted for zSpace)
 
 ---
 
-## W3C Official Resources
+## zSpace-Specific Resources
+
+### zSpace Developer Portal ⭐ PRIMARY RESOURCE
+**URL:** https://developer.zspace.com/
+**Check Frequency:** Monthly
+**What to Monitor:**
+- Unity SDK updates
+- New API documentation
+- Hardware compatibility updates
+- Best practices for zSpace development
+- Accessibility guidelines (if published)
+
+**Key Pages:**
+- Unity SDK documentation
+- API reference
+- Sample applications
+- Hardware specifications
+
+---
+
+### Unity Accessibility Documentation
+**URL:** https://docs.unity3d.com/Manual/accessibility.html
+**Check Frequency:** Quarterly
+**What to Monitor:**
+- New accessibility features in Unity
+- Updates to UI accessibility
+- Screen reader integration improvements
+- New accessibility APIs
+
+---
+
+### Unity Test Framework Documentation
+**URL:** https://docs.unity3d.com/Packages/com.unity.test-framework@latest
+**Check Frequency:** Quarterly
+**What to Monitor:**
+- New testing APIs
+- PlayMode testing updates
+- Integration with CI/CD platforms
+
+---
+
+### Microsoft Accessibility (Windows/NVDA)
+**URL:** https://www.microsoft.com/en-us/accessibility
+**Check Frequency:** Quarterly
+**What to Monitor:**
+- Windows Narrator updates
+- UI Automation API changes
+- Accessibility features in Windows
+- Screen reader compatibility updates
+
+**Key Pages:**
+- https://support.microsoft.com/en-us/windows/complete-guide-to-narrator-e4397a0d-ef4f-b386-d8ae-c172f109bdb1
+- https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-uiautomationoverview
+
+---
+
+### NVDA Screen Reader
+**URL:** https://www.nvaccess.org/
+**Check Frequency:** Monthly
+**What to Monitor:**
+- New NVDA releases
+- API updates
+- Unity application compatibility
+- Speech synthesis improvements
+
+**GitHub:** https://github.com/nvaccess/nvda
+
+---
+
+## W3C Official Resources (Still Applicable to zSpace)
 
 ### WCAG 2.2 Quick Reference ⭐ PRIMARY RESOURCE
 **URL:** https://www.w3.org/WAI/WCAG22/quickref/
@@ -375,5 +447,5 @@ Found a new resource that should be tracked? Please:
 
 ---
 
-**Last Updated:** October 2025
+**Last Updated:** October 16, 2025 (Updated for zSpace Unity platform)
 **Next Review:** January 2026

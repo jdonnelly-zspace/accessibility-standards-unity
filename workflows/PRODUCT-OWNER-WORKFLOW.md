@@ -1,16 +1,31 @@
-# Product Owner Workflow - Accessibility Planning
+# Product Owner Workflow - Accessibility Planning (zSpace Unity)
 
-This guide shows Product Owners how to ensure accessibility is built into the product from planning through acceptance.
+This guide shows Product Owners how to ensure accessibility is built into **zSpace Unity applications** from planning through acceptance.
+
+**Target Platform:** zSpace (stereoscopic 3D desktop + Unity)
+**Standards:** WCAG 2.2 Level AA + W3C XAUR (adapted for zSpace)
 
 ---
 
-## Why Accessibility Matters to POs
+## Why Accessibility Matters for zSpace Applications
+
+**Market Impact (zSpace-Specific):**
+- **Education Market:** 15% of K-12 students have disabilities - zSpace apps must be inclusive
+- **Medical Training:** Healthcare professionals with disabilities need accessible training tools
+- **Legal Risk:** Section 508 (government), ADA Title III (private education), WCAG 2.2 compliance
+- **User Base:** 10-15% of users **cannot perceive stereoscopic 3D** - depth alternatives are CRITICAL
+- **Brand Reputation:** First accessible zSpace platform sets industry standard
+
+**zSpace-Specific Accessibility Challenges:**
+- **Stereoscopic 3D Dependency:** 10-15% of users have stereoblindness/amblyopia/strabismus
+- **Stylus-Only Interaction:** Users with motor impairments need keyboard alternatives
+- **Desktop Screen Readers:** NVDA/Narrator/JAWS integration required for blind users
+- **Depth Perception:** Size, shadow, audio, haptic cues needed for non-stereoscopic users
 
 **Business Impact:**
 - **Market Access:** 15% of global population has disabilities (~1.3 billion people)
-- **Legal Risk:** Accessibility lawsuits increasing (US ADA Title III, EU Accessibility Act)
-- **SEO Benefits:** Accessible sites rank better in search
-- **Better UX:** Accessibility improvements help all users
+- **Legal Risk:** Accessibility lawsuits increasing (US ADA Title III, EU Accessibility Act, Section 508)
+- **Better UX:** Accessibility improvements help all users (keyboard shortcuts benefit everyone)
 - **Brand Reputation:** Demonstrates commitment to inclusion
 
 **Cost of Waiting:**
@@ -26,43 +41,55 @@ This guide shows Product Owners how to ensure accessibility is built into the pr
 
 #### Add Accessibility to Acceptance Criteria
 
-**Standard Acceptance Criteria Template (WCAG 2.2):**
+**Standard Acceptance Criteria Template (zSpace Unity - WCAG 2.2 + W3C XAUR):**
 ```
 User Story: As a [user], I want to [action], so that [benefit]
 
 Acceptance Criteria:
 - [ ] [Functional requirement 1]
 - [ ] [Functional requirement 2]
-- [ ] **Accessibility (WCAG 2.2 Level AA):**
-  - [ ] All interactive elements keyboard accessible
-  - [ ] Color contrast meets WCAG AA (4.5:1 minimum)
-  - [ ] Screen reader compatible
-  - [ ] 🆕 Focus not obscured by fixed/sticky headers (SC 2.4.11)
-  - [ ] 🆕 Interactive elements ≥ 24x24 CSS pixels (SC 2.5.8)
-  - [ ] 🆕 Draggable features have keyboard alternatives (SC 2.5.7)
-  - [ ] 🆕 Forms use autocomplete to prevent redundant entry (SC 3.3.7)
-  - [ ] Lighthouse accessibility score ≥ 95
-  - [ ] Zero axe DevTools violations
-  - [ ] W3C HTML validation passes
+- [ ] **Accessibility (WCAG 2.2 Level AA + W3C XAUR):**
+  - [ ] All stylus interactions have keyboard alternatives (WCAG 2.1.1 - Level A)
+  - [ ] All interactive elements ≥24x24 pixels (WCAG 2.5.8 - Level AA)
+  - [ ] Color contrast ≥4.5:1 for text, 3:1 for UI (WCAG 1.4.3 - Level AA)
+  - [ ] Screen reader compatible (NVDA/Narrator) (WCAG 4.1.2 - Level A)
+  - [ ] Focus indicators visible in 3D space (WCAG 2.4.7 - Level AA)
+  - [ ] **Depth perception alternatives (W3C XAUR - CRITICAL):**
+    - [ ] Size scaling (nearer = larger)
+    - [ ] Shadows (depth cues)
+    - [ ] Audio distance cues
+    - [ ] Haptic depth feedback
+    - [ ] Motion parallax
+    - [ ] Occlusion
+  - [ ] Application fully functional without stereoscopic 3D ("glasses off" test)
+  - [ ] ZSpace Accessibility Validator: Zero critical issues
+  - [ ] Unity Test Framework accessibility tests pass
 ```
 
-**Example User Story:**
+**Example User Story (zSpace):**
 ```
-User Story: As a user, I want to search for blog posts, so that I can find relevant content quickly.
+User Story: As a medical student, I want to rotate a 3D heart model, so that I can study its anatomy from all angles.
 
 Acceptance Criteria:
-- [ ] Search button visible in navbar
-- [ ] Modal opens with search input
-- [ ] Real-time filtering as user types
-- [ ] Results display post title, excerpt, category
+- [ ] Stylus can rotate heart model in 3D space
+- [ ] Rotation is smooth and responsive
+- [ ] Model snaps to anatomical views (front, back, left, right)
+- [ ] Labels appear when hovering over chambers/vessels
 - [ ] **Accessibility:**
-  - [ ] Search button keyboard accessible (Tab + Enter)
-  - [ ] Modal opens/closes with keyboard (Enter/Escape)
-  - [ ] Focus trapped within modal when open
-  - [ ] Search input has proper label (aria-label or visible label)
-  - [ ] Results announced to screen readers
-  - [ ] Modal has role="dialog" and aria-modal="true"
-  - [ ] Lighthouse accessibility score ≥ 95
+  - [ ] Arrow keys rotate model (keyboard alternative to stylus) (WCAG 2.1.1)
+  - [ ] Spacebar activates labels (keyboard alternative) (WCAG 2.1.1)
+  - [ ] All interactive elements ≥24x24 pixels (WCAG 2.5.8)
+  - [ ] Label text has ≥4.5:1 contrast ratio (WCAG 1.4.3)
+  - [ ] NVDA announces focused chamber names (WCAG 4.1.2)
+  - [ ] Focus indicator (cyan glow) visible on focused chamber (WCAG 2.4.7)
+  - [ ] **Depth perception alternatives (W3C XAUR - CRITICAL):**
+    - [ ] Size scaling: Chambers closer to camera appear larger
+    - [ ] Shadows: Dynamic shadows cast on base plane
+    - [ ] Audio: Heartbeat volume varies with distance
+    - [ ] Haptic: Stylus vibrates stronger when closer
+  - [ ] Application fully usable without tracked glasses ("glasses off" test)
+  - [ ] ZSpace Accessibility Validator: 0 critical issues
+  - [ ] Unity Test Framework tests pass
 ```
 
 ---
@@ -305,31 +332,50 @@ Accessibility Criteria:
 
 ---
 
-## Budget & Resources
+## Budget & Resources (zSpace Unity)
+
+### Hardware Requirements
+
+**Required:**
+- zSpace hardware ($3,000-$7,000 per unit) - Already owned by most zSpace projects
+- Windows PC with zSpace support
+- Unity 2021.3+ LTS (Free - Personal license)
+
+**Optional:**
+- Additional zSpace units for multi-user testing
+- Desktop speakers (for spatial audio testing)
 
 ### Time Allocation
 
 **Per Sprint:**
-- Developer accessibility testing: ~5% of dev time
-- QA accessibility testing: ~10% of QA time
-- Initial ESLint setup: 1-2 hours (one-time)
-- Initial Playwright setup: 2-4 hours (one-time)
+- Developer accessibility implementation: ~15% of dev time (first sprint), ~10% ongoing
+- QA accessibility testing: ~15% of QA time
+- Unity Test Framework setup: 2-4 hours (one-time)
+- Depth perception testing: ~1 hour per feature ("glasses off" test)
 
 **Per Release:**
-- Final accessibility audit: 4-8 hours
+- Final accessibility audit: 6-10 hours
+  - ZSpace Accessibility Validator: 1 hour
+  - Unity Test Framework: 1 hour
+  - Manual keyboard testing: 2 hours
+  - NVDA screen reader testing: 2-3 hours
+  - Depth perception testing (glasses off): 2 hours
+  - Contrast checking: 1 hour
 - VPAT report update: 2-4 hours
 
 ### Training & Tools
 
 **One-Time Costs:**
 - Accessibility training for team: $0-500/person (many free resources)
-- Tools: $0 (all free/open-source tools available)
+- Tools: $0 (all free/open-source tools)
+- NVDA screen reader: $0 (free, open source)
+- zSpace Unity SDK: $0 (free with zSpace hardware)
 
-**Recommended Training:**
-- Developers: WCAG 2.2 overview + ESLint + testing (4 hours)
-- Designers: Color contrast + keyboard patterns + ARIA (3 hours)
-- QA: Manual testing + screen readers + tools (4 hours)
-- POs: This workflow + acceptance criteria (1 hour)
+**Recommended Training (zSpace-Specific):**
+- Developers: WCAG 2.2 + W3C XAUR + Unity + zSpace SDK (6 hours)
+- Designers: Depth perception alternatives + keyboard patterns + contrast (4 hours)
+- QA: Unity Test Framework + NVDA + zSpace hardware testing (5 hours)
+- POs: This workflow + acceptance criteria + zSpace accessibility challenges (2 hours)
 
 ---
 
@@ -512,4 +558,17 @@ A: Yes, eventually. Prioritize high-traffic features and authentication flows. M
 
 ---
 
-**Last Updated:** October 2025
+---
+
+## zSpace-Specific Resources
+
+- **Example Scene:** `examples/zspace-accessible-scene/README.md`
+- **Case Study:** `examples/zspace-accessible-scene/CASE-STUDY-ZSPACE.md`
+- **zSpace Checklist:** `standards/ZSPACE-ACCESSIBILITY-CHECKLIST.md`
+- **Unity Components:** `implementation/unity/scripts/`
+- **Unity Tests:** `implementation/unity/tests/ZSpaceAccessibilityTests.cs`
+- **zSpace Developer Portal:** https://developer.zspace.com/
+
+---
+
+**Last Updated:** October 16, 2025 (Updated for zSpace Unity platform)
