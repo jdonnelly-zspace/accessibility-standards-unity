@@ -1,6 +1,6 @@
 {
   "name": "accessibility-standards-unity",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "description": "Comprehensive accessibility standards framework for zSpace Unity applications - WCAG 2.2 Level AA + W3C XAUR compliance with depth perception alternatives for stereoscopic 3D",
   "main": "index.js",
   "type": "module",
@@ -9,7 +9,6 @@
   },
   "scripts": {
     "setup": "node bin/setup.js",
-    "scrape:update": "node scrapers/update-standards.js",
     "test": "echo \"No tests yet\" && exit 0"
   },
   "keywords": [

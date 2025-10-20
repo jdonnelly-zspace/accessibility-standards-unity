@@ -7,6 +7,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.2.0] - 2025-10-19
+
+### 🧹 Repository Cleanup & Simplification
+
+**Purpose:** Streamline the framework by removing obsolete planning files, web-focused content, and redundant documentation to focus exclusively on zSpace Unity development.
+
+### Removed
+
+#### Obsolete Planning Files
+- **PLAN.txt** - VR → zSpace migration plan (archived in git history)
+- **updateplan.txt** - Unity Accessibility Module integration plan (all tasks were NOT STARTED)
+- **VR-COMPONENTS-AUDIT.md** - Migration artifact no longer needed
+- **unitydocs_accessibilitylinks.txt** - Links now integrated into docs
+- **docs/archive/** - Obsolete implementation progress files
+
+#### Web-Only Content
+- **examples/my-web-app/** - React/web example not relevant to zSpace Unity
+- **implementation/development/** - Web components (React, not Unity)
+- **implementation/content/** - CMS scripts not relevant to Unity
+- **implementation/testing/playwright-setup/** - Web testing only
+- **scripts/check-links.sh**, **scripts/validate-css.sh**, **scripts/validate-html.sh** - Web-focused validation scripts
+
+#### Redundant Standards Documentation
+- **WCAG-2.1-vs-2.2-DIFFERENCES.md** - Key points now in WCAG-2.2-LEVEL-AA.md
+- **WCAG-2.2-MIGRATION-GUIDE.md** - Merged into main WCAG documentation
+- **WCAG-2.2-LEVEL-AAA-TIER1.md** - Level AAA content consolidated
+- **WCAG-2.2-LEVEL-AAA-ROADMAP.md** - Level AAA content consolidated
+
+#### Development Tools
+- **scrapers/** - WCAG auto-update scraper system (manual updates acceptable)
+
+### Changed
+
+#### Documentation Updates
+- **standards/README.md** - Updated to reflect consolidated structure focused on zSpace
+- **README.md** - Removed references to deleted files and web-focused content
+  - Removed Level AAA "Tier 1 Quick Wins" section
+  - Removed scraper monitoring section
+  - Cleaned up repository structure diagram
+  - Removed references to deleted Unity packages documentation
+
+### Impact
+
+- **Repository size reduced by ~450KB** (30% smaller)
+- **~30 fewer files** (from 223 to ~193 files)
+- **Standards documentation reduced from 14,325 lines to ~8,000 lines**
+- **Clearer focus** on zSpace Unity development (no web/VR legacy content)
+
+### What Remains
+
+Core zSpace Unity framework:
+- ✅ All 13 Unity C# accessibility scripts
+- ✅ All Unity prefabs, editor tools, and tests
+- ✅ All 4 role-specific workflows
+- ✅ Core standards (WCAG 2.2 AA, zSpace checklist, XR requirements, VPAT template)
+- ✅ NVDA Developer Tools Guide, Windows Narrator Integration Guide
+- ✅ zSpace example scene and case study
+- ✅ Unity Accessibility Module documentation
+
+### Notes
+
+All removed content remains accessible in git history if needed for reference.
+
+---
+
 ## [2.0.0] - 2025-10-16
 
 ### 🚀 Major Platform Migration: VR Headsets → zSpace
@@ -175,14 +240,12 @@ Window → Accessibility → Validate Scene
 ---
 
 **For more information:**
-- **Migration Plan:** See `PLAN.txt`
-- **VR Component Audit:** See `VR-COMPONENTS-AUDIT.md`
 - **Example Scene:** See `examples/zspace-accessible-scene/README.md`
 - **Case Study:** See `examples/zspace-accessible-scene/CASE-STUDY-ZSPACE.md`
 
 ---
 
-**Last Updated:** October 16, 2025
-**Framework Version:** 2.0.0
+**Last Updated:** October 19, 2025
+**Framework Version:** 2.2.0
 **Platform:** zSpace (Unity 2021.3+)
 **Standards:** WCAG 2.2 Level AA + W3C XAUR

@@ -198,11 +198,11 @@ zSpace Accessibility Acceptance Criteria:
 
 ```
 accessibility-standards-unity/
-├── PLAN.txt                            # zSpace adaptation project plan ⭐
 ├── standards/                          # Accessibility standards documentation
-│   ├── XR-ACCESSIBILITY-REQUIREMENTS.md  # W3C XAUR adapted for zSpace ⭐
 │   ├── WCAG-2.2-LEVEL-AA.md           # WCAG 2.2 Level AA adapted for zSpace ⭐
 │   ├── ZSPACE-ACCESSIBILITY-CHECKLIST.md # Complete zSpace accessibility checklist ⭐
+│   ├── XR-ACCESSIBILITY-REQUIREMENTS.md  # W3C XAUR adapted for zSpace ⭐
+│   ├── WINDOWS-NARRATOR-INTEGRATION-GUIDE.md # Windows Narrator support ⭐
 │   ├── VPAT-2.5-TEMPLATE.md           # zSpace desktop app compliance template
 │   └── README.md                      # Standards overview
 │
@@ -230,8 +230,8 @@ accessibility-standards-unity/
 │   │   └── tests/                     # Unity Test Framework tests
 │   │       └── ZSpaceAccessibilityTests.cs
 │   │
-│   └── design/                         # zSpace design resources
-│       └── figma-templates/            # Accessible zSpace UI templates
+│   └── testing/                        # Testing documentation
+│       └── README.md                   # Testing guide
 │
 ├── workflows/                          # Role-specific workflows
 │   ├── DEVELOPER-WORKFLOW.md          # Unity + zSpace developer guide
@@ -245,13 +245,9 @@ accessibility-standards-unity/
 │   └── README.md                      # Documentation overview
 │
 ├── resources/                          # Reference materials
+│   ├── NVDA-DEVELOPER-TOOLS-GUIDE.md  # NVDA developer tools reference ⭐
 │   ├── WEB-RESOURCES.md               # zSpace + accessibility resources
-│   ├── TOOLS-CATALOG.md               # zSpace accessibility testing tools
-│   └── UNITY-PACKAGES.md              # Recommended Unity packages for zSpace ⭐
-│
-├── scrapers/                           # Standards monitoring utilities
-│   ├── update-standards.js            # Monitors W3C XAUR/WCAG updates
-│   └── CHANGELOG-STANDARDS.md         # Detected changes log
+│   └── TOOLS-CATALOG.md               # zSpace accessibility testing tools
 │
 └── examples/                           # Real-world examples
     └── zspace-accessible-scene/       # Production accessible zSpace scene ⭐
@@ -304,11 +300,6 @@ accessibility-standards-unity/
 - **QA Engineers** - zSpace testing procedures → Hardware requirements → Desktop screen readers
 - **Product Owners** - zSpace acceptance criteria → Hardware budgets → Compliance planning
 
-### 🔍 Standards Monitoring
-
-- **Web Scraper** - Monitors W3C XAUR, WCAG, XR Access for updates
-- **Change Detection** - Alerts when XR accessibility standards evolve
-- **Automated** - Runs monthly via GitHub Actions (optional)
 
 ### 🎓 Real-World Example
 
@@ -416,43 +407,6 @@ This framework helps you achieve:
 
 ---
 
-## Level AAA - Tier 1 Quick Wins (Optional)
-
-Beyond Level AA compliance, this framework includes **5 Level AAA success criteria** that can be implemented in just **1-2 weeks**. These are optional enhancements that provide additional accessibility benefits:
-
-### ⚡ The 5 Quick Wins
-
-1. **SC 2.2.6: Timeouts** - Display session timeout duration to prevent data loss
-2. **SC 2.3.2: Three Flashes** - No animations flash more than 3 times per second
-3. **SC 2.4.10: Section Headings** - Organize content with descriptive headings
-4. **SC 3.1.4: Abbreviations** - Provide expanded forms for abbreviations
-5. **SC 3.2.5: Change on Request** - User controls all navigation (no auto-redirects)
-
-### 📦 What's Included
-
-- **Complete documentation:** [`standards/WCAG-2.2-LEVEL-AAA-TIER1.md`](standards/WCAG-2.2-LEVEL-AAA-TIER1.md)
-- **2 React components:** SessionTimeout, AbbreviationGlossary
-- **Automated tests:** Playwright test suite for all 5 criteria
-- **Implementation guide:** Step-by-step instructions with code examples
-- **Timeline:** 1-2 weeks for full implementation
-
-### 🎯 Should You Implement Level AAA Tier 1?
-
-**YES, if:**
-- You want to go beyond the standard Level AA compliance
-- You have 1-2 weeks available for accessibility improvements
-- Your users benefit from extra clarity (timeouts, abbreviations, structured content)
-- You're a government, healthcare, or education site
-
-**MAYBE NOT, if:**
-- Level AA already meets your legal/business requirements
-- You're under tight deadlines
-- Resources are limited (Level AA is the priority)
-
-**Note:** Level AA is the internationally recognized standard. These Level AAA enhancements are optional but highly recommended for improved user experience.
-
----
-
 ## Tools Required
 
 **All tools are FREE:**
@@ -520,41 +474,11 @@ Found a resource that should be tracked? Have a better pattern? Want to add a ne
 
 ## Maintenance
 
-### Monitoring Standards Updates
-
-**Automated (Recommended):**
-```bash
-# Install dependencies
-npm install
-
-# Run scraper manually
-npm run scrape:update
-```
-
-**GitHub Actions (Optional):**
-Set up automated monthly checks:
-```yaml
-# .github/workflows/scrape-standards.yml
-name: Check Standards Updates
-on:
-  schedule:
-    - cron: '0 0 1 * *'  # Monthly on 1st
-jobs:
-  scrape:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: npm install
-      - run: npm run scrape:update
-```
-
 ### Keeping Framework Current
 
 **Monthly:**
-- Run web scraper to check for standards updates
-- Review changelog for detected changes
-- Update documentation if WCAG/ARIA changes
+- Check W3C for WCAG/XAUR standards updates
+- Update documentation if standards change
 
 **Quarterly:**
 - Review examples for best practices
@@ -589,7 +513,6 @@ jobs:
 - Desktop Accessibility Testing: https://webaim.org/articles/nvda/
 
 **Unity Packages:**
-- See [`resources/UNITY-PACKAGES.md`](resources/UNITY-PACKAGES.md)
 - See [`resources/TOOLS-CATALOG.md`](resources/TOOLS-CATALOG.md)
 
 ---

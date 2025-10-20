@@ -1,38 +1,43 @@
 # Accessibility Standards
 
-This directory contains comprehensive documentation of accessibility standards and compliance requirements.
+This directory contains comprehensive documentation of accessibility standards and compliance requirements for zSpace Unity applications.
 
 ## Contents
 
-- **WCAG-2.2-LEVEL-A.md** - Web Content Accessibility Guidelines 2.2 Level A requirements
-- **WCAG-2.2-LEVEL-AA.md** - WCAG 2.2 Level AA requirements (recommended minimum)
-- **SECTION-508-US.md** - U.S. Federal Section 508 compliance mapping
-- **EN-301-549-EU.md** - European Union accessibility standard mapping
+### Core Standards
+- **WCAG-2.2-LEVEL-AA.md** - WCAG 2.2 Level AA requirements (recommended minimum, 57 criteria adapted for zSpace)
+- **ZSPACE-ACCESSIBILITY-CHECKLIST.md** - Combined WCAG + XAUR checklist specifically for zSpace platform
+- **XR-ACCESSIBILITY-REQUIREMENTS.md** - W3C XR Accessibility User Requirements adapted for zSpace
 - **VPAT-2.5-TEMPLATE.md** - Voluntary Product Accessibility Template for documenting compliance
+
+### Platform Integration
+- **WINDOWS-NARRATOR-INTEGRATION-GUIDE.md** - Windows Narrator support for zSpace applications (Unity 2023.2+)
 
 ## Quick Reference
 
 ### Compliance Targets
 
-**Recommended Minimum:** WCAG 2.2 Level AA
+**Recommended Minimum:** WCAG 2.2 Level AA + W3C XAUR
 
 This meets:
 - ✅ US Federal Section 508 requirements
 - ✅ EU EN 301 549 requirements
 - ✅ Most international accessibility laws
-- ✅ Industry best practices
+- ✅ Industry best practices for XR/stereoscopic platforms
 
 ### Priority Levels
 
 - **Level A:** Minimum accessibility (must have)
-- **Level AA:** Recommended accessibility (should have)
+- **Level AA:** Recommended accessibility (should have) - **Target for zSpace**
 - **Level AAA:** Enhanced accessibility (nice to have)
 
-## How to Use
+## How to Use for zSpace Unity Development
 
-1. **Start with WCAG-2.2-LEVEL-AA.md** - This is your primary checklist
-2. **Use VPAT-2.5-TEMPLATE.md** - To document your compliance
-3. **Reference regional standards** - Section 508 (US) or EN 301 549 (EU) as needed
+1. **Start with ZSPACE-ACCESSIBILITY-CHECKLIST.md** - Your primary zSpace-specific checklist
+2. **Reference WCAG-2.2-LEVEL-AA.md** - Detailed success criteria with Unity code examples
+3. **Check XR-ACCESSIBILITY-REQUIREMENTS.md** - 3D/stereoscopic-specific requirements
+4. **Review WINDOWS-NARRATOR-INTEGRATION-GUIDE.md** - Screen reader implementation
+5. **Use VPAT-2.5-TEMPLATE.md** - To document your compliance for clients/stakeholders
 
 ## Standards Overview
 
@@ -70,7 +75,16 @@ WCAG is organized into **4 principles**, **13 guidelines**, and **86 success cri
 
 ## Updates
 
-Standards are reviewed and updated as W3C releases new versions. The web scraper in `/scrapers/` monitors for updates monthly.
+Standards are reviewed and updated as W3C releases new versions.
 
 Last reviewed: October 2025
 Current version: WCAG 2.2 (October 2023)
+
+## zSpace-Specific Adaptations
+
+All WCAG 2.2 criteria have been adapted for:
+- **Stereoscopic 3D display** - Depth perception alternatives (10-15% of users)
+- **Stylus input** - Keyboard/mouse alternatives required
+- **Desktop platform** - Windows screen reader support (NVDA, Narrator, JAWS)
+- **Unity 2023.2+** - Accessibility Module integration
+- **Seated experience** - Desktop-appropriate target sizes (24px minimum vs 44px for VR)
