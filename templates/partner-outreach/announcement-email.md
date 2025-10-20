@@ -52,8 +52,8 @@ High Priority: 1
 ### Option 1: Install Globally (Recommended)
 
 ```bash
-# Install via npm
-npm install -g accessibility-standards-unity
+# Install from GitHub
+npm install -g git+https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
 
 # Run audit on your Unity project
 a11y-audit-zspace /path/to/your-unity-project

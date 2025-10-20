@@ -347,13 +347,13 @@ The accessibility auditor scans your zSpace Unity project and automatically:
 
 ### Three Ways to Audit
 
-#### Option 1: Global CLI Tool (Recommended for Partners)
+#### Option 1: Global CLI Tool (Recommended)
 
 Install once, use anywhere:
 
 ```bash
-# Install
-npm install -g accessibility-standards-unity
+# Install from GitHub
+npm install -g git+https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
 
 # Audit any Unity project
 a11y-audit-zspace /path/to/your-unity-project
@@ -459,7 +459,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install Auditor
-        run: npm install -g accessibility-standards-unity
+        run: npm install -g git+https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
       - name: Run Audit
         run: a11y-audit-zspace . --format json
       - name: Fail on Critical Issues

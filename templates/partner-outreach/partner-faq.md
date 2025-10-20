@@ -64,9 +64,9 @@ All audits produce 5 files:
 
 ### How do I install it?
 
-**Option 1: Global npm install (recommended)**
+**Option 1: Global install from GitHub (recommended)**
 ```bash
-npm install -g accessibility-standards-unity
+npm install -g git+https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
 ```
 
 **Option 2: Clone from GitHub**
@@ -533,7 +533,7 @@ Feel free to adapt the framework to your needs.
 
 Always use the latest version for bug fixes and improvements:
 ```bash
-npm update -g accessibility-standards-unity
+npm update -g git+https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
 ```
 
 ### How often is it updated?
@@ -552,7 +552,7 @@ Check the [CHANGELOG.md](../../CHANGELOG.md) for release notes.
 a11y-audit-zspace --version
 
 # Update to latest
-npm update -g accessibility-standards-unity
+npm update -g git+https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
 
 # Verify update
 a11y-audit-zspace --version
@@ -597,7 +597,7 @@ Yes! See:
 
 ```bash
 # Installation
-npm install -g accessibility-standards-unity
+npm install -g git+https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
 
 # Basic usage
 a11y-audit-zspace /path/to/unity-project
