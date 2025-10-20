@@ -5,10 +5,12 @@
   "main": "index.js",
   "type": "module",
   "bin": {
-    "a11y-setup": "./bin/setup.js"
+    "a11y-setup": "./bin/setup.js",
+    "a11y-audit-zspace": "./bin/audit.js"
   },
   "scripts": {
     "setup": "node bin/setup.js",
+    "audit": "node bin/audit.js",
     "test": "echo \"No tests yet\" && exit 0"
   },
   "keywords": [
