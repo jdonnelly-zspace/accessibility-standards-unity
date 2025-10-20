@@ -13,8 +13,8 @@ This accessibility audit evaluates the **{{APP_NAME}}** zSpace Unity application
 
 ### Overall Compliance Score: **{{COMPLIANCE_SCORE}}% ({{COMPLIANCE_LEVEL}})**
 
-- **WCAG 2.2 Level A:** {{#if WCAG_LEVEL_A_PASS}}✅ Pass{{/if}}{{#if WCAG_LEVEL_A_PASS}}{{/if}}❌ Fail
-- **WCAG 2.2 Level AA:** {{#if WCAG_LEVEL_AA_PASS}}✅ Pass{{/if}}{{#if WCAG_LEVEL_AA_PASS}}{{/if}}❌ Fail
+- **WCAG 2.2 Level A:** {{WCAG_LEVEL_A_STATUS}}
+- **WCAG 2.2 Level AA:** {{WCAG_LEVEL_AA_STATUS}}
 
 ### Findings Summary
 **Critical Issues:** {{CRITICAL_COUNT}} blocking accessibility barriers
@@ -33,9 +33,9 @@ This accessibility audit evaluates the **{{APP_NAME}}** zSpace Unity application
 **Scripts Analyzed:** {{TOTAL_SCRIPTS}}
 
 ### Accessibility Status
-- **Keyboard Support:** {{#if KEYBOARD_SUPPORT_FOUND}}✅ Partial{{/if}}{{#if KEYBOARD_SUPPORT_FOUND}}{{/if}}❌ None
-- **Screen Reader Support:** {{#if SCREEN_READER_SUPPORT_FOUND}}✅ Found{{/if}}{{#if SCREEN_READER_SUPPORT_FOUND}}{{/if}}❌ None
-- **Focus Indicators:** {{#if FOCUS_INDICATORS_FOUND}}✅ Partial{{/if}}{{#if FOCUS_INDICATORS_FOUND}}{{/if}}❌ None
+- **Keyboard Support:** {{KEYBOARD_SUPPORT_STATUS}}
+- **Screen Reader Support:** {{SCREEN_READER_SUPPORT_STATUS}}
+- **Focus Indicators:** {{FOCUS_INDICATORS_STATUS}}
 - **Framework Components:** {{ACCESSIBILITY_COMPONENTS_FOUND}}/10 implemented
 
 ---
@@ -46,7 +46,7 @@ This accessibility audit evaluates the **{{APP_NAME}}** zSpace Unity application
 
 {{#each CRITICAL_ISSUES}}
 #### {{@index}}. **{{title}}** ❌ {{id}}
-**Risk:** Application {{#if wcagLevel}}violates WCAG {{wcagLevel}}{{/if}}{{#if wcagLevel}}{{/if}}does not meet accessibility requirements
+**Risk:** Application does not meet accessibility requirements
 **Impact:** {{impact}}
 
 **Description:**
@@ -118,7 +118,7 @@ Based on {{TOTAL_FINDINGS}} findings and typical implementation speeds:
 - **EN 301 549 (EU):** European accessibility standard
 
 ### Current Legal Risk
-**{{#if WCAG_LEVEL_A_PASS}}LOW{{/if}}{{#if WCAG_LEVEL_A_PASS}}{{/if}}HIGH** - Application has {{CRITICAL_COUNT}} critical WCAG violations
+**{{LEGAL_RISK_LEVEL}}** - Application has {{CRITICAL_COUNT}} critical WCAG violations
 
 **Recommendation:** Prioritize critical fixes to reduce legal exposure
 
