@@ -49,41 +49,48 @@ This report covers:
 
 ### Table 1: Success Criteria, Level A
 
+**Overall Level A Status:** {{#if WCAG_LEVEL_A_PASS}}Supports{{/if}}{{#if WCAG_LEVEL_A_PASS}}{{/if}}Does Not Support
+
 {{#each CRITICAL_ISSUES}}
-{{#if wcagLevel}}{{#if wcagLevel}}
 #### {{id}}: {{title}}
-**Conformance Level:** A
+**Conformance Level:** {{wcagLevel}}
 **Result:** Does Not Support
 
 **Explanation:**
 {{description}}
+
+**Impact:**
+{{impact}}
 
 **Recommendation:**
 {{recommendation}}
 
 ---
 
-{{/if}}{{/if}}
 {{/each}}
 
 ### Table 2: Success Criteria, Level AA
 
 Additional Level AA criteria evaluation based on detected patterns.
 
-**Overall Level AA Status:** {{#if WCAG_LEVEL_AA_PASS}}Supports{{/if}}{{#if WCAG_LEVEL_AA_PASS}}{{/if}}Partially Supports
+**Overall Level AA Status:** {{#if WCAG_LEVEL_AA_PASS}}Supports{{/if}}{{#if WCAG_LEVEL_AA_PASS}}{{/if}}Does Not Support
 
-{{#each CRITICAL_ISSUES}}
-{{#if wcagLevel}}{{#if wcagLevel}}
-{{#if wcagLevel}}
+{{#each HIGH_ISSUES}}
 #### {{id}}: {{title}}
+**Conformance Level:** AA
 **Result:** Does Not Support
 
+**Explanation:**
 {{description}}
+
+**Impact:**
+{{impact}}
+
+**Recommendation:**
+{{recommendation}}
 
 ---
 
-{{/if}}
-{{/if}}{{/if}}
 {{/each}}
 
 ---
