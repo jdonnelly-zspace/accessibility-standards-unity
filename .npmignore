@@ -1,0 +1,33 @@
+# Development files
+.git/
+.github/
+.gitignore
+.DS_Store
+*.log
+npm-debug.log*
+
+# Documentation not needed in published package
+turnkey_plan.txt
+CONTRIBUTING.md
+
+# Examples (partners should clone repo for examples)
+examples/
+
+# Test files
+tests/
+*.test.js
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts
+node_modules/
+dist/
+build/
+
+# OS files
+Thumbs.db
