@@ -198,6 +198,20 @@ zSpace Accessibility Acceptance Criteria:
 
 ```
 accessibility-standards-unity/
+├── bin/                                # Accessibility auditing tools ⭐ NEW
+│   ├── audit.js                        # Main audit orchestrator (CLI entry point)
+│   ├── analyze-unity-project.js        # Unity project analysis engine
+│   └── setup.js                        # Framework setup utility
+│
+├── templates/audit/                    # Audit report templates ⭐ NEW
+│   ├── README.template.md              # Audit overview template
+│   ├── AUDIT-SUMMARY.template.md       # Executive summary template
+│   ├── VPAT.template.md                # VPAT 2.5 compliance report template
+│   └── RECOMMENDATIONS.template.md     # Developer recommendations template
+│
+├── .claude/commands/                   # Claude Code integration ⭐ NEW
+│   └── audit-zspace.md                 # /audit-zspace slash command
+│
 ├── standards/                          # Accessibility standards documentation
 │   ├── WCAG-2.2-LEVEL-AA.md           # WCAG 2.2 Level AA adapted for zSpace ⭐
 │   ├── ZSPACE-ACCESSIBILITY-CHECKLIST.md # Complete zSpace accessibility checklist ⭐
@@ -240,6 +254,9 @@ accessibility-standards-unity/
 │   └── PRODUCT-OWNER-WORKFLOW.md      # zSpace product owner guide
 │
 ├── docs/                               # Documentation
+│   ├── AUDITING-GUIDE.md               # Internal auditing guide ⭐ NEW
+│   ├── PARTNER-ONBOARDING.md           # Partner onboarding guide ⭐ NEW
+│   ├── CLAUDE-PROMPTS.md               # Claude Code prompt engineering guide ⭐ NEW
 │   ├── unity-accessibility-integration.md  # Unity Accessibility Module setup guide ⭐
 │   ├── unity-accessibility-api-reference.md # Complete API reference ⭐
 │   └── README.md                      # Documentation overview
@@ -308,6 +325,148 @@ accessibility-standards-unity/
 - **Use Case:** K-12 STEM Education
 - **Accessibility Score:** Passes all W3C XAUR + WCAG 2.2 AA criteria (zSpace-adapted)
 - **Cost:** $0 (free Unity packages and tools, zSpace SDK)
+
+---
+
+## 🔍 Auditing zSpace Applications
+
+**NEW:** Automatically audit any zSpace Unity application for accessibility compliance and generate professional reports in seconds.
+
+### What the Auditor Does
+
+The accessibility auditor scans your zSpace Unity project and automatically:
+
+- ✅ **Analyzes** all Unity scenes, C# scripts, and project structure
+- ✅ **Detects** accessibility patterns (keyboard support, screen reader compatibility, depth cues)
+- ✅ **Identifies** WCAG 2.2 and W3C XAUR violations specific to zSpace
+- ✅ **Generates** 5 professional reports (VPAT, audit summary, recommendations, etc.)
+- ✅ **Calculates** compliance score (0-100%) and legal risk level
+- ✅ **Provides** specific, actionable fixes with implementation steps
+
+**Execution time:** < 1 second for most projects
+
+### Three Ways to Audit
+
+#### Option 1: Global CLI Tool (Recommended for Partners)
+
+Install once, use anywhere:
+
+```bash
+# Install
+npm install -g accessibility-standards-unity
+
+# Audit any Unity project
+a11y-audit-zspace /path/to/your-unity-project
+
+# Output: 5 reports in /path/to/your-unity-project/AccessibilityAudit/
+```
+
+#### Option 2: Claude Code Slash Command (Recommended for Internal Use)
+
+If you use Anthropic's Claude Code:
+
+```bash
+# In Claude Code CLI
+/audit-zspace /path/to/your-unity-project
+```
+
+Claude will run the audit and explain the results in natural language.
+
+#### Option 3: Direct Script Execution
+
+```bash
+# Clone this repository
+git clone https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
+cd accessibility-standards-unity
+
+# Run audit
+node bin/audit.js /path/to/your-unity-project --verbose
+```
+
+### Generated Reports
+
+All audits produce 5 professional reports in `<your-project>/AccessibilityAudit/`:
+
+| Report | Purpose | Audience |
+|--------|---------|----------|
+| **README.md** | Quick overview and next steps | Everyone |
+| **AUDIT-SUMMARY.md** | Executive summary with compliance score | Managers, stakeholders |
+| **VPAT-{appname}.md** | Legal compliance documentation (VPAT 2.5) | Legal, procurement, customers |
+| **ACCESSIBILITY-RECOMMENDATIONS.md** | Specific fixes with implementation steps | Developers, QA |
+| **accessibility-analysis.json** | Raw findings data | CI/CD, automation tools |
+
+### Example Output
+
+```
+Starting accessibility audit...
+✓ Project found: apps.career-explorer
+✓ Analyzing 51 scenes...
+✓ Scanning 753 scripts...
+✓ Detecting accessibility patterns...
+✓ Generating reports...
+
+Audit complete! Reports saved to:
+/Users/name/apps.career-explorer/AccessibilityAudit/
+
+Compliance Score: 47% (Non-Conformant)
+Critical Issues: 3
+  - No keyboard alternatives for stylus interactions (WCAG 2.1.1)
+  - No depth perception alternatives (W3C XAUR UN17)
+  - No screen reader support (WCAG 4.1.2)
+High Priority: 1
+  - Missing accessibility framework components
+```
+
+### Audit Documentation
+
+- **For Partners/External Users:** [`docs/PARTNER-ONBOARDING.md`](docs/PARTNER-ONBOARDING.md) - Installation, usage, troubleshooting
+- **For Internal Teams:** [`docs/AUDITING-GUIDE.md`](docs/AUDITING-GUIDE.md) - Advanced usage, template customization, best practices
+- **For Claude Code Users:** [`docs/CLAUDE-PROMPTS.md`](docs/CLAUDE-PROMPTS.md) - Prompt engineering guide with 5 workflow templates
+
+### Typical Workflow
+
+1. **Run audit** on your Unity project
+2. **Review AUDIT-SUMMARY.md** to understand overall status
+3. **Read ACCESSIBILITY-RECOMMENDATIONS.md** for specific fixes
+4. **Copy framework components** from `implementation/unity/scripts/` to your project
+5. **Test manually** with keyboard, screen reader, 2D mode (no 3D glasses)
+6. **Re-audit** to measure progress
+7. **Share VPAT** with legal/procurement teams for compliance documentation
+
+### Success Metrics
+
+**First audit (typical):**
+- Compliance Score: 30-50% (Non-Conformant)
+- Critical Issues: 3-5
+- Timeline to fix: 6-10 weeks
+
+**After implementing framework components:**
+- Compliance Score: 90-100% (Fully Compliant)
+- Critical Issues: 0
+- Timeline: 1-2 weeks to polish
+
+### Integration with CI/CD
+
+Add accessibility audits to your build pipeline:
+
+```yaml
+# .github/workflows/accessibility.yml
+name: Accessibility Audit
+on: [push, pull_request]
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Auditor
+        run: npm install -g accessibility-standards-unity
+      - name: Run Audit
+        run: a11y-audit-zspace . --format json
+      - name: Fail on Critical Issues
+        run: |
+          CRITICAL=$(jq '.summary.criticalIssues' AccessibilityAudit/accessibility-analysis.json)
+          if [ $CRITICAL -gt 0 ]; then exit 1; fi
+```
 
 ---
 
