@@ -206,7 +206,8 @@ accessibility-standards-unity/
 ├── templates/audit/                    # Audit report templates ⭐ NEW
 │   ├── README.template.md              # Audit overview template
 │   ├── AUDIT-SUMMARY.template.md       # Executive summary template
-│   ├── VPAT.template.md                # VPAT 2.5 compliance report template
+│   ├── VPAT-COMPREHENSIVE.template.md  # Full VPAT 2.5 (all 50 WCAG criteria)
+│   ├── VPAT.template.md                # Quick VPAT summary (detected issues only)
 │   └── RECOMMENDATIONS.template.md     # Developer recommendations template
 │
 ├── .claude/commands/                   # Claude Code integration ⭐ NEW
@@ -387,13 +388,14 @@ node bin/audit.js /path/to/your-unity-project --verbose
 
 All audits produce 5 professional reports in `<your-project>/AccessibilityAudit/`:
 
-| Report | Purpose | Audience |
-|--------|---------|----------|
-| **README.md** | Quick overview and next steps | Everyone |
-| **AUDIT-SUMMARY.md** | Executive summary with compliance score | Managers, stakeholders |
-| **VPAT-{appname}.md** | Legal compliance documentation (VPAT 2.5) | Legal, procurement, customers |
-| **ACCESSIBILITY-RECOMMENDATIONS.md** | Specific fixes with implementation steps | Developers, QA |
-| **accessibility-analysis.json** | Raw findings data | CI/CD, automation tools |
+| Report | Purpose | Audience | Size |
+|--------|---------|----------|------|
+| **README.md** | Quick overview and next steps | Everyone | 6KB |
+| **AUDIT-SUMMARY.md** | Executive summary with compliance score | Managers, stakeholders | 5KB |
+| **VPAT-{appname}.md** | Comprehensive VPAT 2.5 - All 50 WCAG criteria | Legal, procurement, customers | 26KB |
+| **VPAT-SUMMARY-{appname}.md** | Quick VPAT summary - Detected issues only | Internal review, quick assessment | 4KB |
+| **ACCESSIBILITY-RECOMMENDATIONS.md** | Specific fixes with implementation steps | Developers, QA | 7KB |
+| **accessibility-analysis.json** | Raw findings data | CI/CD, automation tools | 27KB |
 
 ### Example Output
 

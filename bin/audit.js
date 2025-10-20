@@ -219,7 +219,8 @@ class AccessibilityAuditor {
       const templates = [
         { name: 'README.template.md', output: 'README.md' },
         { name: 'AUDIT-SUMMARY.template.md', output: 'AUDIT-SUMMARY.md' },
-        { name: 'VPAT.template.md', output: `VPAT-${this.appName}.md` },
+        { name: 'VPAT.template.md', output: `VPAT-SUMMARY-${this.appName}.md` },
+        { name: 'VPAT-COMPREHENSIVE.template.md', output: `VPAT-${this.appName}.md` },
         { name: 'RECOMMENDATIONS.template.md', output: 'ACCESSIBILITY-RECOMMENDATIONS.md' }
       ];
 
@@ -322,8 +323,10 @@ Output:
   AccessibilityAudit/
   ├── README.md                              (Overview and quick start)
   ├── AUDIT-SUMMARY.md                       (Executive summary)
-  ├── VPAT-apps-<name>.md                    (VPAT 2.5 compliance report)
-  └── ACCESSIBILITY-RECOMMENDATIONS.md       (Developer guide)
+  ├── VPAT-<name>.md                         (Comprehensive VPAT 2.5 - all 50 WCAG criteria)
+  ├── VPAT-SUMMARY-<name>.md                 (Quick VPAT summary - detected issues only)
+  ├── ACCESSIBILITY-RECOMMENDATIONS.md       (Developer guide)
+  └── accessibility-analysis.json            (Raw data)
     `);
     process.exit(0);
   }
