@@ -9,6 +9,55 @@ Comprehensive catalog of free and paid accessibility testing tools for **zSpace 
 
 ## Unity Editor Tools (zSpace-Specific)
 
+### Unity Accessibility Hierarchy Viewer (Unity 2023.2+)
+**Platform:** Unity Editor Window (built-in)
+**Cost:** Free (included with Unity 2023.2+)
+**Location:** Window → Accessibility → Hierarchy
+**Best For:** Validating AccessibilityNode structure for screen reader compatibility
+
+**Features:**
+- Real-time visualization of AccessibilityHierarchy in Unity Editor
+- Displays all registered AccessibilityNodes with properties:
+  - Label (text announced by screen readers)
+  - Role (Button, Checkbox, Header, etc.)
+  - State (Focused, Selected, Disabled, None)
+  - Hint (additional context)
+- Validates nodes before building for screen readers
+- Identifies missing or misconfigured accessibility nodes
+- Updates dynamically during Play Mode
+
+**WCAG Compliance:**
+- SC 4.1.2: Name, Role, Value (Level A) - ensures UI elements have proper labels and roles
+- SC 4.1.3: Status Messages (Level AA) - validates state announcements
+
+**How to Use:**
+1. Window → Accessibility → Hierarchy
+2. Enter Play Mode in Unity Editor
+3. Interact with UI elements (Tab, click, etc.)
+4. Verify each interactive element appears in hierarchy
+5. Check labels are descriptive (not empty or generic)
+6. Verify roles match element types (Button, Checkbox, etc.)
+7. Confirm states update dynamically (Focused, Selected)
+
+**Requirements:**
+- Unity 2023.2 or newer
+- UnityAccessibilityIntegration component in scene
+- AccessibilityNodes registered via RegisterNode() or helper methods
+
+**Common Issues Detected:**
+- Missing AccessibilityNodes (elements not registered)
+- Empty labels (screen readers won't announce)
+- Generic labels ("Button" instead of "Start Simulation")
+- Incorrect roles (e.g., Button labeled as Link)
+- States not updating on interaction
+
+**Related Documentation:**
+- `/docs/unity-accessibility-integration.md` - Setup guide
+- `/workflows/QA-WORKFLOW.md` - Testing procedures
+- Unity Docs: https://docs.unity3d.com/6000.0/Documentation/Manual/accessibility.html
+
+---
+
 ### ZSpace Accessibility Validator
 **Platform:** Unity Editor Window
 **Cost:** Free (included in this framework)
@@ -81,6 +130,141 @@ Comprehensive catalog of free and paid accessibility testing tools for **zSpace 
 **Example Test Location:**
 `implementation/unity/tests/ZSpaceAccessibilityTests.cs`
 
+**Unity Accessibility Module Tests (Unity 2023.2+):**
+
+Add these automated tests for Unity Accessibility Module compliance:
+
+```csharp
+#if UNITY_2023_2_OR_NEWER
+using UnityEngine.Accessibility;
+
+[UnityTest]
+public IEnumerator AccessibilityIntegration_IsInitialized()
+{
+    var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+    Assert.IsNotNull(integration, "UnityAccessibilityIntegration not found");
+    yield return null;
+    Assert.IsTrue(integration.IsInitialized(), "Accessibility not initialized");
+}
+
+[UnityTest]
+public IEnumerator AllInteractiveElements_HaveAccessibilityNodes()
+{
+    var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+    yield return null;
+
+    var buttons = Object.FindObjectsOfType<UnityEngine.UI.Button>();
+    foreach (var button in buttons)
+    {
+        var node = integration.GetNode(button.gameObject);
+        Assert.IsNotNull(node, $"Button '{button.name}' missing AccessibilityNode");
+        Assert.IsFalse(string.IsNullOrEmpty(node.label),
+            $"Button '{button.name}' has empty label");
+    }
+}
+#endif
+```
+
+**Tests for Unity Accessibility Module:**
+- `AccessibilityIntegration_IsInitialized` - Verifies UnityAccessibilityIntegration component is initialized
+- `AccessibilityHierarchy_IsActive` - Verifies hierarchy is set as active for screen readers
+- `AllInteractiveElements_HaveAccessibilityNodes` - Verifies all buttons/toggles are registered
+- `AccessibilityNodes_HaveDescriptiveLabels` - Validates labels are not empty or generic
+- `AccessibilityNodes_HaveCorrectRoles` - Validates semantic roles match element types
+
+See `/workflows/QA-WORKFLOW.md` for complete test suite implementation.
+
+---
+
+### Unity Accessibility Module (Unity 2023.2+)
+**Platform:** Unity (built-in module)
+**Cost:** Free (included with Unity 2023.2+)
+**URL:** https://docs.unity3d.com/6000.0/Documentation/Manual/com.unity.modules.accessibility.html
+**Best For:** Official screen reader integration for Windows desktop applications
+
+**Features:**
+- **AccessibilityHierarchy** - Tree structure for screen reader navigation
+- **AccessibilityNode** - Individual UI element representation with label, role, state, hint
+- **AssistiveSupport** - Screen reader integration and status monitoring
+  - `isScreenReaderEnabled` - Check if screen reader is active
+  - `activeHierarchy` - Set the active accessibility hierarchy
+  - `notificationDispatcher` - Send announcements to screen readers
+  - `screenReaderStatusChanged` - Event when screen reader starts/stops
+- **AccessibilityRole** - Semantic roles (Button, Checkbox, Header, Link, StaticText, etc.)
+- **AccessibilityState** - Element states (Focused, Selected, Disabled, None)
+- **VisionUtility** (Unity 6.0+) - Color-blind safe palette generation
+
+**Platform Support:**
+- Windows desktop screen readers: NVDA, Windows Narrator, JAWS
+- Requires built .exe application (does NOT work in Unity Editor Play Mode)
+
+**WCAG Compliance:**
+- SC 4.1.2: Name, Role, Value (Level A)
+- SC 4.1.3: Status Messages (Level AA)
+
+**How to Use:**
+
+1. **Add UnityAccessibilityIntegration component to scene:**
+```csharp
+// Location: implementation/unity/scripts/UnityAccessibilityIntegration.cs
+// Singleton component that manages AccessibilityHierarchy
+```
+
+2. **Register UI elements as AccessibilityNodes:**
+```csharp
+var integration = UnityAccessibilityIntegration.Instance;
+
+// Register button
+integration.RegisterButton(gameObject, "Start Simulation", "Begins the physics simulation");
+
+// Register toggle
+integration.RegisterToggle(gameObject, "Show Grid", isChecked, "Toggles grid visibility");
+
+// Register custom node
+integration.RegisterNode(gameObject, "Score Display", AccessibilityRole.StaticText);
+```
+
+3. **Send announcements to screen readers:**
+```csharp
+UnityAccessibilityIntegration.Instance.SendAnnouncement("Simulation started");
+```
+
+4. **Update node states dynamically:**
+```csharp
+integration.UpdateNodeState(gameObject, AccessibilityState.Focused);
+integration.UpdateToggleState(toggleGameObject, isChecked);
+```
+
+5. **Use Accessibility Hierarchy Viewer for validation:**
+```
+Window → Accessibility → Hierarchy
+```
+
+6. **Build and test with screen readers:**
+```
+1. File → Build Settings → Build .exe
+2. Launch NVDA or Windows Narrator
+3. Run built .exe application
+4. Tab through UI - screen reader announces elements
+```
+
+**Unity Version Requirements:**
+- Unity 2023.2+ for AccessibilityHierarchy, AccessibilityNode, AssistiveSupport
+- Unity 6.0+ for VisionUtility (color-blind safe palettes)
+- Unity 2021.3 and 2022.3 do NOT have Accessibility Module
+
+**Related Documentation:**
+- `/docs/unity-accessibility-integration.md` - Complete setup guide
+- `/implementation/unity/scripts/UnityAccessibilityIntegration.cs` - Integration script
+- Unity Docs: https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Accessibility.AccessibilityHierarchy.html
+
+**Common Gotchas:**
+- Screen readers ONLY work with built .exe applications (not Unity Editor)
+- Must set `AssistiveSupport.activeHierarchy` before nodes are announced
+- Screen reader must be running BEFORE launching application
+- Labels must be descriptive (not empty or generic like "Button")
+- Roles must match element types for correct announcements
+
 ---
 
 ## Desktop Screen Readers (Windows)
@@ -102,10 +286,38 @@ Comprehensive catalog of free and paid accessibility testing tools for **zSpace 
 zSpace runs on Windows, making NVDA the primary screen reader to test with. It's free, widely used, and integrates well with Unity applications.
 
 **Testing Unity Apps with NVDA:**
+
+**For Unity 2023.2+ (Unity Accessibility Module):**
+1. Build .exe application (File → Build Settings → Build)
+2. Launch NVDA BEFORE launching application (Ctrl + Alt + N)
+3. Run built .exe (NOT Unity Editor - screen readers don't work in Editor)
+4. Press Tab to navigate UI elements
+5. Verify NVDA announces:
+   - Element labels (e.g., "Start Simulation")
+   - Element roles (e.g., "button", "checkbox")
+   - Element states (e.g., "checked", "focused")
+6. Test actions trigger announcements via SendAnnouncement()
+
+**Requirements:**
+- UnityAccessibilityIntegration component in scene
+- All interactive elements registered via RegisterNode() or helper methods
+- AssistiveSupport.activeHierarchy set to your hierarchy
+
+**For Unity 2021.3 and 2022.3 (Pre-Accessibility Module):**
 1. Enable UI Automation in Windows
 2. Use AccessibleStylusButton components for screen reader support
 3. Test keyboard navigation with NVDA running
 4. Verify NVDA announces button labels and states
+
+**Testing Checklist:**
+- [ ] Build .exe application (screen readers require built apps)
+- [ ] Launch NVDA before launching app
+- [ ] Tab through all UI elements
+- [ ] Verify element labels announced
+- [ ] Verify roles announced (button, checkbox, etc.)
+- [ ] Verify states announced (checked, unchecked, focused)
+- [ ] Test action announcements (button pressed, simulation started)
+- [ ] No silent elements (all interactive elements have labels)
 
 ---
 
@@ -510,7 +722,22 @@ npm install --save-dev eslint-plugin-jsx-a11y
 
 ## Recommended Tool Stack for zSpace Unity Apps
 
-### Development Setup (Unity + zSpace)
+### Development Setup (Unity 2023.2+)
+1. **Unity Accessibility Hierarchy Viewer** - Window → Accessibility → Hierarchy (validate AccessibilityNodes in Editor)
+2. **Unity Accessibility Module** - Built-in screen reader APIs (AccessibilityHierarchy, AccessibilityNode, AssistiveSupport)
+3. **UnityAccessibilityIntegration Script** - `implementation/unity/scripts/UnityAccessibilityIntegration.cs` (singleton manager)
+4. **ZSpace Accessibility Validator** - Window → Accessibility → Validate Scene (WCAG validation)
+5. **Contrast Checker zSpace** - Window → Accessibility → Contrast Checker (color contrast)
+6. **Unity Test Framework** - Automated accessibility tests (PlayMode)
+7. **NVDA** - Primary screen reader testing (Windows, free)
+8. **Windows Narrator** - Secondary screen reader testing (built-in)
+9. **zSpace Developer Hub** - Hardware calibration and diagnostics
+10. **WebAIM Contrast Checker** - Quick contrast ratio checks
+11. **NoCoffee** - Color blindness and low vision simulation
+
+### Development Setup (Unity 2021.3 / 2022.3)
+**Note:** Unity Accessibility Module NOT available in Unity 2021.3 or 2022.3
+
 1. **Unity Editor:** ZSpace Accessibility Validator (validation)
 2. **Unity Editor:** Contrast Checker zSpace (color contrast)
 3. **Unity Testing:** Unity Test Framework + ZSpaceAccessibilityTests.cs
@@ -521,6 +748,8 @@ npm install --save-dev eslint-plugin-jsx-a11y
 8. **Documentation:** zSpace Unity SDK documentation
 
 ### Total Cost: $0 (assumes zSpace hardware already owned)
+
+**Upgrade Recommendation:** For best screen reader support, upgrade to Unity 2023.2+ to access Unity Accessibility Module APIs.
 
 ---
 
@@ -541,57 +770,108 @@ npm install --save-dev eslint-plugin-jsx-a11y
 ## Testing Workflow for zSpace Unity Apps
 
 ### 1. Development (Unity Editor)
+
+**For Unity 2023.2+ (with Unity Accessibility Module):**
+- **Unity Accessibility Hierarchy Viewer:** Window → Accessibility → Hierarchy
+  - Validate AccessibilityNode registration in Editor
+  - Check labels, roles, states for all interactive elements
+  - Verify nodes update dynamically during Play Mode
+- **ZSpace Accessibility Validator:** Run after adding interactive elements
+- **Contrast Checker zSpace:** Validate text/UI colors
+- **Unity Test Framework:** Run accessibility tests in PlayMode
+  - Include Unity Accessibility Module tests (5 automated tests)
+- **zSpace Developer Hub:** Calibrate hardware, test tracking
+
+**For Unity 2021.3 / 2022.3 (pre-Accessibility Module):**
 - **ZSpace Accessibility Validator:** Run after adding interactive elements
 - **Contrast Checker zSpace:** Validate text/UI colors
 - **Unity Test Framework:** Run accessibility tests in PlayMode
 - **zSpace Developer Hub:** Calibrate hardware, test tracking
 
 ### 2. Automated Testing (Unity Test Framework)
-- **PlayMode Tests:** Run `ZSpaceAccessibilityTests.cs`
-  - Target size validation (≥24x24px)
-  - Keyboard alternatives for all stylus interactions
-  - Depth perception alternatives (critical!)
-  - Screen reader label verification
-  - Focus indicator presence
+
+**PlayMode Tests:** Run `ZSpaceAccessibilityTests.cs`
+- Target size validation (≥24x24px)
+- Keyboard alternatives for all stylus interactions
+- Depth perception alternatives (critical!)
+- Screen reader label verification
+- Focus indicator presence
+
+**Unity Accessibility Module Tests (Unity 2023.2+ only):**
+- `AccessibilityIntegration_IsInitialized` - Verifies integration component initialized
+- `AccessibilityHierarchy_IsActive` - Verifies hierarchy set as active
+- `AllInteractiveElements_HaveAccessibilityNodes` - Verifies all elements registered
+- `AccessibilityNodes_HaveDescriptiveLabels` - Validates labels not empty/generic
+- `AccessibilityNodes_HaveCorrectRoles` - Validates semantic roles match types
+
+See `/workflows/QA-WORKFLOW.md` for complete test implementations.
 
 ### 3. Manual Testing (CRITICAL for zSpace)
-- **Keyboard-Only Testing:**
-  - Disconnect stylus
-  - Navigate with Tab, Enter, Arrow keys
-  - Verify all functionality accessible via keyboard
 
-- **Depth Perception Testing (CRITICAL):**
-  - Remove tracked glasses (simulate "glasses off")
-  - Verify application still usable with depth cues:
-    - Size scaling
-    - Shadows
-    - Audio distance cues
-    - Haptic feedback
-    - Motion parallax
-    - Occlusion
+**Keyboard-Only Testing:**
+- Disconnect stylus
+- Navigate with Tab, Enter, Arrow keys
+- Verify all functionality accessible via keyboard
 
-- **Screen Reader Testing:**
-  - Launch NVDA (or Windows Narrator)
-  - Navigate UI with keyboard
-  - Verify all buttons/controls announced
-  - Check focus order makes sense
+**Depth Perception Testing (CRITICAL):**
+- Remove tracked glasses (simulate "glasses off")
+- Verify application still usable with depth cues:
+  - Size scaling
+  - Shadows
+  - Audio distance cues
+  - Haptic feedback
+  - Motion parallax
+  - Occlusion
 
-- **Color Contrast:**
-  - Use WebAIM Contrast Checker
-  - Verify 4.5:1 for normal text
-  - Verify 3:1 for large text and UI components
+**Screen Reader Testing:**
+
+**For Unity 2023.2+ (Unity Accessibility Module):**
+1. Build .exe application (File → Build Settings → Build)
+2. Launch NVDA or Windows Narrator BEFORE launching app
+3. Run built .exe (screen readers don't work in Unity Editor)
+4. Tab through UI elements
+5. Verify NVDA/Narrator announces:
+   - Element labels (e.g., "Start Simulation")
+   - Element roles (e.g., "button", "checkbox")
+   - Element states (e.g., "checked", "focused")
+6. Test action announcements (via SendAnnouncement)
+7. Verify focus order makes sense
+
+**For Unity 2021.3 / 2022.3:**
+- Launch NVDA (or Windows Narrator)
+- Navigate UI with keyboard
+- Verify all buttons/controls announced
+- Check focus order makes sense
+
+**Color Contrast:**
+- Use WebAIM Contrast Checker
+- Verify 4.5:1 for normal text
+- Verify 3:1 for large text and UI components
 
 ### 4. Vision Impairment Testing
-- **Color Blindness:** Use NoCoffee extension
-  - Test protanopia, deuteranopia, tritanopia
-  - Verify color is not the only indicator
 
-- **Low Vision:** Use NoCoffee extension
-  - Test with blur, low acuity
-  - Verify UI scales properly
-  - Check text remains readable
+**Color Blindness:** Use NoCoffee extension
+- Test protanopia, deuteranopia, tritanopia
+- Verify color is not the only indicator
+
+**Low Vision:** Use NoCoffee extension
+- Test with blur, low acuity
+- Verify UI scales properly
+- Check text remains readable
 
 ### 5. Pre-Release Validation
+
+**For Unity 2023.2+ (with Unity Accessibility Module):**
+- **Unity Accessibility Hierarchy Viewer:** All interactive elements registered with descriptive labels
+- **Unity Accessibility Module Tests:** All 5 automated tests pass
+- **ZSpace Accessibility Validator:** Full scene validation (zero critical issues)
+- **Unity Test Framework:** All tests pass
+- **NVDA Testing:** Complete walkthrough with screen reader on built .exe
+- **Keyboard Testing:** Complete walkthrough without stylus
+- **Depth Testing:** Complete walkthrough without tracked glasses (glasses off)
+- **Hardware Testing:** Test on actual zSpace hardware
+
+**For Unity 2021.3 / 2022.3:**
 - **ZSpace Accessibility Validator:** Full scene validation (zero critical issues)
 - **Unity Test Framework:** All tests pass
 - **NVDA Testing:** Complete walkthrough with screen reader

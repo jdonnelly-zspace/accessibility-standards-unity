@@ -35,7 +35,7 @@ This repository contains **everything you need** to build accessible Unity zSpac
 ### Prerequisites
 
 1. **zSpace Unity SDK** - Download from [zSpace Developer Portal](https://developer.zspace.com/)
-2. **Unity 2021.3 LTS or newer**
+2. **Unity 2021.3 LTS or newer** (Unity 2023.2+ recommended for Unity Accessibility Module)
 3. **zSpace hardware** (for testing) or zSpace simulator
 
 ### Option 1: Unity Package Manager (Recommended)
@@ -84,31 +84,47 @@ See "Getting Started" section below to use this as a reference guide without ins
 
 ### 👨‍💻 Unity Developers (zSpace)
 
+**For Unity 2023.2+ (Unity Accessibility Module):**
 ```csharp
-// 1. Add accessibility namespace to your scripts
+// 1. Add UnityAccessibilityIntegration component to scene
+// implementation/unity/scripts/UnityAccessibilityIntegration.cs
+
+#if UNITY_2023_2_OR_NEWER
 using UnityEngine.Accessibility;
+#endif
 using zSpace.Core;
 
-// 2. Copy zSpace accessibility components to your project
-// implementation/unity/scripts/AccessibleStylusButton.cs
-// implementation/unity/scripts/KeyboardStylusAlternative.cs
-// implementation/unity/scripts/VoiceCommandManager.cs
-// implementation/unity/scripts/SubtitleSystem.cs
+// 2. Register UI elements for screen reader support
+UnityAccessibilityIntegration.Instance.RegisterButton(
+    startButton.gameObject,
+    "Start Simulation",
+    "Begins the physics simulation"
+);
 
-// 3. Add to your zSpace rig:
+// 3. Add accessibility components to your zSpace rig
 gameObject.AddComponent<KeyboardStylusAlternative>();
 gameObject.AddComponent<VoiceCommandManager>();
 gameObject.AddComponent<SubtitleSystem>();
 
-// 4. Make UI elements accessible with stylus + keyboard
+// 4. Send screen reader announcements
+UnityAccessibilityIntegration.Instance.SendAnnouncement("Simulation started");
+
+// 5. Validate with Hierarchy Viewer
+// Window > Accessibility > Hierarchy
+
+// 6. Build and test with NVDA/Narrator (Windows screen readers)
+```
+
+**For Unity 2021.3 / 2022.3:**
+```csharp
+// Unity Accessibility Module not available - use AccessibleStylusButton
 button.GetComponent<AccessibleStylusButton>().SetAccessibleLabel("Start Game");
 button.GetComponent<AccessibleStylusButton>().EnableKeyboardFallback(true);
-
-// 5. Run Unity Test Framework accessibility tests
-// Window > General > Test Runner
 ```
 
 📖 **Full Guide:** [`workflows/DEVELOPER-WORKFLOW.md`](workflows/DEVELOPER-WORKFLOW.md)
+📖 **Unity Accessibility Setup:** [`examples/zspace-accessible-scene/UnityAccessibilitySetup.md`](examples/zspace-accessible-scene/UnityAccessibilitySetup.md)
+📖 **API Reference:** [`docs/unity-accessibility-api-reference.md`](docs/unity-accessibility-api-reference.md)
 
 ---
 
@@ -193,6 +209,7 @@ accessibility-standards-unity/
 ├── implementation/                     # Ready-to-use Unity code & assets
 │   ├── unity/
 │   │   ├── scripts/                   # C# accessibility components for zSpace
+│   │   │   ├── UnityAccessibilityIntegration.cs # Unity 2023.2+ screen reader support ⭐
 │   │   │   ├── AccessibleStylusButton.cs    # Stylus + keyboard accessible button
 │   │   │   ├── KeyboardStylusAlternative.cs # Keyboard fallback for stylus
 │   │   │   ├── VoiceCommandManager.cs       # Voice navigation system
@@ -222,6 +239,11 @@ accessibility-standards-unity/
 │   ├── QA-WORKFLOW.md                 # zSpace QA engineer guide
 │   └── PRODUCT-OWNER-WORKFLOW.md      # zSpace product owner guide
 │
+├── docs/                               # Documentation
+│   ├── unity-accessibility-integration.md  # Unity Accessibility Module setup guide ⭐
+│   ├── unity-accessibility-api-reference.md # Complete API reference ⭐
+│   └── README.md                      # Documentation overview
+│
 ├── resources/                          # Reference materials
 │   ├── WEB-RESOURCES.md               # zSpace + accessibility resources
 │   ├── TOOLS-CATALOG.md               # zSpace accessibility testing tools
@@ -234,6 +256,7 @@ accessibility-standards-unity/
 └── examples/                           # Real-world examples
     └── zspace-accessible-scene/       # Production accessible zSpace scene ⭐
         ├── CASE-STUDY-ZSPACE.md       # How zSpace accessibility was achieved
+        ├── UnityAccessibilitySetup.md # Unity Accessibility Module setup guide ⭐
         ├── AccessibleZSpaceScene.unity # Sample scene
         └── README.md                  # Setup instructions
 ```
@@ -252,10 +275,18 @@ accessibility-standards-unity/
 
 ### 🛠️ Ready-to-Use Unity Implementation
 
-- **Unity C# Scripts** - 7+ accessibility components ready for zSpace projects
-- **Unity Test Framework** - Automated accessibility testing for zSpace applications
+- **Unity Accessibility Module Support (Unity 2023.2+)** - Official screen reader integration:
+  - UnityAccessibilityIntegration component (singleton manager)
+  - AccessibilityHierarchy and AccessibilityNode APIs
+  - AssistiveSupport for NVDA/Narrator/JAWS screen readers
+  - Accessibility Hierarchy Viewer (Window → Accessibility → Hierarchy)
+  - Complete API reference documentation
+  - Step-by-step setup guide
+- **Unity C# Scripts** - 8+ accessibility components ready for zSpace projects
+- **Unity Test Framework** - Automated accessibility testing (15+ tests for Unity 2023.2+)
 - **Unity Editor Tools** - Custom inspectors for zSpace accessibility validation
-- **7 zSpace Components** - Production-ready accessible scripts:
+- **8 zSpace Components** - Production-ready accessible scripts:
+  - UnityAccessibilityIntegration (Unity 2023.2+ screen reader support) **NEW**
   - AccessibleStylusButton (stylus + keyboard + screen reader support)
   - KeyboardStylusAlternative (keyboard/mouse as stylus fallback)
   - VoiceCommandManager (voice navigation)
@@ -428,9 +459,11 @@ Beyond Level AA compliance, this framework includes **5 Level AAA success criter
 
 | Tool | Purpose | Install |
 |------|---------|---------|
-| **Unity 2021.3+** | zSpace development platform | [Download](https://unity.com/) - Personal edition free |
+| **Unity 2023.2+** | Unity Accessibility Module support | [Download](https://unity.com/) - Personal edition free |
+| **Unity 2021.3+** | Legacy zSpace development | [Download](https://unity.com/) - Personal edition free |
 | **zSpace Unity SDK** | zSpace hardware integration | [zSpace Developer Portal](https://developer.zspace.com/) |
 | **Unity Test Framework** | Automated testing | Built into Unity (Window > General > Test Runner) |
+| **Unity Accessibility Hierarchy Viewer** | Validate AccessibilityNodes | Built into Unity 2023.2+ (Window > Accessibility > Hierarchy) |
 | **Windows Narrator** | Screen reader (Windows) | Built into Windows |
 | **NVDA** | Screen reader (Windows) | [Free Download](https://www.nvaccess.org/) |
 | **JAWS** | Screen reader (Windows) | [Free trial](https://www.freedomscientific.com/products/software/jaws/) |
@@ -549,7 +582,8 @@ jobs:
 - zSpace Community Forums: https://dev-community.zspace.com/
 
 **Learning:**
-- Unity Accessibility Documentation: https://docs.unity3d.com/Manual/com.unity.modules.accessibility.html
+- Unity Accessibility Module (Unity 2023.2+): https://docs.unity3d.com/6000.0/Documentation/Manual/accessibility.html
+- Unity Accessibility API Reference: https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Accessibility.AccessibilityHierarchy.html
 - WebAIM: https://webaim.org/
 - NVDA Screen Reader: https://www.nvaccess.org/
 - Desktop Accessibility Testing: https://webaim.org/articles/nvda/
@@ -597,8 +631,8 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 **Built with ❤️ for accessible zSpace applications**
 
-**Version:** 2.0.0 (zSpace-focused)
+**Version:** 2.1.0 (Unity Accessibility Module Support)
 **Last Updated:** October 2025
 **Standards:** W3C XAUR + WCAG 2.2 (adapted for zSpace stereoscopic 3D)
-**Unity Version:** 2021.3 LTS or newer
+**Unity Version:** 2021.3 LTS or newer (2023.2+ recommended for Unity Accessibility Module)
 **Target Platform:** zSpace

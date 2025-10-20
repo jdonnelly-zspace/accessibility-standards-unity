@@ -80,6 +80,567 @@ public class ZSpaceTest : MonoBehaviour
 
 ---
 
+## Unity Accessibility Module Setup (Unity 2023.2+)
+
+**Unity's official Accessibility Module provides native screen reader support**
+
+### Check Unity Version
+
+```csharp
+// Determine which accessibility features are available
+#if UNITY_2023_2_OR_NEWER
+    // Full Unity Accessibility Module available
+    using UnityEngine.Accessibility;
+#elif UNITY_6000_0_OR_NEWER
+    // Enhanced features: VisionUtility, AccessibilitySettings
+    using UnityEngine.Accessibility;
+#else
+    // Unity 2021.3 / 2022.3: No Accessibility Module
+    // Use custom screen reader integration
+#endif
+```
+
+**Recommendation:** Use Unity 2023.2+ (preferably Unity 6.0+) for full accessibility support.
+
+---
+
+### Step 1: Add UnityAccessibilityIntegration Component
+
+**Create Accessibility Manager in Scene:**
+
+1. Create empty GameObject: `GameObject > Create Empty`
+2. Rename to "AccessibilityManager"
+3. Add Component > Scripts > `UnityAccessibilityIntegration`
+4. In Inspector:
+   - ✅ Enable Accessibility
+   - ✅ Auto Initialize
+   - ✅ Debug Mode (for development)
+
+```csharp
+// UnityAccessibilityIntegration is already created in:
+// implementation/unity/scripts/UnityAccessibilityIntegration.cs
+// Just add it to a GameObject in your scene
+```
+
+---
+
+### Step 2: Register AccessibilityNodes for UI Elements
+
+**Make Buttons Accessible:**
+
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+#if UNITY_2023_2_OR_NEWER
+using UnityEngine.Accessibility;
+#endif
+
+public class AccessibleZSpaceButton : MonoBehaviour
+{
+    [Header("Button Settings")]
+    public string buttonLabel = "Button";
+    public string buttonHint = "Activates button action";
+
+    private Button button;
+
+#if UNITY_2023_2_OR_NEWER
+    void Start()
+    {
+        button = GetComponent<Button>();
+
+        // Register with Unity Accessibility Module
+        var manager = UnityAccessibilityIntegration.Instance;
+        if (manager != null)
+        {
+            manager.RegisterButton(gameObject, buttonLabel, buttonHint);
+        }
+
+        // Add button click listener
+        button.onClick.AddListener(OnButtonPressed);
+    }
+
+    void OnButtonPressed()
+    {
+        // Button action...
+
+        // Announce to screen reader
+        var manager = UnityAccessibilityIntegration.Instance;
+        if (manager != null)
+        {
+            manager.SendAnnouncement($"{buttonLabel} activated");
+        }
+    }
+#endif
+}
+```
+
+---
+
+### Step 3: Use Accessibility Hierarchy Viewer
+
+**Debug Your Accessibility Tree:**
+
+1. Open Unity Editor
+2. `Window > Accessibility > Accessibility Hierarchy Viewer`
+3. Enter Play Mode
+4. The Hierarchy Viewer shows all AccessibilityNodes in real-time
+
+**What to Check:**
+- ✅ All interactive elements appear in tree
+- ✅ Labels are descriptive ("Start Game" not "Button_01")
+- ✅ Roles are correct (Button, Link, Checkbox, etc.)
+- ✅ Focus order matches visual/spatial order
+
+---
+
+### Step 4: Test with Screen Readers
+
+**Build and Test (Screen readers only work with .exe builds):**
+
+```bash
+# 1. Build your application
+File > Build Settings > Build
+
+# 2. Enable Windows Narrator
+Win + Ctrl + Enter
+
+# 3. Launch your .exe
+# Tab through UI - Narrator announces each element
+
+# 4. Test with NVDA (recommended)
+# Download: https://www.nvaccess.org/
+# Install and launch NVDA
+# Run your .exe and test navigation
+```
+
+---
+
+### Unity Accessibility Code Patterns
+
+#### Pattern 1: AccessibilityHierarchy Setup
+
+```csharp
+using UnityEngine;
+#if UNITY_2023_2_OR_NEWER
+using UnityEngine.Accessibility;
+#endif
+
+public class MyAccessibilityManager : MonoBehaviour
+{
+#if UNITY_2023_2_OR_NEWER
+    private AccessibilityHierarchy m_Hierarchy;
+
+    void Awake()
+    {
+        // Create and activate hierarchy
+        m_Hierarchy = new AccessibilityHierarchy();
+        AssistiveSupport.activeHierarchy = m_Hierarchy;
+
+        // Listen for screen reader status changes
+        AssistiveSupport.screenReaderStatusChanged += OnScreenReaderStatusChanged;
+
+        Debug.Log($"Accessibility initialized. Screen reader active: {AssistiveSupport.isScreenReaderEnabled}");
+    }
+
+    void OnScreenReaderStatusChanged(bool enabled)
+    {
+        Debug.Log($"Screen reader {(enabled ? "enabled" : "disabled")}");
+    }
+
+    void OnDestroy()
+    {
+        AssistiveSupport.screenReaderStatusChanged -= OnScreenReaderStatusChanged;
+    }
+#endif
+}
+```
+
+---
+
+#### Pattern 2: Create AccessibilityNode
+
+```csharp
+#if UNITY_2023_2_OR_NEWER
+using UnityEngine.Accessibility;
+#endif
+
+public class AccessibleObject : MonoBehaviour
+{
+#if UNITY_2023_2_OR_NEWER
+    [SerializeField] private string accessibleLabel = "Object";
+    [SerializeField] private string accessibleHint = "";
+
+    private AccessibilityNode m_Node;
+
+    void Start()
+    {
+        CreateAccessibilityNode();
+    }
+
+    void CreateAccessibilityNode()
+    {
+        // Create node
+        m_Node = new AccessibilityNode();
+        m_Node.label = accessibleLabel;
+        m_Node.role = AccessibilityRole.Button; // Or Link, Checkbox, Header, etc.
+        m_Node.hint = accessibleHint;
+        m_Node.state = AccessibilityState.None;
+
+        // Add to active hierarchy
+        var hierarchy = AssistiveSupport.activeHierarchy;
+        if (hierarchy != null)
+        {
+            hierarchy.AddNode(m_Node);
+        }
+    }
+
+    public void OnObjectFocused()
+    {
+        // Update state
+        if (m_Node != null)
+        {
+            m_Node.state = AccessibilityState.Focused;
+        }
+
+        // Announce to screen reader
+        SendAnnouncement($"Focused: {accessibleLabel}");
+    }
+
+    public void OnObjectActivated()
+    {
+        // Object action...
+
+        // Announce action
+        SendAnnouncement($"{accessibleLabel} activated");
+    }
+
+    void SendAnnouncement(string message)
+    {
+        var dispatcher = AssistiveSupport.notificationDispatcher;
+        if (dispatcher != null)
+        {
+            dispatcher.SendAnnouncement(message);
+        }
+    }
+
+    void OnDestroy()
+    {
+        // Clean up node
+        if (m_Node != null && AssistiveSupport.activeHierarchy != null)
+        {
+            AssistiveSupport.activeHierarchy.RemoveNode(m_Node);
+        }
+    }
+#endif
+}
+```
+
+---
+
+#### Pattern 3: AccessibilityRole Usage
+
+```csharp
+#if UNITY_2023_2_OR_NEWER
+// Common roles for zSpace UI elements:
+
+// Buttons
+node.role = AccessibilityRole.Button;
+
+// Links/Hyperlinks
+node.role = AccessibilityRole.Link;
+
+// Toggles/Checkboxes
+node.role = AccessibilityRole.Checkbox;
+node.state = isChecked ? AccessibilityState.Selected : AccessibilityState.None;
+
+// Section Headings
+node.role = AccessibilityRole.Header;
+
+// Static Text/Labels
+node.role = AccessibilityRole.StaticText;
+
+// Images
+node.role = AccessibilityRole.Image;
+node.hint = "Image description here";
+
+// Radio Buttons
+node.role = AccessibilityRole.RadioButton;
+node.state = isSelected ? AccessibilityState.Selected : AccessibilityState.None;
+
+// Search Fields
+node.role = AccessibilityRole.SearchField;
+
+// Tab Buttons
+node.role = AccessibilityRole.TabBar;
+#endif
+```
+
+---
+
+#### Pattern 4: Update Node State Dynamically
+
+```csharp
+#if UNITY_2023_2_OR_NEWER
+public class AccessibleToggle : MonoBehaviour
+{
+    private AccessibilityNode m_Node;
+    private bool m_IsToggled = false;
+
+    void Start()
+    {
+        m_Node = new AccessibilityNode();
+        m_Node.label = "Toggle Option";
+        m_Node.role = AccessibilityRole.Checkbox;
+        m_Node.state = AccessibilityState.None;
+
+        AssistiveSupport.activeHierarchy?.AddNode(m_Node);
+    }
+
+    public void Toggle()
+    {
+        m_IsToggled = !m_IsToggled;
+
+        // Update accessibility state
+        if (m_Node != null)
+        {
+            m_Node.state = m_IsToggled ? AccessibilityState.Selected : AccessibilityState.None;
+        }
+
+        // Announce state change
+        string stateText = m_IsToggled ? "checked" : "unchecked";
+        AssistiveSupport.notificationDispatcher?.SendAnnouncement($"{m_Node.label} {stateText}");
+    }
+
+    public void SetDisabled(bool disabled)
+    {
+        if (m_Node != null)
+        {
+            m_Node.state = disabled ? AccessibilityState.Disabled : AccessibilityState.None;
+        }
+    }
+}
+#endif
+```
+
+---
+
+#### Pattern 5: Color-Blind Safe Palettes (Unity 6.0+)
+
+```csharp
+#if UNITY_6000_0_OR_NEWER
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.Accessibility;
+
+public class ColorBlindSafeUI : MonoBehaviour
+{
+    [SerializeField] private Image[] uiElements;
+
+    void Start()
+    {
+        ApplyColorBlindSafePalette();
+    }
+
+    void ApplyColorBlindSafePalette()
+    {
+        if (uiElements == null || uiElements.Length == 0) return;
+
+        // Request palette
+        Color[] palette = new Color[uiElements.Length];
+        int distinctColors = VisionUtility.GetColorBlindSafePalette(palette);
+
+        // Apply to UI elements
+        for (int i = 0; i < Mathf.Min(uiElements.Length, distinctColors); i++)
+        {
+            if (uiElements[i] != null)
+            {
+                uiElements[i].color = palette[i];
+            }
+        }
+
+        Debug.Log($"Applied {distinctColors} color-blind safe colors");
+    }
+}
+#endif
+```
+
+---
+
+### Unity Accessibility Testing Checklist
+
+**Before Committing Code:**
+
+- [ ] AccessibilityHierarchy created and set as active
+- [ ] All interactive elements have AccessibilityNode
+- [ ] All nodes have descriptive labels (not "Button_01")
+- [ ] All nodes have appropriate roles (Button, Link, etc.)
+- [ ] Tested with Accessibility Hierarchy Viewer in Editor
+- [ ] Built .exe and tested with Windows Narrator
+- [ ] Tested with NVDA (free screen reader)
+- [ ] Unity Test Framework accessibility tests pass
+
+**Testing Steps:**
+
+```bash
+# 1. Editor Testing
+Unity Editor > Window > Accessibility > Accessibility Hierarchy Viewer
+Enter Play Mode
+Verify all interactive elements appear in tree
+
+# 2. Build Testing
+File > Build Settings > Build
+Enable Windows Narrator (Win + Ctrl + Enter)
+Launch .exe
+Tab through UI - verify announcements
+
+# 3. NVDA Testing (Recommended)
+Download NVDA: https://www.nvaccess.org/
+Install and launch NVDA
+Run .exe
+Tab through UI with NVDA active
+Verify labels, roles, and states announced correctly
+```
+
+---
+
+### Integration with Existing zSpace Components
+
+**Enhance AccessibleStylusButton with Unity Accessibility:**
+
+```csharp
+using UnityEngine;
+using zSpace.Core;
+#if UNITY_2023_2_OR_NEWER
+using UnityEngine.Accessibility;
+#endif
+
+public class EnhancedAccessibleStylusButton : MonoBehaviour
+{
+    [Header("Accessibility")]
+    public string buttonLabel = "Button";
+    public string buttonHint = "Activates button action";
+
+    private ZCore zCore;
+#if UNITY_2023_2_OR_NEWER
+    private AccessibilityNode m_Node;
+#endif
+
+    void Start()
+    {
+        zCore = FindObjectOfType<ZCore>();
+
+#if UNITY_2023_2_OR_NEWER
+        // Create AccessibilityNode
+        var manager = UnityAccessibilityIntegration.Instance;
+        if (manager != null)
+        {
+            m_Node = manager.RegisterButton(gameObject, buttonLabel, buttonHint);
+        }
+#endif
+    }
+
+    void Update()
+    {
+        // Keyboard alternative to stylus
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            OnButtonPressed();
+        }
+
+        // Stylus input
+        if (zCore != null && zCore.GetButtonDown(0))
+        {
+            OnButtonPressed();
+        }
+    }
+
+    void OnButtonPressed()
+    {
+        // Button action...
+
+        // Haptic feedback
+        if (zCore != null && zCore.IsStylusInView())
+        {
+            zCore.VibrateStylus(0.3f, 100);
+        }
+
+#if UNITY_2023_2_OR_NEWER
+        // Screen reader announcement
+        var manager = UnityAccessibilityIntegration.Instance;
+        if (manager != null)
+        {
+            manager.SendAnnouncement($"{buttonLabel} activated");
+        }
+#endif
+    }
+
+    public void SetFocused(bool focused)
+    {
+#if UNITY_2023_2_OR_NEWER
+        // Update accessibility state
+        if (m_Node != null)
+        {
+            m_Node.state = focused ? AccessibilityState.Focused : AccessibilityState.None;
+        }
+#endif
+    }
+
+#if UNITY_2023_2_OR_NEWER
+    void OnDestroy()
+    {
+        // Unregister node
+        var manager = UnityAccessibilityIntegration.Instance;
+        if (manager != null)
+        {
+            manager.UnregisterNode(gameObject);
+        }
+    }
+#endif
+}
+```
+
+---
+
+### Common Unity Accessibility Issues
+
+**Issue 1: Hierarchy Viewer is Empty**
+- **Problem:** No nodes appear in Accessibility Hierarchy Viewer
+- **Solution:** Ensure `AssistiveSupport.activeHierarchy = m_Hierarchy` is called before nodes are added
+- **Solution:** Verify you're in Play Mode (viewer only works during Play)
+
+**Issue 2: Screen Reader Not Announcing**
+- **Problem:** Narrator/NVDA doesn't announce UI elements
+- **Solution:** Test with **built .exe**, not Unity Editor Play Mode
+- **Solution:** Verify AccessibilityNodes are added to hierarchy
+- **Solution:** Check that labels are non-empty strings
+
+**Issue 3: Empty or Generic Labels**
+- **Problem:** Nodes have labels like "Button_01" or ""
+- **Solution:** Set descriptive labels: `node.label = "Start Game";`
+- **Solution:** Use meaningful names that describe the element's purpose
+
+**Issue 4: Wrong Roles**
+- **Problem:** Button announced as "StaticText"
+- **Solution:** Set correct AccessibilityRole: `node.role = AccessibilityRole.Button;`
+
+---
+
+### Unity Accessibility Resources
+
+**Official Documentation:**
+- Unity 2023.2 Accessibility: https://docs.unity3d.com/2023.2/Documentation/Manual/com.unity.modules.accessibility.html
+- Unity 6.0 Accessibility: https://docs.unity3d.com/6000.0/Documentation/Manual/accessibility.html
+- AccessibilityNode API: https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Accessibility.AccessibilityNode.html
+- AssistiveSupport API: https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Accessibility.AssistiveSupport.html
+- VisionUtility API (Unity 6.0+): https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Accessibility.VisionUtility.GetColorBlindSafePalette.html
+
+**Framework Documentation:**
+- Unity Accessibility Integration Guide: `docs/unity-accessibility-integration.md`
+- Unity Accessibility API Reference: `docs/unity-accessibility-api-reference.md`
+- zSpace Accessibility Checklist (Section 6): `standards/ZSPACE-ACCESSIBILITY-CHECKLIST.md`
+
+---
+
 ## Development Lifecycle Integration
 
 ### Phase 1: Before Coding

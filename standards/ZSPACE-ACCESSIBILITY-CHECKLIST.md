@@ -48,6 +48,17 @@ This checklist combines:
    - 5.2 Depth Perception
    - 5.3 Stereoscopic 3D
    - 5.4 Desktop Integration
+6. [Unity Accessibility Module Integration (Unity 2023.2+)](#6-unity-accessibility-module-integration-unity-20232)
+   - 6.1 Accessibility Hierarchy
+   - 6.2 AccessibilityNode Requirements
+   - 6.3 Screen Reader Support
+   - 6.4 Accessibility Hierarchy Viewer Testing
+   - 6.5 Vision Accessibility (Unity 6.0+ Only)
+   - 6.6 Unity Accessibility Module Version Support
+   - 6.7 Integration with Existing zSpace Components
+   - 6.8 Unity Accessibility Testing Workflow
+   - 6.9 Common Unity Accessibility Issues
+   - 6.10 Unity Accessibility Resources
 
 ---
 
@@ -556,6 +567,325 @@ These requirements are specific to zSpace stereoscopic 3D desktop platform.
 3. Enable Windows High Contrast Mode (Alt + Left Shift + Print Screen)
 4. Verify UI still readable
 5. Use Windows Magnifier (Win + Plus) to zoom in
+
+---
+
+## 6. Unity Accessibility Module Integration (Unity 2023.2+)
+
+**Unity's official Accessibility Module provides native screen reader support and accessibility APIs**
+
+### 6.1 Accessibility Hierarchy
+
+#### Requirement: Create and manage AccessibilityHierarchy for screen readers
+
+**AccessibilityHierarchy Checklist:**
+- [ ] `UnityAccessibilityIntegration` component added to scene
+- [ ] AccessibilityHierarchy created and set as active (`AssistiveSupport.activeHierarchy`)
+- [ ] All interactive UI elements registered with AccessibilityHierarchy
+- [ ] Hierarchy created in Awake() or Start() before scene loads
+- [ ] Hierarchy cleaned up properly in OnDestroy()
+
+**Code Example:**
+```csharp
+// In your manager script
+AccessibilityHierarchy m_Hierarchy = new AccessibilityHierarchy();
+AssistiveSupport.activeHierarchy = m_Hierarchy;
+```
+
+**Testing:**
+- Open Accessibility Hierarchy Viewer (Window > Accessibility > Accessibility Hierarchy Viewer)
+- Enter Play Mode
+- Verify hierarchy is visible in viewer
+- Check that all interactive elements appear in tree
+
+**Documentation:** `docs/unity-accessibility-integration.md`
+
+---
+
+### 6.2 AccessibilityNode Requirements
+
+#### Requirement: All interactive elements have AccessibilityNodes
+
+**AccessibilityNode Checklist:**
+- [ ] All buttons have AccessibilityNode with label and role
+- [ ] All toggles/checkboxes have AccessibilityNode with state
+- [ ] All links have AccessibilityNode with appropriate role
+- [ ] All headings have AccessibilityNode with Header role
+- [ ] All 3D interactive objects have AccessibilityNode
+- [ ] No AccessibilityNodes have empty labels
+- [ ] Labels are descriptive ("Start Game" not "Button_01")
+- [ ] Roles match element types (Button, Link, Checkbox, etc.)
+
+**Required Properties for Each Node:**
+- `label` - Text announced by screen reader (required)
+- `role` - Semantic role from AccessibilityRole enum (required)
+- `state` - Current state (Focused, Selected, Disabled, None)
+- `hint` - Optional additional context for screen reader users
+
+**Example:**
+```csharp
+AccessibilityNode node = new AccessibilityNode();
+node.label = "Start Game";
+node.role = AccessibilityRole.Button;
+node.hint = "Begins the zSpace simulation";
+node.state = AccessibilityState.None;
+```
+
+**Testing:**
+- Use Accessibility Hierarchy Viewer to inspect all nodes
+- Verify each node has non-empty label
+- Verify roles are correct (not all "Button" or "StaticText")
+- Build application and test with NVDA/Narrator
+
+---
+
+### 6.3 Screen Reader Support
+
+#### Requirement: Desktop screen reader compatibility (NVDA, Narrator, JAWS)
+
+**Screen Reader Integration Checklist:**
+- [ ] `AssistiveSupport.activeHierarchy` set to your hierarchy
+- [ ] Screen reader status change listener registered
+- [ ] All interactive elements accessible via Tab key
+- [ ] Elements announced correctly by screen reader
+- [ ] Announcements sent for important actions (button presses, state changes)
+- [ ] Tested with Windows Narrator (built-in)
+- [ ] Tested with NVDA (free screen reader)
+- [ ] Works in built application (not just Unity Editor)
+
+**AssistiveSupport APIs:**
+```csharp
+// Check if screen reader is active
+bool isActive = AssistiveSupport.isScreenReaderEnabled;
+
+// Listen for screen reader status changes
+AssistiveSupport.screenReaderStatusChanged += OnScreenReaderChanged;
+
+// Send announcement to screen reader
+AssistiveSupport.notificationDispatcher?.SendAnnouncement("Game started");
+```
+
+**Testing Workflow:**
+1. Build your zSpace application (File > Build Settings > Build)
+2. Enable Windows Narrator (Win + Ctrl + Enter)
+3. Launch your .exe application
+4. Press Tab to navigate through UI
+5. Verify each element is announced with correct label and role
+6. Test with NVDA for comparison: https://www.nvaccess.org/
+
+**Important:** Screen readers work with **built applications**, not Unity Editor Play Mode.
+
+---
+
+### 6.4 Accessibility Hierarchy Viewer Testing
+
+#### Requirement: Use Accessibility Hierarchy Viewer for debugging
+
+**Hierarchy Viewer Checklist:**
+- [ ] Hierarchy Viewer opened (Window > Accessibility > Accessibility Hierarchy Viewer)
+- [ ] Viewer shows all interactive elements when in Play Mode
+- [ ] Node labels are descriptive and meaningful
+- [ ] Node roles are correct (Button, Link, Checkbox, etc.)
+- [ ] Focus order in viewer matches visual/spatial order
+- [ ] No duplicate or missing nodes
+- [ ] All nodes have required properties (label, role)
+
+**How to Use Hierarchy Viewer:**
+1. Open Unity Editor
+2. Window > Accessibility > Accessibility Hierarchy Viewer
+3. Enter Play Mode
+4. Viewer shows real-time accessibility tree
+5. Click nodes to inspect properties (label, role, state, hint)
+6. Tab through UI and watch focus in viewer
+
+**What to Look For:**
+- ❌ Empty labels → Won't be announced by screen readers
+- ❌ Generic labels ("Button_01") → Not descriptive
+- ❌ Wrong roles (Link marked as Button) → Screen reader announces incorrectly
+- ❌ Missing nodes → Interactive element not accessible
+- ✅ Descriptive labels ("Start Game", "Rotate Heart Model")
+- ✅ Correct roles (Button, Link, Checkbox, Header, etc.)
+- ✅ All interactive elements present in tree
+
+---
+
+### 6.5 Vision Accessibility (Unity 6.0+ Only)
+
+#### Requirement: Use color-blind safe palettes
+
+**VisionUtility Checklist (Unity 6.0+):**
+- [ ] UI colors generated using `VisionUtility.GetColorBlindSafePalette()`
+- [ ] Palette safe for deuteranopia (red-green color blindness)
+- [ ] Palette safe for protanopia (red-green color blindness)
+- [ ] Palette safe for tritanopia (blue-yellow color blindness)
+- [ ] Color palette tested with Color Oracle or similar tool
+- [ ] UI distinguishable without relying solely on color
+
+**Code Example:**
+```csharp
+#if UNITY_6000_0_OR_NEWER
+// Generate 8 color-blind safe colors
+Color[] palette = new Color[8];
+int distinctColors = VisionUtility.GetColorBlindSafePalette(palette);
+
+// Apply to UI elements
+for (int i = 0; i < distinctColors; i++)
+{
+    uiElements[i].color = palette[i];
+}
+#endif
+```
+
+**Testing:**
+- Download Color Oracle: https://colororacle.org/
+- Enable different color blindness simulations
+- Verify UI elements are still distinguishable
+- Check that critical information doesn't rely solely on color
+
+**Documentation:** https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Accessibility.VisionUtility.GetColorBlindSafePalette.html
+
+---
+
+### 6.6 Unity Accessibility Module Version Support
+
+**Unity Version Requirements:**
+
+| Unity Version | Accessibility Module | Features Available |
+|---------------|---------------------|-------------------|
+| **2021.3 LTS** | ❌ Not Available | No Accessibility Module - use custom implementations |
+| **2022.3 LTS** | ❌ Not Available | No Accessibility Module - use custom implementations |
+| **2023.2** | ✅ Introduced | AccessibilityHierarchy, AccessibilityNode, AssistiveSupport, Hierarchy Viewer |
+| **Unity 6.0+** | ✅ Enhanced | All 2023.2 features + VisionUtility, AccessibilitySettings, enabled by default |
+
+**Recommendation:** Use Unity 2023.2+ (preferably Unity 6.0+) for full accessibility support.
+
+**Fallback for Unity 2021.3/2022.3:**
+```csharp
+#if UNITY_2023_2_OR_NEWER
+    // Use Unity Accessibility Module
+    AccessibilityHierarchy m_Hierarchy = new AccessibilityHierarchy();
+#else
+    // Custom implementation or warning
+    Debug.LogWarning("Upgrade to Unity 2023.2+ for Unity Accessibility Module support");
+#endif
+```
+
+---
+
+### 6.7 Integration with Existing zSpace Components
+
+**Component Integration Checklist:**
+- [ ] `AccessibleStylusButton.cs` enhanced with AccessibilityNode
+- [ ] `KeyboardStylusAlternative.cs` updates focus state in AccessibilityNode
+- [ ] `SubtitleSystem.cs` sends announcements via AssistiveSupport
+- [ ] `ZSpaceFocusIndicator.cs` updates AccessibilityNode state on focus change
+- [ ] `VoiceCommandManager.cs` uses AssistiveSupport for feedback
+- [ ] All zSpace UI components registered with UnityAccessibilityIntegration
+
+**Integration Example:**
+```csharp
+// In AccessibleStylusButton.cs
+void Start()
+{
+    // Register with Unity Accessibility
+    var manager = UnityAccessibilityIntegration.Instance;
+    if (manager != null)
+    {
+        manager.RegisterButton(gameObject, buttonLabel, "Activates button action");
+    }
+}
+
+void OnButtonPressed()
+{
+    // Send announcement to screen reader
+    UnityAccessibilityIntegration.Instance?.SendAnnouncement($"{buttonLabel} activated");
+}
+```
+
+---
+
+### 6.8 Unity Accessibility Testing Workflow
+
+**Complete Testing Procedure:**
+
+**Step 1: Editor Testing (Development)**
+- [ ] Open Accessibility Hierarchy Viewer (Window > Accessibility)
+- [ ] Enter Play Mode
+- [ ] Verify all interactive elements appear in tree
+- [ ] Inspect node properties (label, role, state)
+- [ ] Check for empty labels or missing nodes
+
+**Step 2: Build Testing (Screen Readers)**
+- [ ] Build zSpace application (File > Build Settings > Build)
+- [ ] Enable Windows Narrator (Win + Ctrl + Enter)
+- [ ] Launch .exe application
+- [ ] Tab through all UI elements
+- [ ] Verify each element announced correctly
+- [ ] Test button activation with Enter/Space
+- [ ] Verify announcements for important actions
+
+**Step 3: NVDA Testing (Recommended)**
+- [ ] Download NVDA: https://www.nvaccess.org/
+- [ ] Install and launch NVDA
+- [ ] Run your zSpace .exe application
+- [ ] Tab through UI with NVDA active
+- [ ] Compare NVDA announcements with Narrator
+- [ ] Verify labels, roles, and states announced correctly
+
+**Step 4: Unity Test Framework (Automated)**
+- [ ] Run Unity Test Framework tests
+- [ ] Verify AccessibilityHierarchy creation tests pass
+- [ ] Verify AccessibilityNode registration tests pass
+- [ ] Check for null nodes or empty labels in tests
+
+---
+
+### 6.9 Common Unity Accessibility Issues
+
+**Issue 1: Hierarchy Viewer is Empty**
+- ❌ Problem: No nodes appear in Accessibility Hierarchy Viewer
+- ✅ Solution: Ensure `AssistiveSupport.activeHierarchy = m_Hierarchy` is called
+- ✅ Solution: Check that you're in Play Mode (viewer only works during Play)
+
+**Issue 2: Screen Reader Not Announcing Elements**
+- ❌ Problem: Narrator/NVDA doesn't announce UI elements
+- ✅ Solution: Test with built .exe, not Unity Editor Play Mode
+- ✅ Solution: Verify AccessibilityNodes added to hierarchy
+- ✅ Solution: Check labels are non-empty
+
+**Issue 3: Empty or Generic Labels**
+- ❌ Problem: Nodes have labels like "Button_01" or ""
+- ✅ Solution: Set descriptive labels ("Start Game", "Rotate Model")
+- ✅ Solution: Use Inspector to verify labels before building
+
+**Issue 4: Wrong Roles Announced**
+- ❌ Problem: Button announced as "StaticText" or "Link"
+- ✅ Solution: Set correct AccessibilityRole enum value
+- ✅ Solution: Button → AccessibilityRole.Button
+- ✅ Solution: Link → AccessibilityRole.Link
+- ✅ Solution: Toggle → AccessibilityRole.Checkbox
+
+---
+
+### 6.10 Unity Accessibility Resources
+
+**Official Unity Documentation:**
+- Unity 2023.2 Accessibility Module: https://docs.unity3d.com/2023.2/Documentation/Manual/com.unity.modules.accessibility.html
+- Unity 6.0 Accessibility: https://docs.unity3d.com/6000.0/Documentation/Manual/accessibility.html
+- AccessibilityHierarchy API: https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Accessibility.AccessibilityHierarchy.html
+- AccessibilityNode API: https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Accessibility.AccessibilityNode.html
+- AssistiveSupport API: https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Accessibility.AssistiveSupport.html
+- VisionUtility API (Unity 6.0+): https://docs.unity3d.com/6000.0/Documentation/ScriptReference/Accessibility.VisionUtility.GetColorBlindSafePalette.html
+
+**Framework Documentation:**
+- Unity Accessibility Integration Guide: `docs/unity-accessibility-integration.md`
+- Unity Accessibility API Reference: `docs/unity-accessibility-api-reference.md`
+- Unity Accessibility Setup: `examples/zspace-accessible-scene/UnityAccessibilitySetup.md`
+
+**Screen Readers:**
+- NVDA (Free, Windows): https://www.nvaccess.org/
+- Windows Narrator: Built into Windows 10/11 (Win + Ctrl + Enter)
+- JAWS (Commercial): https://www.freedomscientific.com/products/software/jaws/
 
 ---
 

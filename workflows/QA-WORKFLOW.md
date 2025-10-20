@@ -24,6 +24,373 @@ This guide shows QA engineers how to test zSpace Unity applications for accessib
 
 ---
 
+## Unity Accessibility Module Testing (Unity 2023.2+)
+
+**For Unity 2023.2 or newer projects using Unity Accessibility Module:**
+
+This section covers testing procedures specific to Unity's official Accessibility APIs. If your project uses Unity 2021.3 or 2022.3, skip to "Testing Workflow" section below.
+
+### Unity Accessibility Hierarchy Viewer Testing
+
+**Purpose:** Validate AccessibilityNode structure in Unity Editor before building for screen readers.
+
+**How to Access:**
+```
+Window → Accessibility → Hierarchy
+```
+
+**When to Use:**
+- During development - validate nodes before building
+- After adding new UI elements
+- When debugging screen reader issues
+- Before QA submission
+
+#### Hierarchy Viewer Test Checklist
+
+**Basic Validation:**
+- [ ] Hierarchy viewer opens without errors
+- [ ] All interactive UI elements appear in hierarchy
+- [ ] All 3D interactive objects appear in hierarchy
+- [ ] Node count matches expected interactive elements
+
+**Node Properties Validation:**
+
+For each AccessibilityNode in the hierarchy:
+
+- [ ] **Label** - Not empty, describes element clearly
+  - Good: "Start Simulation Button"
+  - Bad: "Button", "GameObject", ""
+- [ ] **Role** - Appropriate semantic role set
+  - Buttons → `AccessibilityRole.Button`
+  - Toggles → `AccessibilityRole.Checkbox`
+  - Headings → `AccessibilityRole.Header`
+  - Static text → `AccessibilityRole.StaticText`
+  - Links → `AccessibilityRole.Link`
+- [ ] **Hint** - Provides additional context if needed
+  - Example: "Starts the physics simulation"
+- [ ] **State** - Correct current state
+  - Focused elements → `AccessibilityState.Focused`
+  - Selected toggles → `AccessibilityState.Selected`
+  - Disabled elements → `AccessibilityState.Disabled`
+
+**Test Procedure:**
+
+```
+Test: Validate AccessibilityNode Configuration
+1. Window → Accessibility → Hierarchy
+2. Play the scene
+3. Navigate to first interactive element (Tab or click)
+4. In Hierarchy Viewer, find corresponding node
+5. Verify:
+   ✅ Label is descriptive (not empty)
+   ✅ Role matches element type (Button, Checkbox, etc.)
+   ✅ Hint provides context (if needed)
+   ✅ State reflects current state (Focused, Selected, etc.)
+6. Repeat for all interactive elements
+
+Pass Criteria:
+✅ All interactive elements registered in hierarchy
+✅ All labels descriptive and unique
+✅ All roles semantically correct
+✅ States update dynamically during interaction
+```
+
+**Common Issues Found in Hierarchy Viewer:**
+
+```
+Issue: Node missing from hierarchy
+Cause: AccessibilityManager.RegisterNode() not called
+Fix: Add registration in Start() or OnEnable()
+
+Issue: Empty label
+Cause: RegisterNode() called with label = ""
+Fix: Provide descriptive label string
+
+Issue: Generic label ("Button", "Object")
+Cause: Using GameObject.name instead of descriptive label
+Fix: Use user-facing text (e.g., "Start Simulation" not "StartButton")
+
+Issue: State not updating
+Cause: UpdateNodeState() not called on state change
+Fix: Call UpdateNodeState() in event handlers
+```
+
+**Screenshot Example:**
+
+The Hierarchy Viewer should show:
+```
+AccessibilityHierarchy (Active)
+├─ Start Simulation Button (Button, Focused)
+├─ Settings Menu (Button, None)
+├─ Show Grid Toggle (Checkbox, Selected)
+├─ Volume Slider (Slider, None)
+└─ Instructions (Header, None)
+```
+
+### Unity Accessibility Module Screen Reader Testing
+
+**CRITICAL:** Unity Accessibility Module screen reader support requires **built .exe applications**. Screen readers do NOT work in Unity Editor Play Mode.
+
+#### Build and Test Workflow
+
+**Step 1: Build Unity Application**
+
+```
+1. File → Build Settings
+2. Platform: Windows
+3. Architecture: x86_64
+4. Click "Build"
+5. Save to: Builds/AccessibilityTest.exe
+```
+
+**Step 2: Launch Screen Reader**
+
+**Option A: NVDA (Recommended)**
+```
+1. Download from https://www.nvaccess.org/
+2. Install NVDA
+3. Launch: Ctrl + Alt + N
+4. Verify: NVDA voice announces "NVDA started"
+```
+
+**Option B: Windows Narrator (Built-in)**
+```
+1. Press: Win + Ctrl + Enter
+2. Verify: Narrator voice announces "Narrator on"
+```
+
+**Step 3: Test Built Application**
+
+```
+Test: Unity Accessibility Module Screen Reader Integration
+1. Launch NVDA or Narrator
+2. Run built .exe (NOT Unity Editor)
+3. Press Tab to navigate UI
+4. Verify: Screen reader announces each element
+
+Expected Announcements:
+• "Start Simulation, button"
+• "Settings Menu, button"
+• "Show Grid, checkbox, checked"
+• "Volume Slider, slider, 50 percent"
+
+Code Requirements:
+✓ UnityAccessibilityIntegration component in scene
+✓ AssistiveSupport.activeHierarchy set
+✓ All UI elements registered via RegisterNode()
+✓ AccessibilityRole set correctly
+```
+
+**Automated Test Cases:**
+
+```
+Test: AccessibilityNode Registration
+1. Launch built application with NVDA running
+2. Tab to "Start Button"
+3. Verify NVDA announces: "Start Simulation, button"
+4. Press Enter to activate
+5. Verify NVDA announces: "Simulation started" (via SendAnnouncement)
+
+Pass Criteria:
+✅ Button label announced correctly
+✅ Button role announced ("button")
+✅ Activation triggers announcement
+✅ No lag in screen reader response
+
+Fail Indicators:
+❌ Screen reader silent on Tab
+❌ Only announces "button" without label
+❌ Announces GameObject name instead of label
+❌ No announcement on activation
+```
+
+```
+Test: Checkbox State Announcements
+1. Tab to "Show Grid" toggle
+2. Verify NVDA announces: "Show Grid, checkbox, checked"
+3. Press Space to toggle
+4. Verify NVDA announces: "Show Grid, unchecked"
+5. Press Space again
+6. Verify NVDA announces: "Show Grid, checked"
+
+Pass Criteria:
+✅ Checkbox role announced
+✅ State announced ("checked" / "unchecked")
+✅ State updates announced on change
+✅ Uses AccessibilityState.Selected correctly
+
+Code Pattern:
+// Initial registration
+var node = accessibilityManager.RegisterToggle(gameObject, "Show Grid", isChecked);
+
+// On toggle change
+accessibilityManager.UpdateToggleState(gameObject, newCheckedState);
+```
+
+```
+Test: SendAnnouncement() for Actions
+1. With NVDA running, click "Start Simulation" button
+2. Verify NVDA announces: "Simulation started"
+3. Click "Stop" button
+4. Verify NVDA announces: "Simulation stopped"
+
+Pass Criteria:
+✅ Custom announcements triggered by actions
+✅ Announcements clear and descriptive
+✅ No excessive announcements (spam)
+
+Code Pattern:
+public void OnStartSimulation()
+{
+    StartSimulation();
+    UnityAccessibilityIntegration.Instance.SendAnnouncement("Simulation started");
+}
+```
+
+**Unity Accessibility Module Debug Checklist:**
+
+If screen reader is silent:
+- [ ] Check: Application is BUILT .exe (not Editor Play Mode)
+- [ ] Check: Screen reader is running BEFORE launching app
+- [ ] Check: `UnityAccessibilityIntegration` component in scene
+- [ ] Check: `AssistiveSupport.activeHierarchy` is set
+- [ ] Check: Debug mode enabled to see console logs
+- [ ] Check: `AssistiveSupport.isScreenReaderEnabled` returns true
+- [ ] Verify: Nodes registered via `RegisterNode()` or helper methods
+- [ ] Verify: Unity version is 2023.2 or newer
+
+**Unity Console Debug Output (when debugMode = true):**
+```
+[UnityAccessibilityIntegration] Accessibility hierarchy initialized. Screen reader active: True
+[UnityAccessibilityIntegration] Registered node: 'Start Simulation' (Button) for GameObject 'StartButton'
+[UnityAccessibilityIntegration] Registered node: 'Show Grid' (Checkbox) for GameObject 'GridToggle'
+[UnityAccessibilityIntegration] Updated state for 'GridToggle': Selected
+[UnityAccessibilityIntegration] Announcement sent: "Simulation started"
+```
+
+### Unity Accessibility Module Automated Testing
+
+**Add to Unity Test Framework tests:**
+
+```csharp
+#if UNITY_2023_2_OR_NEWER
+using UnityEngine.Accessibility;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+using System.Collections;
+
+public class UnityAccessibilityModuleTests
+{
+    [UnityTest]
+    public IEnumerator AccessibilityIntegration_IsInitialized()
+    {
+        // Find UnityAccessibilityIntegration in scene
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+        Assert.IsNotNull(integration, "UnityAccessibilityIntegration component not found in scene");
+
+        yield return null; // Wait one frame for Awake/Start
+
+        Assert.IsTrue(integration.IsInitialized(),
+            "Unity Accessibility Module not initialized. Check enableAccessibility and autoInitialize settings.");
+    }
+
+    [UnityTest]
+    public IEnumerator AccessibilityHierarchy_IsActive()
+    {
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+        yield return null;
+
+        var hierarchy = integration.GetHierarchy();
+        Assert.IsNotNull(hierarchy, "AccessibilityHierarchy is null");
+        Assert.AreEqual(AssistiveSupport.activeHierarchy, hierarchy,
+            "AccessibilityHierarchy not set as active hierarchy for screen readers");
+    }
+
+    [UnityTest]
+    public IEnumerator AllInteractiveElements_HaveAccessibilityNodes()
+    {
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+        yield return null;
+
+        // Find all interactive elements (buttons, toggles, etc.)
+        var buttons = Object.FindObjectsOfType<UnityEngine.UI.Button>();
+        var toggles = Object.FindObjectsOfType<UnityEngine.UI.Toggle>();
+
+        int expectedNodes = buttons.Length + toggles.Length;
+        int actualNodes = integration.GetNodeCount();
+
+        Assert.GreaterOrEqual(actualNodes, expectedNodes,
+            $"Expected at least {expectedNodes} AccessibilityNodes for {buttons.Length} buttons and {toggles.Length} toggles. " +
+            $"Found {actualNodes}. Register nodes via RegisterButton() or RegisterToggle().");
+    }
+
+    [UnityTest]
+    public IEnumerator AccessibilityNodes_HaveDescriptiveLabels()
+    {
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+        yield return null;
+
+        var buttons = Object.FindObjectsOfType<UnityEngine.UI.Button>();
+        foreach (var button in buttons)
+        {
+            var node = integration.GetNode(button.gameObject);
+            Assert.IsNotNull(node, $"Button '{button.gameObject.name}' has no AccessibilityNode registered");
+            Assert.IsFalse(string.IsNullOrEmpty(node.label),
+                $"Button '{button.gameObject.name}' has empty accessibility label. Screen readers will not announce it.");
+            Assert.AreNotEqual("Button", node.label,
+                $"Button '{button.gameObject.name}' has generic label 'Button'. Use descriptive label instead.");
+        }
+    }
+
+    [UnityTest]
+    public IEnumerator AccessibilityNodes_HaveCorrectRoles()
+    {
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+        yield return null;
+
+        var buttons = Object.FindObjectsOfType<UnityEngine.UI.Button>();
+        foreach (var button in buttons)
+        {
+            var node = integration.GetNode(button.gameObject);
+            if (node != null)
+            {
+                Assert.AreEqual(AccessibilityRole.Button, node.role,
+                    $"Button '{button.gameObject.name}' has incorrect role. Expected Button, got {node.role}");
+            }
+        }
+
+        var toggles = Object.FindObjectsOfType<UnityEngine.UI.Toggle>();
+        foreach (var toggle in toggles)
+        {
+            var node = integration.GetNode(toggle.gameObject);
+            if (node != null)
+            {
+                Assert.AreEqual(AccessibilityRole.Checkbox, node.role,
+                    $"Toggle '{toggle.gameObject.name}' has incorrect role. Expected Checkbox, got {node.role}");
+            }
+        }
+    }
+}
+#endif
+```
+
+**Add to Unity Test Runner:**
+```
+1. Window → General → Test Runner
+2. Select "PlayMode" tab
+3. Verify new tests appear:
+   • AccessibilityIntegration_IsInitialized
+   • AccessibilityHierarchy_IsActive
+   • AllInteractiveElements_HaveAccessibilityNodes
+   • AccessibilityNodes_HaveDescriptiveLabels
+   • AccessibilityNodes_HaveCorrectRoles
+4. Click "Run All"
+5. Verify: All Unity Accessibility tests pass
+```
+
+---
+
 ## Testing Workflow
 
 ### Phase 1: Automated Unity Testing (Every Build)
@@ -655,7 +1022,14 @@ For 3D Objects:
 - Unity Test Framework (Window → General → Test Runner)
 - Unity Console (errors, warnings)
 - Unity Profiler (performance testing)
-- Unity Accessibility Package (com.unity.modules.accessibility)
+- **Unity Accessibility Hierarchy Viewer (Unity 2023.2+):** Window → Accessibility → Hierarchy
+  - Validates AccessibilityNode structure in Editor
+  - Shows labels, roles, states, hints for all registered nodes
+  - Use BEFORE building to verify screen reader compatibility
+- **Unity Accessibility Module (Unity 2023.2+):** com.unity.modules.accessibility
+  - AccessibilityHierarchy, AccessibilityNode, AssistiveSupport APIs
+  - Screen reader integration for Windows (NVDA, Narrator, JAWS)
+  - Requires built .exe applications (does NOT work in Editor Play Mode)
 
 **Desktop Screen Readers:**
 - NVDA (free): https://www.nvaccess.org/

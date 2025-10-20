@@ -5,9 +5,15 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 
+#if UNITY_2023_2_OR_NEWER
+using UnityEngine.Accessibility;
+#endif
+
 /// <summary>
 /// Unity Test Framework tests for zSpace accessibility compliance.
 /// Tests WCAG 2.2 Level AA + W3C XAUR requirements.
+///
+/// Unity 2023.2+ includes Unity Accessibility Module tests.
 ///
 /// Run: Window → General → Test Runner → PlayMode → Run All
 /// </summary>
@@ -354,6 +360,288 @@ public class ZSpaceAccessibilityTests
 
     #endregion
 
+    #region Unity Accessibility Module Tests (Unity 2023.2+ Only)
+
+#if UNITY_2023_2_OR_NEWER
+
+    /// <summary>
+    /// WCAG 4.1.2: Name, Role, Value (Level A)
+    /// Verifies UnityAccessibilityIntegration component is initialized in scene
+    /// </summary>
+    [UnityTest]
+    public IEnumerator UnityAccessibilityIntegration_IsInitialized()
+    {
+        // Find UnityAccessibilityIntegration in scene
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+
+        Assert.IsNotNull(integration,
+            "UnityAccessibilityIntegration component not found in scene. " +
+            "Add UnityAccessibilityIntegration component to a GameObject for screen reader support.");
+
+        yield return null; // Wait one frame for Awake/Start
+
+        Assert.IsTrue(integration.IsInitialized(),
+            "Unity Accessibility Module not initialized. " +
+            "Check enableAccessibility and autoInitialize settings in Inspector.");
+    }
+
+    /// <summary>
+    /// WCAG 4.1.2: Name, Role, Value (Level A)
+    /// Verifies AccessibilityHierarchy is set as active for screen readers
+    /// </summary>
+    [UnityTest]
+    public IEnumerator AccessibilityHierarchy_IsSetAsActive()
+    {
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+        Assert.IsNotNull(integration, "UnityAccessibilityIntegration not found");
+
+        yield return null;
+
+        var hierarchy = integration.GetHierarchy();
+        Assert.IsNotNull(hierarchy,
+            "AccessibilityHierarchy is null. Check UnityAccessibilityIntegration initialization.");
+
+        Assert.AreEqual(AssistiveSupport.activeHierarchy, hierarchy,
+            "AccessibilityHierarchy not set as active hierarchy. " +
+            "Screen readers will not detect UI elements. " +
+            "Ensure AssistiveSupport.activeHierarchy is set in InitializeAccessibility().");
+    }
+
+    /// <summary>
+    /// WCAG 4.1.2: Name, Role, Value (Level A)
+    /// Verifies all interactive UI elements have AccessibilityNodes registered
+    /// </summary>
+    [UnityTest]
+    public IEnumerator AllInteractiveElements_HaveAccessibilityNodes()
+    {
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+        Assert.IsNotNull(integration, "UnityAccessibilityIntegration not found");
+
+        yield return null;
+
+        // Find all interactive elements (buttons, toggles, etc.)
+        var buttons = Object.FindObjectsOfType<Button>();
+        var toggles = Object.FindObjectsOfType<Toggle>();
+
+        int missingNodeCount = 0;
+        List<string> missingElements = new List<string>();
+
+        // Check buttons
+        foreach (var button in buttons)
+        {
+            var node = integration.GetNode(button.gameObject);
+            if (node == null)
+            {
+                missingNodeCount++;
+                missingElements.Add($"Button '{button.gameObject.name}'");
+            }
+        }
+
+        // Check toggles
+        foreach (var toggle in toggles)
+        {
+            var node = integration.GetNode(toggle.gameObject);
+            if (node == null)
+            {
+                missingNodeCount++;
+                missingElements.Add($"Toggle '{toggle.gameObject.name}'");
+            }
+        }
+
+        if (missingNodeCount > 0)
+        {
+            string missingList = string.Join("\n  - ", missingElements);
+            Assert.Fail(
+                $"Found {missingNodeCount} interactive element(s) without AccessibilityNodes:\n  - {missingList}\n\n" +
+                $"Register nodes via:\n" +
+                $"  UnityAccessibilityIntegration.Instance.RegisterButton(gameObject, label, hint)\n" +
+                $"  UnityAccessibilityIntegration.Instance.RegisterToggle(gameObject, label, isChecked, hint)");
+        }
+    }
+
+    /// <summary>
+    /// WCAG 4.1.2: Name, Role, Value (Level A)
+    /// Verifies AccessibilityNodes have descriptive labels (not empty or generic)
+    /// </summary>
+    [UnityTest]
+    public IEnumerator AccessibilityNodes_HaveDescriptiveLabels()
+    {
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+        Assert.IsNotNull(integration, "UnityAccessibilityIntegration not found");
+
+        yield return null;
+
+        var buttons = Object.FindObjectsOfType<Button>();
+        List<string> invalidLabels = new List<string>();
+
+        foreach (var button in buttons)
+        {
+            var node = integration.GetNode(button.gameObject);
+            if (node != null)
+            {
+                // Check for empty label
+                if (string.IsNullOrEmpty(node.label))
+                {
+                    invalidLabels.Add($"Button '{button.gameObject.name}' has EMPTY label - screen readers will be silent");
+                }
+                // Check for generic labels
+                else if (node.label == "Button" || node.label == "GameObject" || node.label == button.gameObject.name)
+                {
+                    invalidLabels.Add($"Button '{button.gameObject.name}' has GENERIC label '{node.label}' - use descriptive label instead (e.g., 'Start Simulation')");
+                }
+            }
+        }
+
+        if (invalidLabels.Count > 0)
+        {
+            string invalidList = string.Join("\n  - ", invalidLabels);
+            Assert.Fail(
+                $"Found {invalidLabels.Count} AccessibilityNode(s) with invalid labels:\n  - {invalidList}\n\n" +
+                $"Labels should be descriptive and user-facing:\n" +
+                $"  Good: 'Start Simulation', 'Settings Menu', 'Show Grid Toggle'\n" +
+                $"  Bad: 'Button', 'GameObject', 'StartButton', ''");
+        }
+    }
+
+    /// <summary>
+    /// WCAG 4.1.2: Name, Role, Value (Level A)
+    /// Verifies AccessibilityNodes have correct semantic roles
+    /// </summary>
+    [UnityTest]
+    public IEnumerator AccessibilityNodes_HaveCorrectRoles()
+    {
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+        Assert.IsNotNull(integration, "UnityAccessibilityIntegration not found");
+
+        yield return null;
+
+        List<string> incorrectRoles = new List<string>();
+
+        // Check buttons have Button role
+        var buttons = Object.FindObjectsOfType<Button>();
+        foreach (var button in buttons)
+        {
+            var node = integration.GetNode(button.gameObject);
+            if (node != null && node.role != AccessibilityRole.Button)
+            {
+                incorrectRoles.Add($"Button '{button.gameObject.name}' has role '{node.role}' - should be AccessibilityRole.Button");
+            }
+        }
+
+        // Check toggles have Checkbox role
+        var toggles = Object.FindObjectsOfType<Toggle>();
+        foreach (var toggle in toggles)
+        {
+            var node = integration.GetNode(toggle.gameObject);
+            if (node != null && node.role != AccessibilityRole.Checkbox)
+            {
+                incorrectRoles.Add($"Toggle '{toggle.gameObject.name}' has role '{node.role}' - should be AccessibilityRole.Checkbox");
+            }
+        }
+
+        if (incorrectRoles.Count > 0)
+        {
+            string rolesList = string.Join("\n  - ", incorrectRoles);
+            Assert.Fail(
+                $"Found {incorrectRoles.Count} AccessibilityNode(s) with incorrect roles:\n  - {rolesList}\n\n" +
+                $"Use correct semantic roles:\n" +
+                $"  Buttons → AccessibilityRole.Button\n" +
+                $"  Toggles → AccessibilityRole.Checkbox\n" +
+                $"  Headings → AccessibilityRole.Header\n" +
+                $"  Links → AccessibilityRole.Link\n" +
+                $"  Static text → AccessibilityRole.StaticText");
+        }
+    }
+
+    /// <summary>
+    /// WCAG 4.1.3: Status Messages (Level AA)
+    /// Verifies SendAnnouncement functionality exists and can be called
+    /// </summary>
+    [UnityTest]
+    public IEnumerator SendAnnouncement_FunctionExists()
+    {
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+        Assert.IsNotNull(integration, "UnityAccessibilityIntegration not found");
+
+        yield return null;
+
+        // Test that SendAnnouncement can be called without errors
+        try
+        {
+            integration.SendAnnouncement("Test announcement");
+            Assert.Pass("SendAnnouncement() works correctly for screen reader notifications (WCAG 4.1.3)");
+        }
+        catch (System.Exception ex)
+        {
+            Assert.Fail($"SendAnnouncement() failed: {ex.Message}. " +
+                       "Ensure AssistiveSupport.notificationDispatcher is available.");
+        }
+    }
+
+    /// <summary>
+    /// WCAG 4.1.2: Name, Role, Value (Level A)
+    /// Verifies toggle states are tracked correctly
+    /// </summary>
+    [UnityTest]
+    public IEnumerator ToggleStates_UpdateCorrectly()
+    {
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+        Assert.IsNotNull(integration, "UnityAccessibilityIntegration not found");
+
+        yield return null;
+
+        // Create test toggle
+        var toggleObj = CreateTestToggle("TestToggle");
+        var toggle = toggleObj.GetComponent<Toggle>();
+
+        // Register as accessibility node
+        var node = integration.RegisterToggle(toggleObj, "Test Toggle", false);
+        Assert.IsNotNull(node, "Failed to register toggle as AccessibilityNode");
+
+        yield return null;
+
+        // Verify initial state (unchecked)
+        Assert.AreEqual(AccessibilityState.None, node.state,
+            "Unchecked toggle should have state None, not Selected");
+
+        // Toggle to checked
+        toggle.isOn = true;
+        integration.UpdateToggleState(toggleObj, true);
+
+        yield return null;
+
+        // Verify checked state
+        Assert.AreEqual(AccessibilityState.Selected, node.state,
+            "Checked toggle should have state Selected. " +
+            "Screen readers announce 'checked' vs 'unchecked' based on this state.");
+
+        // Cleanup
+        Object.DestroyImmediate(toggleObj);
+    }
+
+    /// <summary>
+    /// Test Unity 6.0+ VisionUtility (color-blind safe palettes)
+    /// </summary>
+#if UNITY_6000_0_OR_NEWER
+    [Test]
+    public void VisionUtility_GeneratesColorBlindSafePalette()
+    {
+        var integration = Object.FindObjectOfType<UnityAccessibilityIntegration>();
+        Assert.IsNotNull(integration, "UnityAccessibilityIntegration not found");
+
+        var palette = integration.GetColorBlindSafePalette(8);
+
+        Assert.IsNotNull(palette, "Color-blind safe palette should not be null");
+        Assert.GreaterOrEqual(palette.Length, 1,
+            "Palette should contain at least 1 color. " +
+            "Unity's VisionUtility generates distinct colors safe for deuteranopia, protanopia, and tritanopia.");
+    }
+#endif
+
+#endif // UNITY_2023_2_OR_NEWER
+
+    #endregion
+
     #region Helper Methods
 
     private GameObject CreateTestButton(string name)
@@ -378,6 +666,37 @@ public class ZSpaceAccessibilityTests
         // Note: In real Unity Test Framework, use Input.GetKeyDown simulation
         // For this example, we assume the component handles the input
         Debug.Log($"Simulating key press: {key}");
+    }
+
+    private GameObject CreateTestToggle(string name)
+    {
+        var toggleObj = new GameObject(name);
+        toggleObj.transform.SetParent(testCanvas.transform);
+
+        var rectTransform = toggleObj.AddComponent<RectTransform>();
+        rectTransform.sizeDelta = new Vector2(40, 40); // 40x40px (above minimum)
+
+        var toggle = toggleObj.AddComponent<Toggle>();
+
+        // Add required Image component for Toggle
+        var background = new GameObject("Background");
+        background.transform.SetParent(toggleObj.transform);
+        var bgRect = background.AddComponent<RectTransform>();
+        bgRect.sizeDelta = new Vector2(40, 40);
+        var bgImage = background.AddComponent<Image>();
+        bgImage.color = Color.white;
+        toggle.targetGraphic = bgImage;
+
+        // Add checkmark
+        var checkmark = new GameObject("Checkmark");
+        checkmark.transform.SetParent(background.transform);
+        var checkRect = checkmark.AddComponent<RectTransform>();
+        checkRect.sizeDelta = new Vector2(30, 30);
+        var checkImage = checkmark.AddComponent<Image>();
+        checkImage.color = Color.green;
+        toggle.graphic = checkImage;
+
+        return toggleObj;
     }
 
     #endregion
