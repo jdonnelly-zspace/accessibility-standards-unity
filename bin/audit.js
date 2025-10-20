@@ -121,23 +121,120 @@ class AccessibilityAuditor {
   }
 
   /**
+   * Template engine - substitutes variables in markdown templates
+   */
+  processTemplate(templateContent, variables) {
+    let output = templateContent;
+
+    // Simple variable substitution: {{VARIABLE_NAME}}
+    Object.keys(variables).forEach(key => {
+      const regex = new RegExp(`{{${key}}}`, 'g');
+      output = output.replace(regex, variables[key]);
+    });
+
+    // Conditional sections: {{#if VARIABLE}}content{{/if}}
+    output = output.replace(/{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g, (match, varName, content) => {
+      return variables[varName] ? content : '';
+    });
+
+    // Loop sections: {{#each ARRAY}}content{{/each}}
+    output = output.replace(/{{#each\s+(\w+)}}([\s\S]*?){{\/each}}/g, (match, arrayName, itemTemplate) => {
+      const array = variables[arrayName];
+      if (!Array.isArray(array)) return '';
+
+      return array.map((item, index) => {
+        let itemOutput = itemTemplate;
+        // Substitute item properties
+        Object.keys(item).forEach(key => {
+          const itemRegex = new RegExp(`{{${key}}}`, 'g');
+          itemOutput = itemOutput.replace(itemRegex, item[key] || '');
+        });
+        // Substitute loop metadata
+        itemOutput = itemOutput.replace(/{{@index}}/g, index + 1);
+        return itemOutput;
+      }).join('');
+    });
+
+    return output;
+  }
+
+  /**
+   * Prepare template variables from analysis report
+   */
+  prepareTemplateVariables() {
+    const report = this.analysisReport;
+
+    return {
+      APP_NAME: this.appName,
+      PROJECT_PATH: this.projectPath,
+      AUDIT_DATE: report.metadata.scannedDate,
+      FRAMEWORK_VERSION: report.metadata.version,
+      TOTAL_SCENES: report.summary.totalScenes,
+      TOTAL_SCRIPTS: report.summary.totalScripts,
+      COMPLIANCE_SCORE: report.complianceEstimate.score,
+      COMPLIANCE_LEVEL: report.complianceEstimate.level,
+      CRITICAL_COUNT: report.summary.criticalIssues,
+      HIGH_COUNT: report.summary.highPriorityIssues,
+      MEDIUM_COUNT: report.summary.mediumPriorityIssues,
+      LOW_COUNT: report.summary.lowPriorityIssues,
+      TOTAL_FINDINGS: report.summary.totalFindings,
+      WCAG_LEVEL_A_PASS: report.complianceEstimate.wcagLevelA,
+      WCAG_LEVEL_AA_PASS: report.complianceEstimate.wcagLevelAA,
+      CRITICAL_ISSUES: report.findings.critical,
+      HIGH_ISSUES: report.findings.high,
+      MEDIUM_ISSUES: report.findings.medium,
+      LOW_ISSUES: report.findings.low,
+      KEYBOARD_SUPPORT_FOUND: report.statistics.keyboardSupportFound,
+      SCREEN_READER_SUPPORT_FOUND: report.statistics.screenReaderSupportFound,
+      FOCUS_INDICATORS_FOUND: report.statistics.focusIndicatorsFound,
+      ACCESSIBILITY_COMPONENTS_FOUND: report.statistics.accessibilityComponentsFound,
+      STYLUS_ONLY_SCRIPTS_COUNT: report.statistics.stylusOnlyScripts ? report.statistics.stylusOnlyScripts.length : 0
+    };
+  }
+
+  /**
    * Step 3: Generate audit reports
    */
   async generateReports() {
     console.log('📝 Step 3: Generating audit reports...\n');
 
-    // For now, save the JSON analysis report
-    // Templates will be added in Phase 1B
+    // Always save JSON analysis report
     const jsonPath = path.join(this.options.outputDir, 'accessibility-analysis.json');
     fs.writeFileSync(jsonPath, JSON.stringify(this.analysisReport, null, 2));
     this.log(`   ✅ Generated: accessibility-analysis.json`);
 
-    // Placeholder for template-based reports (Phase 1B)
-    this.log('   ⏳ Template-based reports (coming in Phase 1B)');
-    this.log('      - README.md');
-    this.log('      - AUDIT-SUMMARY.md');
-    this.log('      - VPAT-apps-' + this.appName + '.md');
-    this.log('      - ACCESSIBILITY-RECOMMENDATIONS.md\n');
+    // Generate markdown reports from templates
+    const templatesDir = path.join(__dirname, '../templates/audit');
+
+    if (fs.existsSync(templatesDir)) {
+      const variables = this.prepareTemplateVariables();
+
+      // Generate each report from template
+      const templates = [
+        { name: 'README.template.md', output: 'README.md' },
+        { name: 'AUDIT-SUMMARY.template.md', output: 'AUDIT-SUMMARY.md' },
+        { name: 'VPAT.template.md', output: `VPAT-${this.appName}.md` },
+        { name: 'RECOMMENDATIONS.template.md', output: 'ACCESSIBILITY-RECOMMENDATIONS.md' }
+      ];
+
+      templates.forEach(({ name, output }) => {
+        const templatePath = path.join(templatesDir, name);
+
+        if (fs.existsSync(templatePath)) {
+          const templateContent = fs.readFileSync(templatePath, 'utf-8');
+          const renderedContent = this.processTemplate(templateContent, variables);
+          const outputPath = path.join(this.options.outputDir, output);
+          fs.writeFileSync(outputPath, renderedContent);
+          this.log(`   ✅ Generated: ${output}`);
+        } else {
+          this.log(`   ⚠️  Template not found: ${name}`);
+        }
+      });
+    } else {
+      this.log('   ⚠️  Templates directory not found (Phase 1B in progress)');
+    }
+
+    console.log();
   }
 
   /**

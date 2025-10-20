@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Audit Template Variables",
+  "description": "Variables available for substitution in audit report templates",
+  "type": "object",
+  "properties": {
+    "APP_NAME": {
+      "type": "string",
+      "description": "Name of the audited application"
+    },
+    "PROJECT_PATH": {
+      "type": "string",
+      "description": "Path to Unity project"
+    },
+    "AUDIT_DATE": {
+      "type": "string",
+      "format": "date",
+      "description": "Date audit was performed (YYYY-MM-DD)"
+    },
+    "FRAMEWORK_VERSION": {
+      "type": "string",
+      "description": "Version of accessibility-standards-unity framework"
+    },
+    "TOTAL_SCENES": {
+      "type": "number",
+      "description": "Total number of Unity scenes"
+    },
+    "TOTAL_SCRIPTS": {
+      "type": "number",
+      "description": "Total number of C# scripts"
+    },
+    "COMPLIANCE_SCORE": {
+      "type": "number",
+      "description": "Overall compliance score (0-100)"
+    },
+    "COMPLIANCE_LEVEL": {
+      "type": "string",
+      "enum": ["Full Conformance", "Partial Conformance", "Minimal Conformance", "Non-Conformant"],
+      "description": "Compliance level based on score"
+    },
+    "CRITICAL_COUNT": {
+      "type": "number",
+      "description": "Number of critical issues"
+    },
+    "HIGH_COUNT": {
+      "type": "number",
+      "description": "Number of high priority issues"
+    },
+    "MEDIUM_COUNT": {
+      "type": "number",
+      "description": "Number of medium priority issues"
+    },
+    "LOW_COUNT": {
+      "type": "number",
+      "description": "Number of low priority issues"
+    },
+    "TOTAL_FINDINGS": {
+      "type": "number",
+      "description": "Total number of findings"
+    },
+    "WCAG_LEVEL_A_PASS": {
+      "type": "boolean",
+      "description": "Does the app pass WCAG Level A?"
+    },
+    "WCAG_LEVEL_AA_PASS": {
+      "type": "boolean",
+      "description": "Does the app pass WCAG Level AA?"
+    },
+    "CRITICAL_ISSUES": {
+      "type": "array",
+      "description": "List of critical findings",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "wcagLevel": { "type": "string" },
+          "severity": { "type": "string" },
+          "description": { "type": "string" },
+          "files": { "type": "array", "items": { "type": "string" } },
+          "impact": { "type": "string" },
+          "recommendation": { "type": "string" }
+        }
+      }
+    },
+    "HIGH_ISSUES": {
+      "type": "array",
+      "description": "List of high priority findings"
+    },
+    "MEDIUM_ISSUES": {
+      "type": "array",
+      "description": "List of medium priority findings"
+    },
+    "LOW_ISSUES": {
+      "type": "array",
+      "description": "List of low priority findings"
+    },
+    "KEYBOARD_SUPPORT_FOUND": {
+      "type": "boolean",
+      "description": "Was keyboard support detected?"
+    },
+    "SCREEN_READER_SUPPORT_FOUND": {
+      "type": "boolean",
+      "description": "Was screen reader support detected?"
+    },
+    "FOCUS_INDICATORS_FOUND": {
+      "type": "boolean",
+      "description": "Were focus indicators detected?"
+    },
+    "ACCESSIBILITY_COMPONENTS_FOUND": {
+      "type": "number",
+      "description": "Number of framework accessibility components found"
+    },
+    "STYLUS_ONLY_SCRIPTS_COUNT": {
+      "type": "number",
+      "description": "Number of scripts that are stylus-only"
+    }
+  },
+  "required": [
+    "APP_NAME",
+    "AUDIT_DATE",
+    "FRAMEWORK_VERSION",
+    "COMPLIANCE_SCORE",
+    "COMPLIANCE_LEVEL",
+    "CRITICAL_COUNT",
+    "TOTAL_FINDINGS"
+  ]
+}
