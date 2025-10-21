@@ -22,6 +22,36 @@ This checklist combines:
 - ⚠️ **Partial** - Partially met, needs improvement
 - N/A **Not Applicable** - Doesn't apply to this zSpace application
 
+**Test Method Indicators:**
+- 🤖 **[AUTO]** - Automated testing available (code analysis, pattern detection)
+- 👤 **[MANUAL]** - Manual testing required (human evaluation)
+- ⚙️ **[HYBRID]** - Combination of automated + manual testing
+
+---
+
+## Testing Documentation
+
+### 🎯 Quick Start: Which Test Method?
+
+Each criterion below is marked with **🤖 [AUTO]**, **👤 [MANUAL]**, or **⚙️ [HYBRID]** to show the testing approach.
+
+**🤖 Automated Testing (~20% coverage)**
+- Run `node bin/audit.js /path/to/project` for instant automated checks
+- Detects: Component presence, keyboard/screen reader APIs, input methods, Unity Accessibility setup
+- See: **[testing/AUTOMATED-TESTS.md](./testing/AUTOMATED-TESTS.md)** for details
+
+**👤 Manual Testing (~80% coverage)**
+- Human evaluation: Keyboard navigation, screen reader quality, contrast, UX, depth perception
+- Requires: Physical hardware testing, assistive technology validation
+- See: **[testing/MANUAL-TESTS.md](./testing/MANUAL-TESTS.md)** for step-by-step procedures
+
+**📊 Need a quick lookup?**
+- **[testing/TESTING-QUICK-REFERENCE.md](./testing/TESTING-QUICK-REFERENCE.md)** - Complete matrix: criterion → test method → tools → priority
+
+---
+
+**Use this comprehensive checklist** for criterion-by-criterion reference. **Use the split testing documents** for focused test execution.
+
 ---
 
 ## Table of Contents
@@ -68,7 +98,7 @@ Information and user interface components must be presentable to users in ways t
 
 ### 1.1 Text Alternatives
 
-#### SC 1.1.1: Non-text Content (Level A)
+#### SC 1.1.1: Non-text Content (Level A) 👤 [MANUAL]
 **Requirement:** All 3D objects and UI elements have text alternatives for screen readers.
 
 **zSpace Context:**
@@ -87,12 +117,12 @@ Information and user interface components must be presentable to users in ways t
 
 ### 1.2 Time-Based Media
 
-#### SC 1.2.1: Audio-only and Video-only (Prerecorded) (Level A)
+#### SC 1.2.1: Audio-only and Video-only (Prerecorded) (Level A) 👤 [MANUAL]
 **zSpace Context:**
 - [ ] Audio-only content has text transcript
 - [ ] Video-only content has text description or audio description
 
-#### SC 1.2.2: Captions (Prerecorded) (Level A)
+#### SC 1.2.2: Captions (Prerecorded) (Level A) 👤 [MANUAL]
 **zSpace Context:**
 - [ ] All spatial audio has synchronized captions
 - [ ] Captions display in 3D space or 2D overlay
@@ -166,7 +196,7 @@ Information and user interface components must be presentable to users in ways t
 - [ ] Audio controls accessible via keyboard
 - [ ] Background audio volume adjustable independently
 
-#### SC 1.4.3: Contrast (Minimum) (Level AA)
+#### SC 1.4.3: Contrast (Minimum) (Level AA) 👤 [MANUAL - Requires visual measurement]
 **zSpace Context:**
 - [ ] Text contrast ≥ 4.5:1 (normal text) on zSpace display
 - [ ] Text contrast ≥ 3:1 (large text ≥18pt or bold ≥14pt)
@@ -222,7 +252,7 @@ User interface components and navigation must be operable.
 
 ### 2.1 Keyboard Accessible
 
-#### SC 2.1.1: Keyboard (Level A)
+#### SC 2.1.1: Keyboard (Level A) ⚙️ [HYBRID - Auto: Code detection | Manual: Full testing]
 **zSpace Context:**
 - [ ] ALL stylus interactions have keyboard alternatives
 - [ ] Tab key moves focus through interactive elements
@@ -316,7 +346,7 @@ User interface components and navigation must be operable.
 - [ ] Form labels clearly describe purpose
 - [ ] 3D scene sections labeled for screen reader users
 
-#### SC 2.4.7: Focus Visible (Level AA)
+#### SC 2.4.7: Focus Visible (Level AA) ⚙️ [HYBRID - Auto: Component detection | Manual: Visibility/contrast]
 **zSpace Context:**
 - [ ] Keyboard focus always visible (outline, glow, highlight)
 - [ ] Focus indicator contrast ≥ 3:1
@@ -468,7 +498,7 @@ Content must be robust enough to be interpreted by assistive technologies.
 
 ### 4.1 Compatible
 
-#### SC 4.1.2: Name, Role, Value (Level A)
+#### SC 4.1.2: Name, Role, Value (Level A) ⚙️ [HYBRID - Auto: API detection | Manual: Screen reader test]
 **zSpace Context:**
 - [ ] All UI components have accessible name
 - [ ] Role conveyed programmatically (button, link, checkbox)
@@ -487,9 +517,11 @@ Content must be robust enough to be interpreted by assistive technologies.
 
 These requirements are specific to zSpace stereoscopic 3D desktop platform.
 
-### 5.1 Stylus Alternatives
+### 5.1 Stylus Alternatives ⚙️ [HYBRID]
 
 #### Requirement: All stylus interactions have alternatives
+
+**Test Method:** Automated detection of keyboard input patterns + Manual full keyboard testing
 
 **zSpace Critical Checklist:**
 - [ ] **Stylus Button 0** has keyboard alternative (default: Space)
@@ -510,9 +542,11 @@ These requirements are specific to zSpace stereoscopic 3D desktop platform.
 
 ---
 
-### 5.2 Depth Perception
+### 5.2 Depth Perception ⚙️ [HYBRID]
 
 #### Requirement: Applications function without stereoscopic 3D
+
+**Test Method:** Automated component detection (DepthCueManager) + Manual 2D mode testing
 
 **Depth Perception Checklist:**
 - [ ] Application tested with stereoscopic 3D disabled
@@ -533,9 +567,11 @@ These requirements are specific to zSpace stereoscopic 3D desktop platform.
 
 ---
 
-### 5.3 Stereoscopic 3D Comfort
+### 5.3 Stereoscopic 3D Comfort 👤 [MANUAL]
 
 #### Requirement: Reduce eye strain and discomfort
+
+**Test Method:** Human evaluation of comfort, readability, and user experience
 
 **Stereoscopic Comfort Checklist:**
 - [ ] Text readable in stereoscopic 3D (no excessive depth)
@@ -547,9 +583,11 @@ These requirements are specific to zSpace stereoscopic 3D desktop platform.
 
 ---
 
-### 5.4 Desktop Integration
+### 5.4 Desktop Integration ⚙️ [HYBRID]
 
 #### Requirement: Integrate with Windows desktop accessibility
+
+**Test Method:** Automated API detection + Manual testing with Narrator/NVDA/Magnifier
 
 **Desktop Accessibility Checklist:**
 - [ ] **Windows Narrator** compatible (Win + Ctrl + Enter to test)
@@ -574,9 +612,11 @@ These requirements are specific to zSpace stereoscopic 3D desktop platform.
 
 **Unity's official Accessibility Module provides native screen reader support and accessibility APIs**
 
-### 6.1 Accessibility Hierarchy
+### 6.1 Accessibility Hierarchy 🤖 [AUTO]
 
 #### Requirement: Create and manage AccessibilityHierarchy for screen readers
+
+**Test Method:** Automated code pattern detection for AccessibilityHierarchy setup
 
 **AccessibilityHierarchy Checklist:**
 - [ ] `UnityAccessibilityIntegration` component added to scene
@@ -602,9 +642,11 @@ AssistiveSupport.activeHierarchy = m_Hierarchy;
 
 ---
 
-### 6.2 AccessibilityNode Requirements
+### 6.2 AccessibilityNode Requirements ⚙️ [HYBRID]
 
 #### Requirement: All interactive elements have AccessibilityNodes
+
+**Test Method:** Automated label/role detection + Manual quality verification
 
 **AccessibilityNode Checklist:**
 - [ ] All buttons have AccessibilityNode with label and role
@@ -922,9 +964,29 @@ void OnButtonPressed()
 
 ## Testing Workflow
 
-### 1. Automated Testing (Unity Test Framework)
+### 🤖 Automated Testing (~20% of requirements)
+
+**What can be automated:**
+- Component presence detection
+- Code pattern analysis (keyboard/screen reader APIs)
+- Input method detection
+- Unity Accessibility Module setup verification
+- Basic structural checks (target sizes, EventSystem, etc.)
+
+**How to run automated tests:**
+
+```bash
+# CLI Auditor - Instant code analysis
+node bin/audit.js /path/to/unity-project --verbose
+
+# Detects: Components, keyboard support, screen reader APIs, input methods
+# Output: Compliance score + detailed findings + recommendations
+```
+
 ```csharp
-// tests/ZSpaceAccessibilityTests.cs
+// Unity Test Framework - Automated unit tests
+// Window > General > Test Runner > Run All
+
 [Test]
 public void AllInteractiveObjects_HaveAccessibleLabels()
 {
@@ -946,38 +1008,67 @@ public void AllButtons_MeetMinimumTargetSize()
 }
 ```
 
-### 2. Manual Testing Checklist
+**See [testing/AUTOMATED-TESTS.md](testing/AUTOMATED-TESTS.md) for complete automated testing guide.**
 
-**Keyboard Testing:**
-- [ ] Unplug zSpace stylus
+---
+
+### 👤 Manual Testing (~80% of requirements)
+
+**What requires manual testing:**
+- Contrast ratio measurement (visual inspection)
+- Keyboard navigation usability
+- Screen reader output quality
+- Focus indicator visibility/contrast
+- Depth perception alternatives effectiveness
+- Stereoscopic 3D comfort
+- Desktop integration (Narrator, NVDA, Magnifier)
+- User experience and accessibility quality
+
+**Critical Manual Tests (⭐ Must Pass):**
+
+**1. Keyboard Navigation Testing (30 min)**
+- [ ] Disconnect zSpace stylus completely
 - [ ] Tab through all UI elements
 - [ ] Space/Enter activates buttons
-- [ ] Arrow keys navigate menus
-- [ ] ESC closes modals
-- [ ] Complete all application tasks
+- [ ] Arrow keys navigate menus/lists
+- [ ] ESC closes modals/popups
+- [ ] Complete ALL application tasks using keyboard only
+- **Pass Criteria:** All tasks completable without stylus
 
-**Screen Reader Testing:**
+**2. Screen Reader Testing (45 min)**
+- [ ] Build .exe application (File > Build Settings > Build)
 - [ ] Enable Windows Narrator (Win + Ctrl + Enter)
-- [ ] Navigate with Tab key
-- [ ] Verify all elements announced
-- [ ] Test with NVDA (free download)
-- [ ] Verify ARIA labels working
+- [ ] Navigate with Tab key through entire UI
+- [ ] Verify all elements announced with label + role
+- [ ] Test with NVDA: https://www.nvaccess.org/
+- [ ] Verify announcements for actions (button presses, state changes)
+- **Pass Criteria:** All interactive elements announced correctly
 
-**Contrast Testing:**
+**3. Contrast Measurement (30 min)**
 - [ ] Use WebAIM Contrast Checker: https://webaim.org/resources/contrastchecker/
-- [ ] Verify text contrast ≥ 4.5:1
-- [ ] Verify UI component contrast ≥ 3:1
+- [ ] Measure normal text: ≥ 4.5:1 contrast ratio
+- [ ] Measure large text: ≥ 3:1 contrast ratio
+- [ ] Measure UI components: ≥ 3:1 contrast ratio
+- [ ] Measure focus indicators: ≥ 3:1 contrast ratio
+- **Pass Criteria:** All text and UI meets minimum contrast
 
-**Depth Perception Testing:**
-- [ ] Remove zSpace glasses
-- [ ] View display in 2D mode
-- [ ] Complete all tasks without stereoscopic depth
-- [ ] Verify depth cues present (size, shadow, audio)
+**4. Depth Perception Testing (30 min)**
+- [ ] Remove zSpace tracked glasses
+- [ ] View zSpace display in 2D mode (no stereoscopic effect)
+- [ ] Complete all tasks without 3D depth
+- [ ] Verify depth cues present (size, shadows, occlusion, audio)
+- [ ] Confirm no critical info relies solely on depth
+- **Pass Criteria:** All tasks completable in 2D mode
 
-**Target Size Testing:**
-- [ ] Measure interactive elements (≥ 24x24px)
-- [ ] Use browser DevTools or ruler tool
-- [ ] Test with imprecise stylus control
+**5. Desktop Integration Testing (30 min)**
+- [ ] Test with Windows Narrator
+- [ ] Test with NVDA screen reader
+- [ ] Enable Windows High Contrast Mode (Alt + Left Shift + Print Screen)
+- [ ] Use Windows Magnifier (Win + Plus)
+- [ ] Verify standard Windows shortcuts work (Alt+F4, Alt+Tab)
+- **Pass Criteria:** Full Windows accessibility tool compatibility
+
+**See [testing/MANUAL-TESTS.md](testing/MANUAL-TESTS.md) for complete step-by-step manual testing procedures.**
 
 ---
 
