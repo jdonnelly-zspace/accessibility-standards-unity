@@ -1,0 +1,255 @@
+{
+  "timestamp": "2025-10-22T21:15:58.934402",
+  "wcag_criterion": "2.4.7 Focus Visible (Level AA)",
+  "summary": {
+    "timestamp": "2025-10-22T21:15:58.934486",
+    "wcag_criterion": "2.4.7 Focus Visible (Level AA)",
+    "elements_tested": 10,
+    "with_indicators": 5,
+    "without_indicators": 5,
+    "compliance_rate": 50.0,
+    "wcag_compliant": false
+  },
+  "results": [
+    {
+      "element_index": 1,
+      "screenshot_before": "focus_test_01_before.png",
+      "screenshot_after": "focus_test_01_after.png",
+      "has_focus_indicator": true,
+      "wcag_criterion": "2.4.7",
+      "timestamp": "2025-10-22T21:15:33.495640",
+      "indicator_color": "#cccccc",
+      "background_color": "#282828",
+      "contrast_ratio": 9.18,
+      "thickness_px": 1,
+      "passes_contrast": true,
+      "passes_thickness": false,
+      "location": {
+        "x": 587,
+        "y": 1284,
+        "w": 23,
+        "h": 46,
+        "area": 990
+      },
+      "wcag_compliant": false,
+      "issues": [
+        "too thin (1px < 2px)"
+      ]
+    },
+    {
+      "element_index": 2,
+      "screenshot_before": "focus_test_02_before.png",
+      "screenshot_after": "focus_test_02_after.png",
+      "has_focus_indicator": true,
+      "wcag_criterion": "2.4.7",
+      "timestamp": "2025-10-22T21:15:36.315153",
+      "indicator_color": "#72779e",
+      "background_color": "#212229",
+      "contrast_ratio": 3.66,
+      "thickness_px": 4,
+      "passes_contrast": true,
+      "passes_thickness": true,
+      "location": {
+        "x": 2566,
+        "y": 1392,
+        "w": 19,
+        "h": 30,
+        "area": 389
+      },
+      "wcag_compliant": true
+    },
+    {
+      "element_index": 3,
+      "screenshot_before": "focus_test_03_before.png",
+      "screenshot_after": "focus_test_03_after.png",
+      "has_focus_indicator": true,
+      "wcag_criterion": "2.4.7",
+      "timestamp": "2025-10-22T21:15:39.260608",
+      "indicator_color": "#0c0c0c",
+      "background_color": "#191919",
+      "contrast_ratio": 1.11,
+      "thickness_px": 1,
+      "passes_contrast": false,
+      "passes_thickness": false,
+      "location": {
+        "x": 2566,
+        "y": 1392,
+        "w": 19,
+        "h": 30,
+        "area": 389
+      },
+      "wcag_compliant": false,
+      "issues": [
+        "low contrast (1.11:1 < 3:1)",
+        "too thin (1px < 2px)"
+      ]
+    },
+    {
+      "element_index": 4,
+      "screenshot_before": "focus_test_04_before.png",
+      "screenshot_after": "focus_test_04_after.png",
+      "has_focus_indicator": true,
+      "wcag_criterion": "2.4.7",
+      "timestamp": "2025-10-22T21:15:42.082832",
+      "indicator_color": "#72779e",
+      "background_color": "#212229",
+      "contrast_ratio": 3.66,
+      "thickness_px": 4,
+      "passes_contrast": true,
+      "passes_thickness": true,
+      "location": {
+        "x": 2566,
+        "y": 1392,
+        "w": 19,
+        "h": 30,
+        "area": 389
+      },
+      "wcag_compliant": true
+    },
+    {
+      "element_index": 5,
+      "screenshot_before": "focus_test_05_before.png",
+      "screenshot_after": "focus_test_05_after.png",
+      "has_focus_indicator": true,
+      "wcag_criterion": "2.4.7",
+      "timestamp": "2025-10-22T21:15:44.854399",
+      "indicator_color": "#0c0c0c",
+      "background_color": "#191919",
+      "contrast_ratio": 1.11,
+      "thickness_px": 1,
+      "passes_contrast": false,
+      "passes_thickness": false,
+      "location": {
+        "x": 2566,
+        "y": 1392,
+        "w": 19,
+        "h": 30,
+        "area": 389
+      },
+      "wcag_compliant": false,
+      "issues": [
+        "low contrast (1.11:1 < 3:1)",
+        "too thin (1px < 2px)"
+      ]
+    },
+    {
+      "element_index": 6,
+      "screenshot_before": "focus_test_06_before.png",
+      "screenshot_after": "focus_test_06_after.png",
+      "has_focus_indicator": true,
+      "wcag_criterion": "2.4.7",
+      "timestamp": "2025-10-22T21:15:47.599872",
+      "indicator_color": "#72779e",
+      "background_color": "#212229",
+      "contrast_ratio": 3.66,
+      "thickness_px": 4,
+      "passes_contrast": true,
+      "passes_thickness": true,
+      "location": {
+        "x": 2566,
+        "y": 1392,
+        "w": 19,
+        "h": 30,
+        "area": 389
+      },
+      "wcag_compliant": true
+    },
+    {
+      "element_index": 7,
+      "screenshot_before": "focus_test_07_before.png",
+      "screenshot_after": "focus_test_07_after.png",
+      "has_focus_indicator": true,
+      "wcag_criterion": "2.4.7",
+      "timestamp": "2025-10-22T21:15:50.353342",
+      "indicator_color": "#0c0c0c",
+      "background_color": "#191919",
+      "contrast_ratio": 1.11,
+      "thickness_px": 1,
+      "passes_contrast": false,
+      "passes_thickness": false,
+      "location": {
+        "x": 2566,
+        "y": 1392,
+        "w": 19,
+        "h": 30,
+        "area": 389
+      },
+      "wcag_compliant": false,
+      "issues": [
+        "low contrast (1.11:1 < 3:1)",
+        "too thin (1px < 2px)"
+      ]
+    },
+    {
+      "element_index": 8,
+      "screenshot_before": "focus_test_08_before.png",
+      "screenshot_after": "focus_test_08_after.png",
+      "has_focus_indicator": true,
+      "wcag_criterion": "2.4.7",
+      "timestamp": "2025-10-22T21:15:53.137783",
+      "indicator_color": "#72779e",
+      "background_color": "#212229",
+      "contrast_ratio": 3.66,
+      "thickness_px": 4,
+      "passes_contrast": true,
+      "passes_thickness": true,
+      "location": {
+        "x": 2566,
+        "y": 1392,
+        "w": 19,
+        "h": 30,
+        "area": 389
+      },
+      "wcag_compliant": true
+    },
+    {
+      "element_index": 9,
+      "screenshot_before": "focus_test_09_before.png",
+      "screenshot_after": "focus_test_09_after.png",
+      "has_focus_indicator": true,
+      "wcag_criterion": "2.4.7",
+      "timestamp": "2025-10-22T21:15:55.970278",
+      "indicator_color": "#0c0c0c",
+      "background_color": "#191919",
+      "contrast_ratio": 1.11,
+      "thickness_px": 1,
+      "passes_contrast": false,
+      "passes_thickness": false,
+      "location": {
+        "x": 2566,
+        "y": 1392,
+        "w": 19,
+        "h": 30,
+        "area": 389
+      },
+      "wcag_compliant": false,
+      "issues": [
+        "low contrast (1.11:1 < 3:1)",
+        "too thin (1px < 2px)"
+      ]
+    },
+    {
+      "element_index": 10,
+      "screenshot_before": "focus_test_10_before.png",
+      "screenshot_after": "focus_test_10_after.png",
+      "has_focus_indicator": true,
+      "wcag_criterion": "2.4.7",
+      "timestamp": "2025-10-22T21:15:58.804964",
+      "indicator_color": "#72779e",
+      "background_color": "#212229",
+      "contrast_ratio": 3.66,
+      "thickness_px": 4,
+      "passes_contrast": true,
+      "passes_thickness": true,
+      "location": {
+        "x": 2566,
+        "y": 1392,
+        "w": 19,
+        "h": 30,
+        "area": 389
+      },
+      "wcag_compliant": true
+    }
+  ],
+  "screenshots_dir": "C:\\Users\\Jill\\accessibility-standards-unity\\automation\\screenshots\\career_explorer_focus"
+}
