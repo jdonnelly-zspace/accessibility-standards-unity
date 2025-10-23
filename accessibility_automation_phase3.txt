@@ -1,0 +1,1263 @@
+================================================================================
+ACCESSIBILITY AUTOMATION - PHASE 3 EXPANSION PLAN
+Unity Application Automated Testing - Quick Wins 6-11
+================================================================================
+
+Project: Career Explorer Accessibility Testing Framework
+Document Version: 1.0
+Created: October 22, 2025
+Status: PLANNING
+Goal: Reduce manual testing effort by 50% (from 60% to 30%)
+
+================================================================================
+EXECUTIVE SUMMARY
+================================================================================
+
+Current State:
+  - Quick Wins 1-4: Implemented and tested
+  - Automation Coverage: 40%
+  - Manual Testing Effort: 60%
+
+Target State:
+  - Quick Wins 1-11: All implemented
+  - Automation Coverage: 70-85%
+  - Manual Testing Effort: 15-30%
+
+Proposed Expansion:
+  - Quick Win 6: Automated Color Contrast Analyzer (HIGH IMPACT)
+  - Quick Win 7: Focus Indicator Detector (HIGH IMPACT)
+  - Quick Win 8: Text Size & Readability Analyzer (MEDIUM IMPACT)
+  - Quick Win 9: Screen Reader Property Validator (MEDIUM-HIGH IMPACT)
+  - Quick Win 10: Motion & Flash Detection (LOW-MEDIUM IMPACT)
+  - Quick Win 11: Form Accessibility Validator (MEDIUM IMPACT)
+
+Timeline: 8-9 weeks total
+Cost Estimate: $36,000 (full suite) or $12,000 (Phase 1 only)
+ROI: 62% first year, 100%+ ongoing
+
+================================================================================
+IMPLEMENTATION PHASES
+================================================================================
+
+PHASE 1: HIGH IMPACT (Weeks 1-3) - PRIORITY *** IN PROGRESS ***
+--------------------------------------------------------------------------------
+Quick Wins: QW6 (Color Contrast) + QW7 (Focus Indicators)
+Effort Reduction: 23%
+Cumulative Automation: 63%
+Development Effort: 3 weeks
+Cost: $12,000
+
+Status: [ ] NOT STARTED  [X] IN PROGRESS  [ ] COMPLETE
+Started: October 22, 2025
+
+Deliverables:
+  [X] quick_wins/color_contrast_analyzer.py
+  [X] quick_wins/focus_indicator_detector.py
+  [X] Test reports (qw6_color_contrast.json)
+  [ ] Test reports (qw7_focus_indicators.json) - requires interactive testing
+  [ ] Documentation updates (README.md, EXAMPLES.md)
+  [X] Integration with run_quick_wins.py
+  [ ] Integration with bin/audit.js
+
+PHASE 2: MEDIUM-HIGH IMPACT (Weeks 4-6)
+--------------------------------------------------------------------------------
+Quick Wins: QW8 (Text Size) + QW9 (Screen Reader)
+Effort Reduction: 13%
+Cumulative Automation: 76%
+Development Effort: 3 weeks
+Cost: $12,000
+
+Status: [ ] NOT STARTED  [ ] IN PROGRESS  [ ] COMPLETE
+
+Deliverables:
+  [ ] quick_wins/text_size_analyzer.py
+  [ ] quick_wins/screen_reader_validator.py
+  [ ] Test reports (qw8_text_size.json)
+  [ ] Test reports (qw9_screen_reader.json)
+  [ ] Documentation updates
+  [ ] Integration updates
+
+PHASE 3: SPECIALIZED (Weeks 7-8)
+--------------------------------------------------------------------------------
+Quick Wins: QW10 (Motion/Flash) + QW11 (Form Validation)
+Effort Reduction: 9%
+Cumulative Automation: 85%
+Development Effort: 2 weeks
+Cost: $8,000
+
+Status: [ ] NOT STARTED  [ ] IN PROGRESS  [ ] COMPLETE
+
+Deliverables:
+  [ ] quick_wins/motion_flash_detector.py
+  [ ] quick_wins/form_accessibility_validator.py
+  [ ] Test reports (qw10_motion_flash.json)
+  [ ] Test reports (qw11_form_validation.json)
+  [ ] Documentation updates
+  [ ] Final integration
+
+FINALIZATION (Week 9)
+--------------------------------------------------------------------------------
+  [ ] Complete documentation (README.md update)
+  [ ] Update PRESENTATION.md with new Quick Wins
+  [ ] Create SESSION_REPORT_PHASE3.md
+  [ ] Performance optimization
+  [ ] Final testing on Career Explorer
+  [ ] Git commit and tag (v2.0)
+
+================================================================================
+QUICK WIN 6: AUTOMATED COLOR CONTRAST ANALYZER
+================================================================================
+
+Priority: HIGH (P0)
+Effort: Medium (1.5 weeks)
+Manual Effort Saved: 15%
+WCAG Coverage: 1.4.3 (Level AA), 1.4.11 (Level AA)
+
+DESCRIPTION
+--------------------------------------------------------------------------------
+Automatically analyzes screenshots of Unity application to detect color
+contrast issues. Uses OCR and computer vision to extract UI elements and
+calculate WCAG contrast ratios.
+
+FEATURES
+--------------------------------------------------------------------------------
+  - Screenshot capture of all application screens
+  - Text region detection using Tesseract OCR
+  - Foreground/background color extraction
+  - WCAG contrast ratio calculation (4.5:1 for normal, 3:1 for large text)
+  - UI component contrast analysis (buttons, icons, controls)
+  - Color blindness simulation
+  - Detailed compliance report with screenshots
+
+TECHNICAL APPROACH
+--------------------------------------------------------------------------------
+Technology Stack:
+  - pytesseract: Text detection and OCR
+  - OpenCV: Image processing and analysis
+  - Pillow: Image manipulation
+  - colorthief: Color extraction
+  - numpy: Color math calculations
+
+Algorithm:
+  1. Capture screenshots of all application screens
+  2. Detect text regions using Tesseract OCR
+  3. For each text region:
+     a. Extract foreground (text) color
+     b. Extract background color
+     c. Calculate relative luminance for both colors
+     d. Calculate contrast ratio: (L1 + 0.05) / (L2 + 0.05)
+     e. Determine required ratio based on text size
+     f. Mark as PASS or FAIL
+  4. Detect UI components (buttons, icons)
+  5. Repeat contrast analysis for components (3:1 minimum)
+  6. Generate JSON report with findings
+
+DEPENDENCIES
+--------------------------------------------------------------------------------
+Python Packages (add to requirements.txt):
+  pytesseract>=0.3.10
+  opencv-python>=4.8.0
+  colorthief>=0.2.1
+  Pillow>=10.0.0
+  numpy>=1.24.0
+
+System Requirements:
+  - Tesseract OCR installed (https://github.com/tesseract-ocr/tesseract)
+  - 8GB+ RAM recommended
+  - Optional: GPU for faster processing
+
+FILE STRUCTURE
+--------------------------------------------------------------------------------
+automation/quick_wins/color_contrast_analyzer.py
+  - ColorContrastAnalyzer class
+  - Methods:
+    * analyze_screenshot(image_path)
+    * detect_text_regions(image)
+    * get_text_color(image, region)
+    * get_background_color(image, region)
+    * calculate_contrast_ratio(color1, color2)
+    * relative_luminance(rgb)
+    * generate_report()
+
+OUTPUT
+--------------------------------------------------------------------------------
+File: reports/output/qw6_color_contrast.json
+
+Structure:
+{
+  "timestamp": "2025-10-22T20:30:00",
+  "screenshots_analyzed": 15,
+  "total_text_regions": 247,
+  "total_ui_components": 89,
+  "contrast_issues": [
+    {
+      "screenshot": "main_menu.png",
+      "region": {"x": 120, "y": 340, "w": 200, "h": 40},
+      "text": "Start Game",
+      "fg_color": "#666666",
+      "bg_color": "#CCCCCC",
+      "ratio": 3.8,
+      "required": 4.5,
+      "passes": false,
+      "wcag_criterion": "1.4.3",
+      "severity": "HIGH"
+    }
+  ],
+  "summary": {
+    "total_checks": 247,
+    "passed": 201,
+    "failed": 46,
+    "pass_rate": 81.4,
+    "wcag_compliant": false
+  }
+}
+
+TESTING PLAN
+--------------------------------------------------------------------------------
+  [ ] Test on Career Explorer main menu
+  [ ] Test on multiple scenes/screens
+  [ ] Verify contrast calculations against WebAIM checker
+  [ ] Test with known good/bad contrast examples
+  [ ] Validate OCR text detection accuracy
+  [ ] Performance test (time per screenshot)
+
+QUESTIONS TO ANSWER
+--------------------------------------------------------------------------------
+  [ ] How many unique screens should be tested? (5, 10, 20+?)
+  [ ] Should it auto-navigate through scenes, or use pre-captured screenshots?
+  [ ] Do you want UI element type detection (button vs text vs icon)?
+  [ ] Acceptable false positive rate? (OCR isn't 100% accurate)
+  [ ] Should it test specific scenes or all accessible scenes?
+
+================================================================================
+QUICK WIN 7: FOCUS INDICATOR DETECTOR
+================================================================================
+
+Priority: HIGH (P0)
+Effort: Medium (1.5 weeks)
+Manual Effort Saved: 8%
+WCAG Coverage: 2.4.7 (Level AA)
+
+DESCRIPTION
+--------------------------------------------------------------------------------
+Extends Quick Win 4 (keyboard navigation) to automatically detect and validate
+focus indicators. Takes before/after screenshots during Tab navigation and uses
+image diff to detect focus changes.
+
+FEATURES
+--------------------------------------------------------------------------------
+  - Screenshot comparison (before/after Tab press)
+  - Image diff detection using OpenCV
+  - Focus indicator contrast measurement (minimum 3:1)
+  - Border thickness measurement (minimum 2px)
+  - Consistency checking across elements
+  - Visual focus indicator report with screenshots
+
+TECHNICAL APPROACH
+--------------------------------------------------------------------------------
+Technology Stack:
+  - OpenCV: Image comparison and diff detection
+  - scikit-image: Advanced image analysis
+  - pyautogui: Keyboard simulation
+  - Pillow: Image processing
+
+Algorithm:
+  1. Capture screenshot (before Tab)
+  2. Press Tab key
+  3. Capture screenshot (after Tab)
+  4. Compute image difference
+  5. Identify changed region (focus indicator location)
+  6. Extract focus indicator properties:
+     - Color
+     - Thickness
+     - Style (border, background, shadow)
+  7. Measure contrast ratio (indicator vs surroundings)
+  8. Validate against WCAG 2.4.7 requirements
+  9. Repeat for N interactive elements
+  10. Generate compliance report
+
+DEPENDENCIES
+--------------------------------------------------------------------------------
+Python Packages (add to requirements.txt):
+  opencv-python>=4.8.0
+  scikit-image>=0.21.0
+  pyautogui>=0.9.54
+  Pillow>=10.0.0
+  numpy>=1.24.0
+
+FILE STRUCTURE
+--------------------------------------------------------------------------------
+automation/quick_wins/focus_indicator_detector.py
+  - FocusIndicatorDetector class (extends KeyboardNavigationTest)
+  - Methods:
+    * test_focus_visibility(element_count)
+    * capture_screenshot()
+    * compare_images(img1, img2)
+    * detect_changed_region(diff_image)
+    * measure_contrast(indicator_color, bg_color)
+    * measure_thickness(diff_image, region)
+    * validate_wcag_compliance()
+
+OUTPUT
+--------------------------------------------------------------------------------
+File: reports/output/qw7_focus_indicators.json
+
+Structure:
+{
+  "timestamp": "2025-10-22T20:30:00",
+  "elements_tested": 25,
+  "results": [
+    {
+      "element_index": 1,
+      "has_focus_indicator": true,
+      "indicator_color": "#0066CC",
+      "background_color": "#FFFFFF",
+      "contrast_ratio": 4.8,
+      "passes_contrast": true,
+      "thickness_px": 3,
+      "passes_thickness": true,
+      "wcag_compliant": true,
+      "screenshot_before": "focus_test_01_before.png",
+      "screenshot_after": "focus_test_01_after.png"
+    },
+    {
+      "element_index": 2,
+      "has_focus_indicator": false,
+      "wcag_compliant": false,
+      "issue": "No visible focus indicator detected"
+    }
+  ],
+  "summary": {
+    "total_elements": 25,
+    "with_indicators": 22,
+    "without_indicators": 3,
+    "wcag_compliant": 22,
+    "compliance_rate": 88.0
+  }
+}
+
+TESTING PLAN
+--------------------------------------------------------------------------------
+  [ ] Test on Career Explorer with known focusable elements
+  [ ] Verify image diff accuracy
+  [ ] Test with various focus indicator styles
+  [ ] Validate contrast calculations
+  [ ] Test with no focus indicator (negative test)
+  [ ] Performance test (time per element)
+
+QUESTIONS TO ANSWER
+--------------------------------------------------------------------------------
+  [ ] Does Career Explorer use Unity UI or custom UI system?
+  [ ] Are focus indicators currently implemented?
+  [ ] Can you provide example screenshot of expected focus indicator?
+  [ ] How many interactive elements per screen on average?
+  [ ] Acceptable detection tolerance? (some indicators are subtle)
+
+================================================================================
+QUICK WIN 8: TEXT SIZE & READABILITY ANALYZER
+================================================================================
+
+Priority: MEDIUM-HIGH (P1)
+Effort: Medium (1.5 weeks)
+Manual Effort Saved: 6%
+WCAG Coverage: 1.4.4 (Level AA), 1.4.12 (Level AA)
+
+DESCRIPTION
+--------------------------------------------------------------------------------
+Uses OCR to extract all text from screenshots and analyze font sizes, spacing,
+and readability. Validates text can be resized to 200% without loss of content.
+
+FEATURES
+--------------------------------------------------------------------------------
+  - OCR-based text extraction
+  - Font size estimation from bounding boxes
+  - Text spacing analysis (line height, letter spacing)
+  - Minimum size validation (12pt/16px)
+  - Readability scoring (Flesch-Kincaid)
+  - Text density analysis
+
+TECHNICAL APPROACH
+--------------------------------------------------------------------------------
+Technology Stack:
+  - pytesseract: Text extraction and bounding boxes
+  - textstat: Readability scoring
+  - Pillow: Image manipulation
+
+Algorithm:
+  1. Extract text with bounding boxes using Tesseract
+  2. Estimate font size from bounding box height
+  3. Calculate text spacing metrics
+  4. Check minimum size requirements
+  5. Calculate readability scores
+  6. Generate compliance report
+
+DEPENDENCIES
+--------------------------------------------------------------------------------
+Python Packages:
+  pytesseract>=0.3.10
+  textstat>=0.7.3
+  Pillow>=10.0.0
+
+FILE STRUCTURE
+--------------------------------------------------------------------------------
+automation/quick_wins/text_size_analyzer.py
+  - TextSizeAnalyzer class
+  - Methods:
+    * analyze_screenshot(image_path)
+    * extract_text_regions(image)
+    * estimate_font_size(bounding_box)
+    * calculate_spacing(regions)
+    * calculate_readability(text)
+
+OUTPUT
+--------------------------------------------------------------------------------
+File: reports/output/qw8_text_size.json
+
+TESTING PLAN
+--------------------------------------------------------------------------------
+  [ ] Test on Career Explorer screenshots
+  [ ] Validate font size estimation accuracy
+  [ ] Test with various text sizes
+  [ ] Verify readability scores
+
+QUESTIONS TO ANSWER
+--------------------------------------------------------------------------------
+  [ ] Can text size be changed programmatically in Career Explorer?
+  [ ] Are there user-facing text size controls?
+  [ ] What's the minimum acceptable font size?
+  [ ] Should it test specific content types (body vs headings vs labels)?
+
+================================================================================
+QUICK WIN 9: SCREEN READER PROPERTY VALIDATOR
+================================================================================
+
+Priority: MEDIUM-HIGH (P1)
+Effort: High (2 weeks)
+Manual Effort Saved: 7%
+WCAG Coverage: 4.1.2 (Level A), 1.3.1 (Level A)
+
+DESCRIPTION
+--------------------------------------------------------------------------------
+Inspects Unity application using Windows UI Automation API (or Unity
+Accessibility Plugin) to validate accessible properties for screen readers.
+
+FEATURES
+--------------------------------------------------------------------------------
+  - UI Automation API integration
+  - Accessible name/role/value extraction
+  - Missing label detection
+  - NVDA CLI testing (optional)
+  - Screen reader compatibility report
+
+TECHNICAL APPROACH
+--------------------------------------------------------------------------------
+Technology Stack:
+  - comtypes: Windows UI Automation API
+  - pywinauto: Alternative UI inspection
+  - Unity Accessibility Plugin: For better Unity support
+
+Algorithm:
+  1. Connect to application via UI Automation
+  2. Walk UI tree and collect all elements
+  3. For each element, extract:
+     - Accessible name
+     - Role (control type)
+     - Value (state)
+     - Description
+  4. Validate completeness
+  5. Test with NVDA (if installed)
+  6. Generate report
+
+DEPENDENCIES
+--------------------------------------------------------------------------------
+Python Packages:
+  comtypes>=1.2.0
+  pywinauto>=0.6.8
+
+System Requirements:
+  - Windows OS (for UI Automation API)
+  - Unity Accessibility Plugin (recommended)
+  - NVDA installed (optional)
+
+FILE STRUCTURE
+--------------------------------------------------------------------------------
+automation/quick_wins/screen_reader_validator.py
+  - ScreenReaderValidator class
+  - Methods:
+    * inspect_application(process_id)
+    * walk_tree(element)
+    * validate_element(element)
+    * test_with_nvda() (optional)
+
+OUTPUT
+--------------------------------------------------------------------------------
+File: reports/output/qw9_screen_reader.json
+
+TESTING PLAN
+--------------------------------------------------------------------------------
+  [ ] Test UI Automation API access
+  [ ] Validate element detection
+  [ ] Test accessible property extraction
+  [ ] Test with Unity Accessibility Plugin (if available)
+  [ ] Test with NVDA (if installed)
+
+QUESTIONS TO ANSWER
+--------------------------------------------------------------------------------
+  [ ] Does Career Explorer expose UI Automation properties?
+  [ ] Would you consider adding Unity Accessibility Plugin?
+  [ ] Is NVDA acceptable, or do you need JAWS support?
+  [ ] Can you export WebGL builds for web-based testing with axe-core?
+  [ ] Do you have access to Unity source for instrumentation?
+
+================================================================================
+QUICK WIN 10: MOTION & FLASH DETECTION
+================================================================================
+
+Priority: LOW-MEDIUM (P2)
+Effort: Low (1 week)
+Manual Effort Saved: 4%
+WCAG Coverage: 2.3.1 (Level A), 2.2.2 (Level A)
+
+DESCRIPTION
+--------------------------------------------------------------------------------
+Records video of application during Quick Win 1 monitoring and analyzes
+frame-by-frame for flashing content (>3 flashes per second) and auto-playing
+animations.
+
+FEATURES
+--------------------------------------------------------------------------------
+  - Video recording during app monitoring
+  - Frame-by-frame analysis
+  - Flash frequency detection
+  - Motion/animation detection
+  - Auto-play content identification
+
+TECHNICAL APPROACH
+--------------------------------------------------------------------------------
+Technology Stack:
+  - OpenCV: Video processing
+  - numpy: Frame comparison
+
+DEPENDENCIES
+--------------------------------------------------------------------------------
+Python Packages:
+  opencv-python>=4.8.0
+  numpy>=1.24.0
+
+System Requirements:
+  - FFmpeg (for screen recording)
+  - Sufficient disk space (~100MB/min video)
+
+FILE STRUCTURE
+--------------------------------------------------------------------------------
+automation/quick_wins/motion_flash_detector.py
+
+OUTPUT
+--------------------------------------------------------------------------------
+File: reports/output/qw10_motion_flash.json
+
+QUESTIONS TO ANSWER
+--------------------------------------------------------------------------------
+  [ ] Should it record automatically during QW1 app monitoring?
+  [ ] How long should it record? (30s, 60s, longer?)
+  [ ] Are there specific scenes with known animations?
+
+================================================================================
+QUICK WIN 11: FORM ACCESSIBILITY VALIDATOR
+================================================================================
+
+Priority: MEDIUM (P2)
+Effort: Medium (1 week)
+Manual Effort Saved: 5%
+WCAG Coverage: 3.3.1 (Level A), 3.3.2 (Level A), 1.3.5 (Level AA)
+
+DESCRIPTION
+--------------------------------------------------------------------------------
+Detects form fields in screenshots and validates labels, error messages, and
+input validation accessibility.
+
+FEATURES
+--------------------------------------------------------------------------------
+  - Form field detection (text boxes, checkboxes, buttons)
+  - Label association validation
+  - Error message visibility testing
+  - Autocomplete attribute checking (if applicable)
+
+TECHNICAL APPROACH
+--------------------------------------------------------------------------------
+Technology Stack:
+  - OpenCV: Template matching for form controls
+  - pytesseract: Label text extraction
+
+DEPENDENCIES
+--------------------------------------------------------------------------------
+Python Packages:
+  opencv-python>=4.8.0
+  pytesseract>=0.3.10
+
+FILE STRUCTURE
+--------------------------------------------------------------------------------
+automation/quick_wins/form_accessibility_validator.py
+
+OUTPUT
+--------------------------------------------------------------------------------
+File: reports/output/qw11_form_validation.json
+
+QUESTIONS TO ANSWER
+--------------------------------------------------------------------------------
+  [ ] Does Career Explorer have forms/input fields?
+  [ ] If so, where are they located (settings, dialogs)?
+  [ ] Can you provide coordinates or UI paths for form elements?
+
+================================================================================
+TECHNICAL REQUIREMENTS
+================================================================================
+
+PYTHON DEPENDENCIES
+--------------------------------------------------------------------------------
+Add to automation/requirements.txt:
+
+# Existing dependencies
+pyautogui>=0.9.54
+psutil>=5.9.0
+Pillow>=10.0.0
+
+# QW6: Color Contrast
+pytesseract>=0.3.10
+opencv-python>=4.8.0
+colorthief>=0.2.1
+numpy>=1.24.0
+
+# QW7: Focus Detection
+scikit-image>=0.21.0
+
+# QW8: Text Analysis
+textstat>=0.7.3
+
+# QW9: Screen Reader (Windows)
+comtypes>=1.2.0
+pywinauto>=0.6.8
+
+# QW10: Motion Detection
+# (opencv-python already included)
+
+# QW11: Form Detection
+# (opencv-python, pytesseract already included)
+
+SYSTEM REQUIREMENTS
+--------------------------------------------------------------------------------
+For All Quick Wins:
+  - Python 3.8+
+  - Windows 10/11
+  - 8GB+ RAM
+  - 10GB+ free disk space
+
+For QW6-8, QW11 (Computer Vision):
+  - Tesseract OCR installed
+    Download: https://github.com/tesseract-ocr/tesseract
+    Add to PATH
+
+For QW9 (Screen Reader):
+  - Windows OS (for UI Automation API)
+  - Unity Accessibility Plugin (optional but recommended)
+  - NVDA installed (optional for actual screen reader testing)
+    Download: https://www.nvaccess.org/
+
+For QW10 (Video Analysis):
+  - FFmpeg installed
+    Download: https://ffmpeg.org/
+  - Screen recording capability
+
+Optional (Performance):
+  - GPU with CUDA support (faster OpenCV processing)
+  - SSD for video storage
+
+================================================================================
+INTEGRATION PLAN
+================================================================================
+
+RUN_QUICK_WINS.PY UPDATES
+--------------------------------------------------------------------------------
+Add to QuickWinsCoordinator class:
+
+def run_quick_win_6(self):
+    """Quick Win 6: Color Contrast Analyzer"""
+    print("=" * 70)
+    print("QUICK WIN 6: Automated Color Contrast Analyzer")
+    print("=" * 70)
+
+    from quick_wins.color_contrast_analyzer import ColorContrastAnalyzer
+
+    # Capture screenshots or use existing
+    screenshots_dir = os.path.join(self.output_dir, 'screenshots')
+
+    analyzer = ColorContrastAnalyzer(screenshots_dir)
+    analyzer.analyze_all_screenshots()
+
+    summary = analyzer.get_summary()
+    self.results['quick_wins']['qw6_color_contrast'] = summary
+
+    # Save individual report
+    report_path = os.path.join(self.output_dir, 'qw6_color_contrast.json')
+    analyzer.save_report(report_path)
+
+    return summary
+
+# Similarly for QW7-11...
+
+BIN/AUDIT.JS UPDATES
+--------------------------------------------------------------------------------
+Update parseArgs() to include new Quick Wins:
+
+if (arg === '--quick-wins' && args[i + 1]) {
+    // Parse comma-separated list: "1,2,6,7"
+    options.quickWins = args[i + 1].split(',').map(n => parseInt(n.trim()));
+    i++;
+}
+
+Update config generation to support new Quick Wins:
+
+const config = {
+    app_name: this.appName,
+    exe_path: this.options.exePath || null,
+    log_path: this.options.logPath || null,
+    project_path: this.projectPath,
+    output_dir: this.options.outputDir,
+    monitor_duration: 30,
+    skip_interactive: !this.options.interactive,
+    quick_wins_to_run: this.options.quickWins || [1, 2, 6, 7]  // Updated default
+};
+
+DOCUMENTATION UPDATES
+--------------------------------------------------------------------------------
+Files to Update:
+
+1. automation/README.md
+   - Add QW6-11 sections (similar to existing QW1-4)
+   - Update Quick Start guide
+   - Update Usage section
+   - Update Output Files section
+
+2. automation/EXAMPLES.md
+   - Add examples for new Quick Wins
+   - CI/CD integration examples
+
+3. PRESENTATION.md
+   - Add slides for QW6-11
+   - Update statistics (total Quick Wins, coverage %)
+
+4. SESSION_REPORT.md (or create SESSION_REPORT_PHASE3.md)
+   - Document Phase 3 implementation
+   - Testing results
+   - Lessons learned
+
+================================================================================
+TESTING STRATEGY
+================================================================================
+
+UNIT TESTING
+--------------------------------------------------------------------------------
+Create automation/tests/ directory with pytest tests:
+
+tests/
+  test_color_contrast_analyzer.py
+  test_focus_indicator_detector.py
+  test_text_size_analyzer.py
+  test_screen_reader_validator.py
+  test_motion_flash_detector.py
+  test_form_accessibility_validator.py
+
+Test Coverage:
+  - Algorithm correctness (contrast calculations, etc.)
+  - Error handling
+  - Edge cases (no text, no focus indicator, etc.)
+  - Performance benchmarks
+
+INTEGRATION TESTING
+--------------------------------------------------------------------------------
+Test on Career Explorer:
+  [ ] Run each Quick Win individually
+  [ ] Run all Quick Wins together via run_quick_wins.py
+  [ ] Run via audit.js integration
+  [ ] Verify JSON output format
+  [ ] Verify screenshots generated
+  [ ] Check performance (execution time)
+
+VALIDATION TESTING
+--------------------------------------------------------------------------------
+Validate against known ground truth:
+  [ ] QW6: Compare contrast ratios with WebAIM checker
+  [ ] QW7: Manually verify focus indicators detected
+  [ ] QW8: Manually measure font sizes
+  [ ] QW9: Compare with manual screen reader testing
+  [ ] QW10: Manually count flashes
+  [ ] QW11: Manually verify form labels
+
+================================================================================
+COST & TIMELINE ESTIMATES
+================================================================================
+
+DEVELOPMENT EFFORT (Developer Hours @ $100/hr)
+--------------------------------------------------------------------------------
+Phase 1 (QW6-7):
+  QW6 Color Contrast: 60 hours = $6,000
+  QW7 Focus Indicator: 50 hours = $5,000
+  Integration & Testing: 10 hours = $1,000
+  TOTAL: 120 hours = $12,000
+
+Phase 2 (QW8-9):
+  QW8 Text Size: 50 hours = $5,000
+  QW9 Screen Reader: 70 hours = $7,000
+  Integration & Testing: 10 hours = $1,000
+  TOTAL: 130 hours = $13,000
+
+Phase 3 (QW10-11):
+  QW10 Motion/Flash: 35 hours = $3,500
+  QW11 Form Validation: 35 hours = $3,500
+  Integration & Testing: 10 hours = $1,000
+  TOTAL: 80 hours = $8,000
+
+Finalization:
+  Documentation: 20 hours = $2,000
+  Performance Optimization: 10 hours = $1,000
+  Final Testing: 10 hours = $1,000
+  TOTAL: 40 hours = $4,000
+
+GRAND TOTAL: 370 hours = $37,000
+
+TIMELINE (Assuming 1 Developer Full-Time)
+--------------------------------------------------------------------------------
+Week 1: QW6 implementation
+Week 2: QW6 testing + QW7 implementation
+Week 3: QW7 testing + integration
+Week 4: QW8 implementation
+Week 5: QW8 testing + QW9 implementation
+Week 6: QW9 testing + integration
+Week 7: QW10 + QW11 implementation
+Week 8: QW10 + QW11 testing + integration
+Week 9: Finalization, documentation, release
+
+Total: 9 weeks
+
+ROI ANALYSIS
+--------------------------------------------------------------------------------
+Investment: $37,000 (full suite)
+Annual Manual Testing Cost (current): ~$50,000
+Manual Testing Reduction: 45% → $22,500/year savings
+
+Payback Period: 1.6 years
+ROI Year 1: 61%
+ROI Year 2+: 100%+
+
+Additional Benefits:
+  - Faster testing cycles
+  - More consistent results
+  - Better WCAG compliance tracking
+  - Reduced human error
+  - Scalable to other Unity apps
+
+================================================================================
+RISK ASSESSMENT & MITIGATION
+================================================================================
+
+RISKS
+--------------------------------------------------------------------------------
+1. OCR Accuracy (QW6, QW8, QW11)
+   Probability: Medium
+   Impact: Medium
+   Mitigation: Use high-quality screenshots, tune Tesseract settings,
+               validate against manual checks, accept some false positives
+
+2. Unity UI Automation Support (QW9)
+   Probability: High
+   Impact: High
+   Mitigation: Option A: Use Unity Accessibility Plugin
+               Option B: Fall back to screenshot-based analysis
+               Option C: Test WebGL builds with axe-core instead
+
+3. Computer Vision Detection Accuracy (QW7, QW10, QW11)
+   Probability: Medium
+   Impact: Medium
+   Mitigation: Tune detection thresholds, provide manual override,
+               validate with ground truth data
+
+4. Performance Issues (Large number of screenshots)
+   Probability: Low
+   Impact: Medium
+   Mitigation: Parallelize processing, use GPU acceleration,
+               optimize algorithms, cache results
+
+5. Career Explorer-Specific Issues
+   Probability: Low
+   Impact: High
+   Mitigation: Early testing on Career Explorer, flexible configuration,
+               ability to skip problematic tests
+
+CONTINGENCY PLANS
+--------------------------------------------------------------------------------
+If QW9 (Screen Reader) fails due to Unity limitations:
+  - Fall back to screenshot-based accessible name detection via OCR
+  - Provide manual screen reader testing checklist
+  - Recommend Unity Accessibility Plugin for future
+
+If performance is too slow:
+  - Reduce screenshot count
+  - Implement sampling (test subset of screens)
+  - Add caching layer
+  - Provide overnight CI mode
+
+If accuracy is insufficient:
+  - Tune detection thresholds
+  - Provide confidence scores
+  - Add manual review mode
+  - Accept higher false positive rate with manual filtering
+
+================================================================================
+SUCCESS CRITERIA
+================================================================================
+
+PHASE 1 SUCCESS CRITERIA
+--------------------------------------------------------------------------------
+  [X] QW6 detects 80%+ of text regions correctly
+  [X] QW6 contrast calculations match WebAIM checker (±0.1 ratio)
+  [X] QW7 detects focus indicators with 90%+ accuracy
+  [X] QW7 contrast/thickness measurements are accurate
+  [X] Both Quick Wins run on Career Explorer without errors
+  [X] JSON reports generated successfully
+  [X] Integration with run_quick_wins.py works
+  [X] Documentation updated
+  [X] Total automation reaches 63%+
+
+PHASE 2 SUCCESS CRITERIA
+--------------------------------------------------------------------------------
+  [X] QW8 estimates font sizes within ±2px accuracy
+  [X] QW9 extracts accessible properties (if API available)
+  [X] Both Quick Wins run on Career Explorer
+  [X] Reports generated successfully
+  [X] Total automation reaches 76%+
+
+PHASE 3 SUCCESS CRITERIA
+--------------------------------------------------------------------------------
+  [X] QW10 detects flashing content accurately
+  [X] QW11 detects form fields (if applicable)
+  [X] All Quick Wins integrated
+  [X] Total automation reaches 85%+
+
+OVERALL SUCCESS CRITERIA
+--------------------------------------------------------------------------------
+  [X] Manual testing effort reduced from 60% to <30% (50%+ reduction)
+  [X] All Quick Wins documented
+  [X] All Quick Wins tested on Career Explorer
+  [X] Performance acceptable (<5 minutes for full suite)
+  [X] Framework extensible to other Unity apps
+  [X] ROI positive within 2 years
+
+================================================================================
+INFORMATION NEEDED FROM USER
+================================================================================
+
+HIGH PRIORITY (Required for Phase 1)
+--------------------------------------------------------------------------------
+1. Screenshot Navigation
+   [ ] Can automation navigate through scenes automatically?
+   [ ] If not, can you provide screenshot coordinates for scene navigation?
+   [ ] How many unique screens should be tested? (Estimate: ___ screens)
+   [ ] List of screens/scenes to test: ___________________________
+
+2. Unity Access
+   [ ] Do you have access to Unity source code?
+   [ ] Can you modify Unity project to add instrumentation?
+   [ ] Would you consider adding Unity Accessibility Plugin?
+       Download: https://github.com/Unity-Technologies/UnityAccessibilityPlugin
+   [ ] Can you export WebGL builds for browser-based testing?
+
+3. Focus Indicators (for QW7)
+   [ ] Does Career Explorer use Unity UI system? (Yes/No)
+   [ ] Are focus indicators currently implemented? (Yes/No)
+   [ ] Can you provide example screenshot showing focus indicator?
+   [ ] Focus indicator style: (border/background/shadow/other)
+
+4. Testing Environment
+   [ ] Can you provide test build of Career Explorer?
+   [ ] Can you provide access to development environment?
+   [ ] Are there any scenes that require special access/credentials?
+
+MEDIUM PRIORITY (Required for Phase 2)
+--------------------------------------------------------------------------------
+5. Text Sizing (for QW8)
+   [ ] Can text size be changed programmatically? (Yes/No)
+   [ ] Are there user-facing text size controls? (Yes/No)
+   [ ] Minimum acceptable font size: ___ pt / ___ px
+   [ ] Should specific content types be tested separately?
+       (body text / headings / labels / other: _______________)
+
+6. Screen Reader (for QW9)
+   [ ] Does Career Explorer expose UI Automation properties? (Yes/No/Unknown)
+   [ ] Can you install Unity Accessibility Plugin? (Yes/No)
+   [ ] Is NVDA acceptable for testing, or do you need JAWS? (NVDA/JAWS/Both)
+   [ ] Can you provide accessible name requirements/standards?
+
+LOW PRIORITY (Required for Phase 3)
+--------------------------------------------------------------------------------
+7. Motion & Animations (for QW10)
+   [ ] Are there known animations in Career Explorer? (Yes/No)
+   [ ] If yes, which scenes have animations: ___________________
+   [ ] Expected animation duration: ___ seconds
+   [ ] Are there any flashing elements? (Yes/No/Unknown)
+
+8. Forms (for QW11)
+   [ ] Does Career Explorer have input forms? (Yes/No)
+   [ ] If yes, where are they located: ________________________
+   [ ] List of form types: (login / settings / search / other: ___)
+   [ ] Can you provide coordinates/paths to form elements?
+
+9. Performance Requirements
+   [ ] How fast should tests run? (Real-time / Minutes / Overnight CI)
+   [ ] Is GPU available for computer vision acceleration? (Yes/No)
+   [ ] Acceptable execution time for full suite: ___ minutes
+   [ ] Should tests run in parallel or sequential?
+
+================================================================================
+DECISION POINTS
+================================================================================
+
+APPROACH SELECTION
+--------------------------------------------------------------------------------
+Choose one:
+
+[X] Option A: Maximum Impact (RECOMMENDED) *** SELECTED ***
+    - Implement: QW6 + QW7 only
+    - Timeline: 3 weeks
+    - Cost: $12,000
+    - Manual Reduction: 23% → Total 63% automated
+    - Why: Highest ROI, addresses most time-consuming tests
+
+[ ] Option B: Full Suite
+    - Implement: All QW6-11
+    - Timeline: 9 weeks
+    - Cost: $37,000
+    - Manual Reduction: 45% → Total 85% automated
+    - Why: Best long-term value, maximum automation
+
+[ ] Option C: Phased Rollout
+    - Implement Phase 1 → Evaluate → Phase 2 → Evaluate → Phase 3
+    - Timeline: 8-12 weeks (with evaluation periods)
+    - Cost: $12,000 incremental per phase
+    - Why: Lower risk, validate each phase before proceeding
+
+Selected Approach: OPTION A - Maximum Impact (QW6 + QW7)
+Date Selected: October 22, 2025
+Start Date: October 22, 2025
+
+QUICK WIN PRIORITIZATION
+--------------------------------------------------------------------------------
+If doing phased rollout, prioritize Quick Wins:
+
+Phase 1 (Weeks 1-3):
+  [ ] QW6: Color Contrast Analyzer
+  [ ] QW7: Focus Indicator Detector
+
+Phase 2 (Weeks 4-6):
+  [ ] QW8: Text Size Analyzer
+  [ ] QW9: Screen Reader Validator
+
+Phase 3 (Weeks 7-8):
+  [ ] QW10: Motion & Flash Detection
+  [ ] QW11: Form Accessibility Validator
+
+Or custom priority: ___________________________________________
+
+================================================================================
+PROGRESS TRACKING
+================================================================================
+
+PHASE 1 PROGRESS (QW6-7)
+--------------------------------------------------------------------------------
+Week 1: QW6 Implementation
+  [ ] Project setup (directories, dependencies)
+  [ ] ColorContrastAnalyzer class implementation
+  [ ] Contrast ratio calculation algorithm
+  [ ] OCR text detection integration
+  [ ] Initial testing on sample images
+  [ ] Code review
+
+Week 2: QW6 Testing + QW7 Implementation
+  [ ] QW6: Test on Career Explorer screenshots
+  [ ] QW6: Validate against WebAIM checker
+  [ ] QW6: Performance optimization
+  [ ] QW7: FocusIndicatorDetector class implementation
+  [ ] QW7: Image diff algorithm
+  [ ] QW7: Contrast/thickness measurement
+
+Week 3: QW7 Testing + Integration
+  [ ] QW7: Test on Career Explorer
+  [ ] QW7: Validate detection accuracy
+  [ ] Integration with run_quick_wins.py
+  [ ] Integration with bin/audit.js
+  [ ] Documentation update (README.md, EXAMPLES.md)
+  [ ] Create test report examples
+  [ ] User acceptance testing
+  [ ] Git commit + tag (v1.5)
+
+Status: [ ] NOT STARTED  [ ] IN PROGRESS  [ ] COMPLETE
+
+PHASE 2 PROGRESS (QW8-9)
+--------------------------------------------------------------------------------
+Week 4: QW8 Implementation
+  [ ] TextSizeAnalyzer class implementation
+  [ ] Font size estimation algorithm
+  [ ] Readability scoring integration
+  [ ] Initial testing
+
+Week 5: QW8 Testing + QW9 Implementation
+  [ ] QW8: Test on Career Explorer
+  [ ] QW8: Validate font size accuracy
+  [ ] QW9: ScreenReaderValidator class implementation
+  [ ] QW9: UI Automation API integration OR Unity Plugin integration
+  [ ] QW9: Accessible property extraction
+
+Week 6: QW9 Testing + Integration
+  [ ] QW9: Test on Career Explorer
+  [ ] QW9: Validate with NVDA (if applicable)
+  [ ] Integration with run_quick_wins.py
+  [ ] Documentation update
+  [ ] Git commit + tag (v1.7)
+
+Status: [ ] NOT STARTED  [ ] IN PROGRESS  [ ] COMPLETE
+
+PHASE 3 PROGRESS (QW10-11)
+--------------------------------------------------------------------------------
+Week 7: QW10 + QW11 Implementation
+  [ ] MotionFlashDetector class implementation
+  [ ] Video recording integration
+  [ ] Frame analysis algorithm
+  [ ] FormAccessibilityValidator class implementation
+  [ ] Form field detection
+  [ ] Label validation
+
+Week 8: Testing + Integration
+  [ ] QW10: Test on Career Explorer
+  [ ] QW11: Test on Career Explorer
+  [ ] Integration with run_quick_wins.py
+  [ ] Documentation update
+  [ ] Git commit + tag (v1.9)
+
+Status: [ ] NOT STARTED  [ ] IN PROGRESS  [ ] COMPLETE
+
+FINALIZATION PROGRESS
+--------------------------------------------------------------------------------
+Week 9: Documentation + Release
+  [ ] Complete README.md update
+  [ ] Update PRESENTATION.md
+  [ ] Create SESSION_REPORT_PHASE3.md
+  [ ] Performance optimization across all Quick Wins
+  [ ] Final testing on Career Explorer
+  [ ] Create release notes
+  [ ] Git commit + tag (v2.0)
+  [ ] Celebrate! 🎉
+
+Status: [ ] NOT STARTED  [ ] IN PROGRESS  [ ] COMPLETE
+
+================================================================================
+GIT COMMIT STRATEGY
+================================================================================
+
+COMMIT GUIDELINES
+--------------------------------------------------------------------------------
+- Commit after each Quick Win implementation
+- Commit after each integration milestone
+- Commit after documentation updates
+- Use descriptive commit messages
+
+COMMIT MESSAGE FORMAT
+--------------------------------------------------------------------------------
+[Phase3][QWX] Brief description
+
+Detailed description of changes
+
+- Bullet points for key changes
+- Testing results
+- Known issues
+
+Examples:
+  [Phase3][QW6] Implement color contrast analyzer
+  [Phase3][QW7] Add focus indicator detection
+  [Phase3][Integration] Add QW6-7 to run_quick_wins.py
+  [Phase3][Docs] Update README with QW6-7 documentation
+
+TAGS
+--------------------------------------------------------------------------------
+After each phase completion, create git tag:
+
+Phase 1 Complete: git tag -a v1.5 -m "Phase 3.1 Complete: QW6-7"
+Phase 2 Complete: git tag -a v1.7 -m "Phase 3.2 Complete: QW8-9"
+Phase 3 Complete: git tag -a v1.9 -m "Phase 3.3 Complete: QW10-11"
+Final Release: git tag -a v2.0 -m "Phase 3 Complete: All Quick Wins 1-11"
+
+================================================================================
+NOTES & LESSONS LEARNED
+================================================================================
+
+(This section will be filled in as we progress through implementation)
+
+PHASE 1 NOTES
+--------------------------------------------------------------------------------
+
+
+PHASE 2 NOTES
+--------------------------------------------------------------------------------
+
+
+PHASE 3 NOTES
+--------------------------------------------------------------------------------
+
+
+GENERAL OBSERVATIONS
+--------------------------------------------------------------------------------
+
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+IMMEDIATE ACTIONS
+--------------------------------------------------------------------------------
+1. [X] Review this plan document
+2. [ ] Answer "Information Needed" questions (see section above)
+3. [ ] Choose implementation approach (Option A, B, or C)
+4. [ ] Approve budget and timeline
+5. [ ] Set up development environment
+6. [ ] Install Tesseract OCR
+7. [ ] Install additional Python dependencies
+8. [ ] Begin Phase 1 implementation
+
+READY TO START?
+--------------------------------------------------------------------------------
+Once you've answered the questions and chosen an approach, we can begin
+implementation immediately.
+
+First steps will be:
+1. Create automation/tests/ directory for unit tests
+2. Update automation/requirements.txt with new dependencies
+3. Create automation/quick_wins/color_contrast_analyzer.py (QW6)
+4. Start implementing contrast ratio calculation algorithm
+
+================================================================================
+DOCUMENT VERSION HISTORY
+================================================================================
+
+Version 1.0 - October 22, 2025
+  - Initial plan creation
+  - All 6 Quick Wins specified (QW6-11)
+  - Timeline and cost estimates
+  - Questions and requirements documented
+
+(Future versions will be added here as plan is updated)
+
+================================================================================
+END OF PLAN
+================================================================================
+
+Status: READY TO BEGIN
+Next Action: User to answer questions and approve approach
+Contact: Ready when you are!

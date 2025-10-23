@@ -1,0 +1,21 @@
+{
+  "timestamp": "2025-10-22T20:10:37.965231",
+  "log_file": "C:\\Users\\Jill\\AppData\\LocalLow\\zSpace\\Career Explorer\\Player.log",
+  "summary": {
+    "unity_version": "2022.3.59f1 (630718f645a5)",
+    "total_scenes": 0,
+    "unique_scenes": 0,
+    "scene_transitions": 0,
+    "errors": 0,
+    "warnings": 0,
+    "exceptions": 0,
+    "critical_issues": 0
+  },
+  "scenes": [],
+  "scene_transitions": [],
+  "errors": [],
+  "warnings": [],
+  "exceptions": [],
+  "critical_issues": [],
+  "scene_flow": "No scene transitions detected"
+}

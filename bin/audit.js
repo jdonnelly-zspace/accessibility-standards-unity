@@ -25,6 +25,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
 import { UnityProjectAnalyzer } from './analyze-unity-project.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -73,10 +74,15 @@ class AccessibilityAuditor {
       // Step 2: Create output directory
       await this.createOutputDirectory();
 
-      // Step 3: Generate reports (templates will be added in Phase 1B)
+      // Step 3: Run Quick Wins automation (if enabled)
+      if (this.options.runQuickWins) {
+        await this.runQuickWinsAutomation();
+      }
+
+      // Step 4: Generate reports
       await this.generateReports();
 
-      // Step 4: Display summary
+      // Step 5: Display summary
       this.displaySummary();
 
       console.log('\n✅ Audit complete!');
@@ -104,6 +110,97 @@ class AccessibilityAuditor {
     this.log(`   Scenes: ${this.analysisReport.summary.totalScenes}`);
     this.log(`   Scripts: ${this.analysisReport.summary.totalScripts}`);
     this.log(`   Findings: ${this.analysisReport.summary.totalFindings}\n`);
+  }
+
+  /**
+   * Step 2.5: Run Quick Wins Automation (Python scripts)
+   */
+  async runQuickWinsAutomation() {
+    console.log('🤖 Step 2.5: Running Quick Wins Automation...\n');
+
+    const automationDir = path.join(__dirname, '../automation');
+    const runQuickWinsScript = path.join(automationDir, 'run_quick_wins.py');
+
+    // Check if Python automation is available
+    if (!fs.existsSync(runQuickWinsScript)) {
+      this.log('⚠️  Quick Wins automation scripts not found, skipping...\n');
+      return;
+    }
+
+    try {
+      // Create automation config
+      const config = {
+        app_name: this.appName,
+        exe_path: this.options.exePath || null,
+        log_path: this.options.logPath || null,
+        project_path: this.projectPath,
+        output_dir: this.options.outputDir,
+        monitor_duration: 30,
+        skip_interactive: !this.options.interactive,
+        quick_wins_to_run: this.options.quickWins || [1, 2]  // Default: only non-interactive tests
+      };
+
+      const configPath = path.join(this.options.outputDir, 'quick_wins_config.json');
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+      this.log(`✓ Created automation config: ${configPath}`);
+      this.log(`  Running Quick Wins: ${config.quick_wins_to_run.join(', ')}`);
+
+      // Run Python automation
+      await this.runPythonScript(runQuickWinsScript, [configPath]);
+
+      // Load automation results
+      const resultsPath = path.join(this.options.outputDir, 'quick_wins_combined_report.json');
+      if (fs.existsSync(resultsPath)) {
+        const automationResults = JSON.parse(fs.readFileSync(resultsPath, 'utf-8'));
+        this.analysisReport.automation = automationResults;
+        this.log('✅ Automation results integrated into audit report\n');
+      } else {
+        this.log('⚠️  No automation results found\n');
+      }
+
+    } catch (error) {
+      this.log(`⚠️  Automation failed: ${error.message}`);
+      if (this.options.verbose) {
+        console.error(error.stack);
+      }
+      this.log('   Continuing with audit...\n');
+    }
+  }
+
+  /**
+   * Helper: Run Python script
+   */
+  runPythonScript(scriptPath, args = []) {
+    return new Promise((resolve, reject) => {
+      const python = spawn('python', [scriptPath, ...args], {
+        cwd: path.dirname(scriptPath)
+      });
+
+      python.stdout.on('data', (data) => {
+        if (this.options.verbose) {
+          process.stdout.write(data.toString());
+        }
+      });
+
+      python.stderr.on('data', (data) => {
+        if (this.options.verbose) {
+          process.stderr.write(data.toString());
+        }
+      });
+
+      python.on('close', (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Python script exited with code ${code}`));
+        }
+      });
+
+      python.on('error', (error) => {
+        reject(new Error(`Failed to run Python script: ${error.message}`));
+      });
+    });
   }
 
   /**
@@ -307,17 +404,25 @@ Options:
   --output-dir <dir>      Output directory for reports (default: <project>/AccessibilityAudit)
   --format <format>       Output format: markdown, json, both (default: markdown)
   --verbose               Enable verbose logging
+  --run-automation        Run Quick Wins automation tests (requires Python & dependencies)
+  --exe-path <path>       Path to Unity executable for automation testing
+  --log-path <path>       Path to Unity Player.log for log analysis
+  --interactive           Enable interactive automation tests (keyboard navigation, etc.)
+  --quick-wins <list>     Comma-separated list of Quick Wins to run (e.g., "1,2,5")
   --help, -h              Show this help message
 
 Examples:
-  # Audit a Unity project
+  # Basic audit (static analysis only)
   node bin/audit.js /path/to/unity-project
 
-  # Audit with custom output directory
-  node bin/audit.js /path/to/unity-project --output-dir ./reports
+  # Audit with automation (log analysis only)
+  node bin/audit.js /path/to/unity-project --run-automation
 
-  # Verbose mode
-  node bin/audit.js /path/to/unity-project --verbose
+  # Full audit with executable testing
+  node bin/audit.js /path/to/unity-project --run-automation --exe-path "C:/Program Files/MyApp/app.exe" --interactive
+
+  # Custom Quick Wins selection
+  node bin/audit.js /path/to/unity-project --run-automation --quick-wins "1,2"
 
 Output:
   AccessibilityAudit/
@@ -326,7 +431,15 @@ Output:
   ├── VPAT-<name>.md                         (Comprehensive VPAT 2.5 - all 50 WCAG criteria)
   ├── VPAT-SUMMARY-<name>.md                 (Quick VPAT summary - detected issues only)
   ├── ACCESSIBILITY-RECOMMENDATIONS.md       (Developer guide)
-  └── accessibility-analysis.json            (Raw data)
+  ├── accessibility-analysis.json            (Raw data)
+  └── quick_wins_combined_report.json        (Automation test results)
+
+Quick Wins Automation:
+  1. Application Launch & Monitoring          (requires --exe-path)
+  2. Log File Scene Analyzer                  (auto-detects or use --log-path)
+  3. Basic Input Automation                   (requires --exe-path and --interactive)
+  4. Keyboard Navigation Test                 (requires --exe-path and --interactive)
+  5. Accessibility Audit Integration          (always runs)
     `);
     process.exit(0);
   }
@@ -335,7 +448,12 @@ Output:
     projectPath: null,
     outputDir: null,
     format: 'markdown',
-    verbose: false
+    verbose: false,
+    runQuickWins: false,
+    exePath: null,
+    logPath: null,
+    interactive: false,
+    quickWins: null
   };
 
   // Parse arguments
@@ -350,6 +468,19 @@ Output:
       i++;
     } else if (arg === '--verbose') {
       options.verbose = true;
+    } else if (arg === '--run-automation') {
+      options.runQuickWins = true;
+    } else if (arg === '--exe-path' && args[i + 1]) {
+      options.exePath = args[i + 1];
+      i++;
+    } else if (arg === '--log-path' && args[i + 1]) {
+      options.logPath = args[i + 1];
+      i++;
+    } else if (arg === '--interactive') {
+      options.interactive = true;
+    } else if (arg === '--quick-wins' && args[i + 1]) {
+      options.quickWins = args[i + 1].split(',').map(n => parseInt(n.trim()));
+      i++;
     } else if (!arg.startsWith('--')) {
       options.projectPath = arg;
     }
@@ -370,7 +501,12 @@ async function main() {
   const auditor = new AccessibilityAuditor(options.projectPath, {
     outputDir: options.outputDir,
     format: options.format,
-    verbose: options.verbose
+    verbose: options.verbose,
+    runQuickWins: options.runQuickWins,
+    exePath: options.exePath,
+    logPath: options.logPath,
+    interactive: options.interactive,
+    quickWins: options.quickWins
   });
 
   await auditor.run();

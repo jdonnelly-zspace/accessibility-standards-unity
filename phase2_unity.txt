@@ -1,0 +1,766 @@
+================================================================================
+PHASE 2: UNITY AUTOMATED TESTING STRATEGY
+Human-Like Scene-by-Scene Testing Framework
+================================================================================
+
+Last Updated: October 22, 2025
+Project: Career Explorer (zSpace Unity Application)
+Framework: accessibility-standards-unity
+
+================================================================================
+CURRENT APPLICATION DETAILS
+================================================================================
+
+Executable Path:
+  C:\Program Files\zSpace\Career Explorer\zSpaceCareerExplorer.exe
+
+Unity Version:
+  2022.3.59f1
+
+Application Structure:
+  - 13 scenes detected (level0 through level12)
+  - zSpace SDK integration (stereoscopic 3D + stylus input)
+  - Platform: zSpace LAPTOP_GEN_2
+  - Log files: C:\Users\Jill\AppData\LocalLow\zSpace\Career Explorer\Player.log
+
+Hardware Requirements:
+  - zSpace device with tracked glasses + stylus
+  - Fallback mode availability: TBD
+
+================================================================================
+TESTING STRATEGY OPTIONS
+================================================================================
+
+--------------------------------------------------------------------------------
+OPTION 1: Unity Automation Framework (Recommended for Scene Testing)
+--------------------------------------------------------------------------------
+
+Description:
+  Native Unity testing using Unity Test Framework and Unity Editor. This
+  provides the deepest integration and most reliable testing capabilities.
+
+Tools Needed:
+  ✓ Unity Editor 2022.3.59f1 (exact version match)
+  ✓ Unity Test Framework (built-in)
+  ✓ Unity Automation package (if available)
+  ✓ Unity Input System package (for input simulation)
+  ✓ Access to Unity project source files
+
+Capabilities:
+  ✓ Direct access to all GameObjects and Components
+  ✓ Scene loading and validation
+  ✓ Input simulation (keyboard, mouse, stylus)
+  ✓ State validation and assertions
+  ✓ Performance profiling
+  ✓ Play Mode and Edit Mode tests
+  ✓ Automated accessibility validation
+  ✓ CI/CD integration
+
+Pros:
+  + Most reliable and accurate testing
+  + Full access to game state and internal data
+  + Can test individual components in isolation
+  + Integrated with Unity workflow
+  + Can automate accessibility checks
+  + Best for regression testing
+
+Cons:
+  - Requires Unity project source code (not just executable)
+  - Requires Unity Editor license
+  - Tests run in Editor, not final build
+  - Slower execution than external tools
+
+Implementation Steps:
+  1. Obtain Unity project source code
+  2. Install Unity Editor 2022.3.59f1
+  3. Install Unity Test Framework package
+  4. Create test assembly definitions
+  5. Write PlayMode tests for scene transitions
+  6. Write EditMode tests for component validation
+  7. Integrate with CI/CD pipeline
+
+Example Test Structure:
+  Tests/
+    ├── PlayMode/
+    │   ├── SceneNavigationTests.cs     (scene loading, transitions)
+    │   ├── AccessibilityTests.cs       (keyboard alternatives, screen reader)
+    │   ├── StylusInteractionTests.cs   (stylus input simulation)
+    │   └── PerformanceTests.cs         (frame rate, memory)
+    └── EditMode/
+        ├── ComponentValidationTests.cs (verify components exist)
+        ├── ContrastTests.cs            (UI color contrast)
+        └── PrefabTests.cs              (prefab integrity)
+
+Cost: $0 (Unity Personal edition free for revenue < $100K/year)
+
+Recommended For:
+  - Internal development teams with source code access
+  - Regression testing during development
+  - Automated accessibility validation
+  - CI/CD integration
+
+--------------------------------------------------------------------------------
+OPTION 2: UI Automation Tools (Works with Built Executable)
+--------------------------------------------------------------------------------
+
+Description:
+  External automation that interacts with the built executable through UI
+  automation, computer vision, or instrumented builds.
+
+Tools Needed:
+
+  A. Python-based Automation:
+     ✓ Python 3.8+
+     ✓ pyautogui (mouse/keyboard simulation)
+     ✓ opencv-python (computer vision, screenshot analysis)
+     ✓ pytesseract (OCR for text detection)
+     ✓ psutil (process monitoring)
+
+  B. AltUnity Tester (Unity-specific):
+     ✓ AltUnity Tester SDK (requires integration in Unity project)
+     ✓ AltUnity Driver (Python, C#, or Java client)
+     ✓ Instrumented build of Career Explorer
+     Note: Requires rebuilding the app with AltUnity SDK
+
+  C. Computer Vision-based:
+     ✓ Sikuli (image-based automation)
+     ✓ OpenCV + Template matching
+     ✓ TensorFlow/PyTorch (AI-based UI detection)
+
+  D. Windows UI Automation:
+     ✓ pywinauto (Windows UI Automation API)
+     ✓ Windows Accessibility Insights
+     ✓ Limited for Unity apps (most UI not exposed to Windows API)
+
+Capabilities:
+  ✓ Launch and monitor executable
+  ✓ Simulate mouse/keyboard inputs
+  ✓ Screenshot capture and validation
+  ✓ Log file parsing
+  ✓ Process monitoring (CPU, memory)
+  ✓ Basic scene detection via computer vision
+  ✓ Crash detection and recovery
+
+Pros:
+  + Works with executable only (no source code needed)
+  + Tests actual production build
+  + Easy to set up for basic tests
+  + Can run on multiple machines simultaneously
+  + Good for smoke testing
+
+Cons:
+  - Fragile (breaks with UI changes, resolution changes)
+  - No access to internal game state
+  - Difficult to validate complex interactions
+  - Computer vision can be unreliable
+  - Timing issues (race conditions)
+  - Limited to what's visible on screen
+
+Implementation Steps (Python + pyautogui):
+  1. Install Python 3.8+
+  2. pip install pyautogui opencv-python pytesseract psutil
+  3. Create automation scripts:
+     - app_launcher.py (launch and monitor)
+     - input_simulator.py (mouse/keyboard inputs)
+     - scene_detector.py (analyze screenshots)
+     - log_parser.py (parse Player.log for scene changes)
+  4. Create test scenarios:
+     - smoke_test.py (launch, basic navigation)
+     - scene_walkthrough.py (visit all scenes)
+     - accessibility_test.py (keyboard-only navigation)
+  5. Generate test reports
+
+Example Script Structure:
+  automation/
+    ├── core/
+    │   ├── app_launcher.py         (launch executable)
+    │   ├── input_simulator.py      (input automation)
+    │   ├── scene_detector.py       (detect current scene)
+    │   ├── log_parser.py           (parse Unity logs)
+    │   └── screenshot_analyzer.py  (computer vision)
+    ├── tests/
+    │   ├── smoke_test.py           (basic launch test)
+    │   ├── scene_navigation.py     (walk through all scenes)
+    │   ├── accessibility_test.py   (keyboard navigation)
+    │   └── stress_test.py          (rapid inputs, stability)
+    ├── config/
+    │   ├── app_config.json         (executable path, settings)
+    │   └── test_scenarios.json     (test case definitions)
+    └── reports/
+        └── test_results.html       (HTML report generator)
+
+Cost: $0 (all tools are free/open-source)
+
+Recommended For:
+  - Testing production builds without source access
+  - Smoke testing and basic validation
+  - External QA teams
+  - Quick prototyping of test scenarios
+
+--------------------------------------------------------------------------------
+OPTION 3: Custom Test Harness (Best for Production Testing)
+--------------------------------------------------------------------------------
+
+Description:
+  Purpose-built testing framework that combines multiple approaches for
+  comprehensive, production-ready automated testing of Unity applications.
+
+Architecture:
+
+  ┌─────────────────────────────────────────────────────────────┐
+  │                    Test Orchestrator                        │
+  │  (Main control loop, test scenario management)              │
+  └─────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              │               │               │
+  ┌───────────▼──────┐ ┌──────▼──────┐ ┌─────▼──────────┐
+  │  Input Simulator │ │Scene Detector│ │ Result Validator│
+  │  (Mouse/Keyboard)│ │ (CV + Logs)  │ │ (Assertions)    │
+  └──────────────────┘ └──────────────┘ └─────────────────┘
+              │               │               │
+              └───────────────┼───────────────┘
+                              │
+              ┌───────────────▼───────────────┐
+              │      Unity Application        │
+              │   (Career Explorer EXE)       │
+              └───────────────────────────────┘
+
+Components:
+
+  1. Test Orchestrator
+     - Manages test execution flow
+     - Loads test scenarios from configuration
+     - Coordinates all subsystems
+     - Generates comprehensive reports
+     - Handles error recovery and retry logic
+
+  2. Input Simulator
+     - Simulates human-like inputs (mouse movement curves, timing delays)
+     - Keyboard input simulation (including accessibility testing)
+     - Stylus emulation (if API available)
+     - Configurable input profiles (fast, slow, erratic)
+
+  3. Scene Detector
+     - Multi-method scene detection:
+       a) Log file parsing (Player.log scene transitions)
+       b) Computer vision (screenshot analysis)
+       c) Process memory reading (if possible)
+     - Confidence scoring for detection accuracy
+
+  4. Result Validator
+     - Assertion engine for expected vs actual results
+     - Screenshot comparison (baseline vs current)
+     - Performance metrics validation
+     - Accessibility compliance checking
+     - Log error detection
+
+  5. Reporting System
+     - HTML/PDF test reports
+     - Screenshots and videos of failures
+     - Performance graphs
+     - Accessibility compliance scorecard
+     - CI/CD integration hooks
+
+Tools & Technologies:
+  ✓ Python 3.8+ (orchestration)
+  ✓ pyautogui (input simulation)
+  ✓ opencv-python (computer vision)
+  ✓ pytest (test framework)
+  ✓ selenium-like architecture (page object model for scenes)
+  ✓ ffmpeg (video recording)
+  ✓ jinja2 (HTML report templating)
+  ✓ yaml (test configuration)
+
+Capabilities:
+  ✓ Full scene-by-scene automated walkthrough
+  ✓ Human-like interaction patterns
+  ✓ Accessibility testing (keyboard-only modes)
+  ✓ Performance monitoring
+  ✓ Crash detection and auto-recovery
+  ✓ Parallel test execution
+  ✓ CI/CD integration
+  ✓ Video recording of test sessions
+  ✓ Comprehensive reporting
+
+Pros:
+  + Tailored to specific testing needs
+  + Combines best of multiple approaches
+  + Production-ready, robust error handling
+  + Extensible for different Unity apps
+  + Can be reused across projects
+  + Professional-grade reporting
+
+Cons:
+  - Requires significant upfront development
+  - Maintenance overhead
+  - Requires expertise in multiple technologies
+  - Initial setup time: 2-4 weeks
+
+Implementation Steps:
+  1. Design test harness architecture
+  2. Implement core components (orchestrator, input simulator)
+  3. Create scene detector with multiple detection methods
+  4. Build result validation engine
+  5. Develop test scenario configuration system
+  6. Implement reporting system
+  7. Create test scenarios for Career Explorer
+  8. Add CI/CD integration
+  9. Document usage and extend for other Unity apps
+
+Example Directory Structure:
+  unity-test-harness/
+    ├── core/
+    │   ├── orchestrator.py         (main test coordinator)
+    │   ├── input_simulator.py      (input automation)
+    │   ├── scene_detector.py       (multi-method scene detection)
+    │   ├── validator.py            (assertions & validation)
+    │   └── reporter.py             (report generation)
+    ├── detectors/
+    │   ├── log_parser.py           (Unity log parsing)
+    │   ├── cv_detector.py          (computer vision)
+    │   └── memory_reader.py        (process memory, if possible)
+    ├── scenarios/
+    │   ├── base_scenario.py        (scenario base class)
+    │   ├── scene_walkthrough.py    (visit all scenes)
+    │   ├── accessibility_test.py   (keyboard navigation)
+    │   └── stress_test.py          (stability testing)
+    ├── config/
+    │   ├── apps/
+    │   │   └── career_explorer.yaml (app-specific config)
+    │   └── scenarios/
+    │       └── full_regression.yaml (test scenarios)
+    ├── reports/
+    │   ├── templates/
+    │   │   └── report.html         (Jinja2 template)
+    │   └── output/                 (generated reports)
+    ├── tests/
+    │   └── test_harness_tests.py   (unit tests for harness)
+    ├── utils/
+    │   ├── screenshot.py           (screenshot utilities)
+    │   ├── video_recorder.py       (record test sessions)
+    │   └── performance.py          (performance monitoring)
+    └── run_tests.py                (CLI entry point)
+
+Test Scenario Configuration Example (YAML):
+  ---
+  app:
+    name: Career Explorer
+    executable: "C:/Program Files/zSpace/Career Explorer/zSpaceCareerExplorer.exe"
+    log_path: "C:/Users/Jill/AppData/LocalLow/zSpace/Career Explorer/Player.log"
+
+  scenarios:
+    - name: "Full Scene Walkthrough"
+      type: "navigation"
+      steps:
+        - action: "wait_for_scene"
+          scene: "level0"
+          timeout: 30
+        - action: "click"
+          target: "next_button"
+          coordinates: [960, 540]
+        - action: "wait_for_scene"
+          scene: "level1"
+        # ... repeat for all scenes
+
+    - name: "Keyboard Navigation Test"
+      type: "accessibility"
+      input_method: "keyboard_only"
+      steps:
+        - action: "press_key"
+          key: "tab"
+        - action: "press_key"
+          key: "enter"
+        # ... keyboard navigation sequence
+
+Cost: 2-4 weeks development time + $0 for tools (all open-source)
+
+Recommended For:
+  - Production testing across multiple Unity apps
+  - Organizations needing robust, reusable test framework
+  - Accessibility compliance validation
+  - Long-term investment in test automation
+
+================================================================================
+INFORMATION NEEDED TO PROCEED
+================================================================================
+
+Please answer the following to determine the best approach:
+
+1. Unity Project Source Code Access
+   [ ] YES - I have access to the Unity project source code
+   [ ] NO  - I only have access to the built executable
+   [ ] PARTIAL - I can request source code access if needed
+
+   If YES:
+     - Project location: _____________________________
+     - Unity version matches (2022.3.59f1): [ ] Yes [ ] No
+     - Can rebuild the application: [ ] Yes [ ] No
+
+2. Testing Objectives
+   What aspects do you want to test? (Check all that apply)
+   [ ] Navigation through all scenes
+   [ ] Accessibility features (keyboard alternatives to stylus)
+   [ ] UI element interactions
+   [ ] Performance/stability
+   [ ] Crash detection
+   [ ] Specific user workflows: ______________________
+   [ ] Accessibility compliance (WCAG 2.2 Level AA)
+   [ ] All of the above
+
+3. Application Modification Rights
+   [ ] YES - I can modify and rebuild the application
+   [ ] NO  - I can only test the existing executable
+   [ ] MAYBE - Need to get approval first
+
+   If YES:
+     - Would you consider integrating AltUnity Tester SDK? [ ] Yes [ ] No
+     - Can add telemetry/logging for testing? [ ] Yes [ ] No
+     - Can create special "test builds" with extra features? [ ] Yes [ ] No
+
+4. "Human-Like" Testing Definition
+   What does "like a human" mean for your tests?
+   [ ] Random exploration of scenes (monkey testing)
+   [ ] Specific interaction patterns based on expected user behavior
+   [ ] Accessibility testing (keyboard-only navigation, screen reader)
+   [ ] Stress testing (rapid inputs, edge cases)
+   [ ] Realistic timing (human-speed interactions)
+   [ ] All of the above
+
+   Describe typical user interactions: _______________________________
+
+5. zSpace Hardware Availability
+   [ ] YES - zSpace hardware is available for testing
+   [ ] NO  - No zSpace hardware available
+   [ ] SIMULATOR - Can use zSpace simulator mode
+
+   If NO hardware:
+     - Does the app have a fallback mode (non-zSpace)? [ ] Yes [ ] No
+     - Can you test in simulator mode? [ ] Yes [ ] No
+
+6. Testing Environment
+   [ ] Windows 10/11
+   [ ] Multiple test machines available
+   [ ] CI/CD pipeline exists: [ ] Yes [ ] No
+   [ ] Target test execution: [ ] Manual [ ] Automated [ ] Both
+
+7. Timeline & Budget
+   - How quickly do you need this? ____________________
+   - Budget for tools (if any): $______
+   - Available development time for custom harness: ______ weeks
+   - Preferred approach: [ ] Quick & Simple [ ] Robust & Reusable
+
+8. Scope Across Unity Apps
+   - How many Unity apps need this testing framework? ______
+   - Similar architecture across apps? [ ] Yes [ ] No
+   - Worth investing in reusable harness? [ ] Yes [ ] No
+
+================================================================================
+QUICK WINS: What We Can Do Right Now
+================================================================================
+
+Even without the Unity project source code, here are immediate actions we can
+take to start automated testing:
+
+--------------------------------------------------------------------------------
+QUICK WIN 1: Application Launch & Monitoring Script
+--------------------------------------------------------------------------------
+
+Description:
+  Basic Python script that launches Career Explorer, monitors it, and captures
+  logs and screenshots.
+
+What It Does:
+  ✓ Launches the executable programmatically
+  ✓ Monitors process health (CPU, memory, running status)
+  ✓ Captures screenshots at intervals
+  ✓ Watches log file for errors and scene transitions
+  ✓ Detects crashes and generates crash reports
+  ✓ Generates simple HTML report
+
+Files to Create:
+  automation/quick_wins/
+    ├── app_launcher.py       (launch and monitor)
+    ├── log_monitor.py        (watch Player.log in real-time)
+    ├── screenshot_capture.py (periodic screenshots)
+    └── simple_report.py      (generate HTML report)
+
+Time to Implement: 2-4 hours
+
+Value:
+  - Immediate feedback on app stability
+  - Smoke testing automation
+  - Foundation for more complex tests
+
+--------------------------------------------------------------------------------
+QUICK WIN 2: Log File Scene Analyzer
+--------------------------------------------------------------------------------
+
+Description:
+  Parse existing Player.log files to understand scene transitions, timing,
+  and identify any errors or warnings.
+
+What It Does:
+  ✓ Extracts all scene loading events from logs
+  ✓ Maps scene transitions (level0 → level1 → level2, etc.)
+  ✓ Calculates scene load times
+  ✓ Identifies errors, warnings, exceptions
+  ✓ Generates scene flow diagram
+  ✓ Creates baseline for expected behavior
+
+Files to Create:
+  automation/quick_wins/
+    ├── log_parser.py         (parse Player.log)
+    ├── scene_mapper.py       (map scene transitions)
+    └── scene_flow_report.py  (visualize scene flow)
+
+Time to Implement: 2-3 hours
+
+Value:
+  - Understand application flow without running it
+  - Identify existing errors/warnings
+  - Create test baselines
+
+Sample Output:
+  Scene Transition Map:
+    level0 (Main Menu) → level1 (Career 1) [2.3s]
+    level1 (Career 1) → level2 (Career 2) [1.8s]
+    ...
+
+  Errors Found: 3
+    - NullReferenceException at level5 (line 1234)
+    - Missing texture warning at level8
+
+  Performance:
+    Average scene load time: 2.1s
+    Longest scene load: level3 (4.5s)
+
+--------------------------------------------------------------------------------
+QUICK WIN 3: Basic Input Automation Script
+--------------------------------------------------------------------------------
+
+Description:
+  Simple Python script using pyautogui to automate basic inputs and navigate
+  through the first few scenes.
+
+What It Does:
+  ✓ Launches Career Explorer
+  ✓ Waits for app to be ready
+  ✓ Simulates mouse clicks at predefined coordinates
+  ✓ Simulates keyboard inputs (Tab, Enter, Arrow keys)
+  ✓ Takes screenshots before/after each action
+  ✓ Compares against baseline screenshots
+
+Files to Create:
+  automation/quick_wins/
+    ├── basic_automation.py   (simple click/type automation)
+    ├── config.json           (click coordinates, timings)
+    └── baseline/             (baseline screenshots)
+
+Time to Implement: 3-4 hours
+
+Value:
+  - Immediate automation capability
+  - Can test basic navigation flows
+  - Foundation for more sophisticated automation
+
+Sample Test Flow:
+  1. Launch app
+  2. Wait 5 seconds for load
+  3. Click "Start" button (coordinates: 960, 540)
+  4. Wait for level1 to load
+  5. Press Tab key 3 times
+  6. Press Enter
+  7. Verify level2 loaded
+  8. Continue...
+
+--------------------------------------------------------------------------------
+QUICK WIN 4: Accessibility Keyboard Navigation Test
+--------------------------------------------------------------------------------
+
+Description:
+  Test that all scenes can be navigated using keyboard only (no mouse/stylus),
+  which is a critical accessibility requirement.
+
+What It Does:
+  ✓ Launches Career Explorer
+  ✓ Attempts to navigate using ONLY keyboard (Tab, Enter, Arrow keys)
+  ✓ Records which interactions work vs. fail
+  ✓ Generates accessibility compliance report
+  ✓ Identifies missing keyboard alternatives
+
+Files to Create:
+  automation/quick_wins/
+    ├── keyboard_only_test.py      (keyboard navigation)
+    ├── accessibility_report.py    (WCAG compliance check)
+    └── findings.json              (document issues)
+
+Time to Implement: 2-3 hours
+
+Value:
+  - Critical accessibility validation
+  - Identifies WCAG 2.1.1 compliance issues
+  - Low effort, high impact
+
+Sample Report:
+  Accessibility Test Results (Keyboard Navigation):
+    ✓ level0 (Main Menu): Fully keyboard accessible
+    ✗ level1 (Career 1): Cannot activate "Next" button with keyboard
+    ✗ level2 (Career 2): No keyboard focus indicators visible
+
+  WCAG 2.2 Compliance:
+    2.1.1 Keyboard (Level A): FAIL
+    Recommendation: Add keyboard event handlers to all interactive elements
+
+--------------------------------------------------------------------------------
+QUICK WIN 5: Automated Accessibility Audit Integration
+--------------------------------------------------------------------------------
+
+Description:
+  Use the existing accessibility-standards-unity framework to audit Career
+  Explorer and generate VPAT report.
+
+What It Does:
+  ✓ Runs a11y-audit-zspace on Career Explorer (if source available)
+  ✓ Generates comprehensive accessibility reports
+  ✓ Identifies WCAG 2.2 Level AA violations
+  ✓ Provides actionable recommendations
+
+Command:
+  cd C:\Users\Jill\accessibility-standards-unity
+  npm install
+  node bin/audit.js "C:\Program Files\zSpace\Career Explorer"
+
+Time to Implement: 15 minutes (already built!)
+
+Value:
+  - Professional accessibility audit
+  - VPAT 2.5 compliance documentation
+  - Specific recommendations for fixes
+
+Note: May require source code access for full analysis. If only executable
+      is available, we'll get limited results but still valuable insights.
+
+================================================================================
+RECOMMENDED NEXT STEPS
+================================================================================
+
+Based on typical scenarios, here's the recommended approach:
+
+SCENARIO A: You have Unity source code access
+  1. Start with OPTION 1 (Unity Test Framework)
+  2. Implement Quick Win 5 (accessibility audit)
+  3. Create Unity PlayMode tests for scene navigation
+  4. Add accessibility validation to test suite
+  5. Integrate with CI/CD
+
+SCENARIO B: You only have the executable
+  1. Start with Quick Wins 1-4 (all can be done in 1 day)
+  2. Evaluate results and decide if OPTION 2 or 3 is needed
+  3. If testing multiple apps, invest in OPTION 3 (custom harness)
+  4. If one-off testing, use OPTION 2 (simpler tools)
+
+SCENARIO C: You need production-grade testing framework
+  1. Implement all Quick Wins first (validate approach)
+  2. Build OPTION 3 (custom test harness) incrementally
+  3. Start with core components (orchestrator, input simulator)
+  4. Add scene detector and validator
+  5. Extend to other Unity apps as needed
+
+SCENARIO D: Accessibility compliance is priority
+  1. Run Quick Win 5 (accessibility audit) immediately
+  2. Implement Quick Win 4 (keyboard navigation test)
+  3. Review accessibility-standards-unity framework
+  4. Copy Unity accessibility components to project
+  5. Re-test and validate compliance
+
+================================================================================
+ESTIMATED EFFORT & TIMELINE
+================================================================================
+
+Quick Wins (All 5):
+  Time: 1-2 days
+  Cost: $0
+  Value: Immediate testing capability, foundation for advanced automation
+
+Option 1 (Unity Test Framework):
+  Setup: 1-2 days
+  Test Development: 1-2 weeks
+  Cost: $0 (Unity Personal free)
+  Value: Best long-term solution if source code available
+
+Option 2 (UI Automation):
+  Setup: 1-2 days
+  Test Development: 1 week
+  Cost: $0 (open-source tools)
+  Value: Good for executable-only testing
+
+Option 3 (Custom Harness):
+  Design: 1 week
+  Development: 2-4 weeks
+  Test Development: 1 week
+  Cost: $0 (tools) + development time
+  Value: Best for multiple Unity apps, production-grade testing
+
+================================================================================
+REUSABILITY ACROSS UNITY APPS
+================================================================================
+
+Framework Design Principles for Multi-App Testing:
+
+1. Application Abstraction Layer
+   - Each Unity app has a config file (YAML/JSON)
+   - Config defines: executable path, scenes, expected behaviors
+   - Core testing framework is app-agnostic
+
+2. Scene Model Pattern
+   - Define "page object" equivalent for Unity scenes
+   - Each scene has: name, entry points, exit points, interactions
+   - Reusable scene interaction patterns
+
+3. Modular Test Components
+   - Input simulators work across all Unity apps
+   - Scene detectors work with any Unity app
+   - Validators can be customized per app
+
+4. Configuration-Driven Tests
+   - Test scenarios defined in YAML/JSON
+   - Same test framework, different configs for each app
+   - Easy to add new apps without code changes
+
+5. Shared Utilities
+   - Screenshot comparison
+   - Log parsing
+   - Performance monitoring
+   - Report generation
+   - All reusable across projects
+
+Example Multi-App Structure:
+  unity-test-framework/
+    ├── core/                    (reusable framework)
+    ├── apps/
+    │   ├── career_explorer/     (app-specific config & tests)
+    │   ├── app2/
+    │   └── app3/
+    └── shared/                  (shared utilities)
+
+Investment: Build once, use across all Unity apps.
+
+================================================================================
+NEXT ACTIONS
+================================================================================
+
+To proceed, please:
+
+1. Fill out the "Information Needed" section above
+2. Choose which approach aligns with your goals:
+   - Quick Wins (start immediately)
+   - Option 1, 2, or 3 (strategic investment)
+   - Combination approach
+3. Let me know and we'll start implementation
+
+Ready to begin when you are!
+
+================================================================================
+END OF DOCUMENT
+================================================================================

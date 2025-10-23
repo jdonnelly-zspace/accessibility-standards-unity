@@ -1,0 +1,178 @@
+{
+  "timestamp": "2025-10-22T20:48:07.019166",
+  "wcag_criteria": [
+    "1.4.3 Contrast (Minimum)",
+    "1.4.11 Non-text Contrast"
+  ],
+  "summary": {
+    "screenshots_analyzed": 1,
+    "total_checks": 10,
+    "total_passed": 0,
+    "total_failed": 10,
+    "overall_pass_rate": 0.0,
+    "wcag_compliant": false
+  },
+  "results": [
+    {
+      "screenshot": "screenshot_20251022_204806.png",
+      "path": "screenshot_20251022_204806.png",
+      "timestamp": "2025-10-22T20:48:06.674273",
+      "issues": [
+        {
+          "type": "color_sample",
+          "location": {
+            "x": 2817,
+            "y": 928
+          },
+          "fg_color": "#0c0c0c",
+          "bg_color": "#0c0c0c",
+          "ratio": 1.0,
+          "required": 3.0,
+          "passes": false,
+          "wcag_criterion": "1.4.11",
+          "severity": "MEDIUM"
+        },
+        {
+          "type": "color_sample",
+          "location": {
+            "x": 3000,
+            "y": 925
+          },
+          "fg_color": "#0c0c0c",
+          "bg_color": "#0c0c0c",
+          "ratio": 1.0,
+          "required": 3.0,
+          "passes": false,
+          "wcag_criterion": "1.4.11",
+          "severity": "MEDIUM"
+        },
+        {
+          "type": "color_sample",
+          "location": {
+            "x": 1034,
+            "y": 610
+          },
+          "fg_color": "#0c0c0c",
+          "bg_color": "#0c0c0c",
+          "ratio": 1.0,
+          "required": 3.0,
+          "passes": false,
+          "wcag_criterion": "1.4.11",
+          "severity": "MEDIUM"
+        },
+        {
+          "type": "color_sample",
+          "location": {
+            "x": 2534,
+            "y": 538
+          },
+          "fg_color": "#0c0c0c",
+          "bg_color": "#0c0c0c",
+          "ratio": 1.0,
+          "required": 3.0,
+          "passes": false,
+          "wcag_criterion": "1.4.11",
+          "severity": "MEDIUM"
+        },
+        {
+          "type": "color_sample",
+          "location": {
+            "x": 2634,
+            "y": 659
+          },
+          "fg_color": "#0c0c0c",
+          "bg_color": "#0c0c0c",
+          "ratio": 1.0,
+          "required": 3.0,
+          "passes": false,
+          "wcag_criterion": "1.4.11",
+          "severity": "MEDIUM"
+        },
+        {
+          "type": "color_sample",
+          "location": {
+            "x": 2161,
+            "y": 1679
+          },
+          "fg_color": "#0c0c0c",
+          "bg_color": "#0c0c0c",
+          "ratio": 1.0,
+          "required": 3.0,
+          "passes": false,
+          "wcag_criterion": "1.4.11",
+          "severity": "MEDIUM"
+        },
+        {
+          "type": "color_sample",
+          "location": {
+            "x": 624,
+            "y": 555
+          },
+          "fg_color": "#0c0c0c",
+          "bg_color": "#0c0c0c",
+          "ratio": 1.0,
+          "required": 3.0,
+          "passes": false,
+          "wcag_criterion": "1.4.11",
+          "severity": "MEDIUM"
+        },
+        {
+          "type": "color_sample",
+          "location": {
+            "x": 2633,
+            "y": 489
+          },
+          "fg_color": "#225c2b",
+          "bg_color": "#678f6d",
+          "ratio": 2.17,
+          "required": 3.0,
+          "passes": false,
+          "wcag_criterion": "1.4.11",
+          "severity": "MEDIUM"
+        },
+        {
+          "type": "color_sample",
+          "location": {
+            "x": 2245,
+            "y": 1601
+          },
+          "fg_color": "#0c0c0c",
+          "bg_color": "#0c0c0c",
+          "ratio": 1.0,
+          "required": 3.0,
+          "passes": false,
+          "wcag_criterion": "1.4.11",
+          "severity": "MEDIUM"
+        },
+        {
+          "type": "color_sample",
+          "location": {
+            "x": 1458,
+            "y": 1878
+          },
+          "fg_color": "#d3d3d3",
+          "bg_color": "#bfbfc1",
+          "ratio": 1.23,
+          "required": 3.0,
+          "passes": false,
+          "wcag_criterion": "1.4.11",
+          "severity": "MEDIUM"
+        }
+      ],
+      "passed": [],
+      "summary": {
+        "total_checks": 10,
+        "passed": 0,
+        "failed": 10,
+        "pass_rate": 0.0,
+        "wcag_compliant": false
+      },
+      "text_regions_found": 0
+    }
+  ],
+  "configuration": {
+    "tesseract_available": true,
+    "opencv_available": true,
+    "colorthief_available": true
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-10-22T20:11:23.538041",
+  "executable": "C:/Program Files/zSpace/Career Explorer/zSpaceCareerExplorer.exe",
+  "metrics": {
+    "launch_time": 2.003229856491089,
+    "peak_memory_mb": 1536.12890625,
+    "avg_cpu_percent": 110.00666666666666,
+    "crash_detected": false,
+    "errors": []
+  }
+}

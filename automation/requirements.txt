@@ -1,0 +1,22 @@
+# Python dependencies for Unity Accessibility Testing Framework
+# Install with: pip install -r requirements.txt
+
+# Core automation
+pyautogui>=0.9.54           # Mouse and keyboard automation
+psutil>=5.9.0               # Process monitoring
+Pillow>=10.0.0              # Screenshot capture (required by pyautogui)
+
+# Computer vision and image analysis
+opencv-python>=4.8.0        # Computer vision for screenshot analysis
+pytesseract>=0.3.10         # OCR for text detection
+numpy>=1.24.0               # Array operations and color math
+scikit-image>=0.21.0        # Advanced image processing and comparison
+colorthief>=0.2.1           # Color palette extraction
+
+# Reporting and data processing
+jinja2>=3.1.2               # HTML report templating
+PyYAML>=6.0                 # YAML configuration parsing
+
+# Testing framework
+pytest>=7.4.0               # Test framework for automation tests
+pytest-html>=3.2.0          # HTML test reports

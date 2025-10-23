@@ -1,0 +1,17 @@
+{
+  "app_name": "Career Explorer",
+  "exe_path": "C:/Program Files/zSpace/Career Explorer/zSpaceCareerExplorer.exe",
+  "log_path": "C:/Users/Jill/AppData/LocalLow/zSpace/Career Explorer/Player.log",
+  "project_path": "C:/UnityProjects/CareerExplorer",
+  "output_dir": "./automation/reports/output",
+  "monitor_duration": 30,
+  "automation_config": null,
+  "skip_interactive": false,
+  "quick_wins_to_run": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-10-22T20:51:55.477989",
+  "app_name": "Career Explorer",
+  "exe_path": "C:/Program Files/zSpace/Career Explorer/zSpaceCareerExplorer.exe",
+  "quick_wins": {
+    "qw6_color_contrast": {
+      "screenshots_analyzed": 1,
+      "total_checks": 10,
+      "total_passed": 0,
+      "total_failed": 10,
+      "overall_pass_rate": 0.0,
+      "wcag_compliant": false
+    }
+  }
+}
