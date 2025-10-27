@@ -32,6 +32,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import { UnityProjectAnalyzer } from './analyze-unity-project.js';
 import { captureScreenshots } from './capture-screenshots.js';
 import { ComplianceTracker } from './compliance-tracker.js';
@@ -61,7 +62,13 @@ class AccessibilityAuditor {
       unityPath: options.unityPath || null,
       baseline: options.baseline || false,
       trackCompliance: options.trackCompliance || false,
-      failOnRegression: options.failOnRegression || false
+      failOnRegression: options.failOnRegression || false,
+      exportPDF: options.exportPDF || false,
+      exportCSV: options.exportCSV || false,
+      createIssues: options.createIssues || null,
+      template: options.template || null,
+      config: options.config || path.join(__dirname, '..', 'config', 'export-config.json'),
+      generateFixes: options.generateFixes || false
     };
     this.analysisReport = null;
     this.appName = path.basename(this.projectPath);
@@ -98,7 +105,17 @@ class AccessibilityAuditor {
       // Step 4: Display summary
       this.displaySummary();
 
-      // Step 5: Compliance tracking (Phase 3.2)
+      // Step 5: Export reports (Phase 3.4)
+      if (this.options.exportPDF || this.options.exportCSV || this.options.createIssues) {
+        await this.handleExports();
+      }
+
+      // Step 6: Generate fixes (Phase 3.5)
+      if (this.options.generateFixes) {
+        await this.handleFixGeneration();
+      }
+
+      // Step 7: Compliance tracking (Phase 3.2)
       let regressionCheck = null;
       if (this.options.baseline || this.options.trackCompliance || this.options.failOnRegression) {
         regressionCheck = await this.handleComplianceTracking();
@@ -127,10 +144,118 @@ class AccessibilityAuditor {
   }
 
   /**
+   * Handle report exports (Phase 3.4)
+   */
+  async handleExports() {
+    console.log('\n📤 Step 5: Exporting reports...\n');
+
+    // Export to PDF
+    if (this.options.exportPDF) {
+      try {
+        const vpatPath = path.join(this.options.outputDir, `VPAT-${this.appName}.md`);
+        const pdfPath = path.join(this.options.outputDir, 'exports', `VPAT-${this.appName}.pdf`);
+
+        // Ensure exports directory exists
+        const exportsDir = path.join(this.options.outputDir, 'exports');
+        if (!fs.existsSync(exportsDir)) {
+          fs.mkdirSync(exportsDir, { recursive: true });
+        }
+
+        const exportPDFPath = path.join(__dirname, 'export-pdf.js');
+        const configArg = this.options.config ? `--config "${this.options.config}"` : '';
+
+        console.log('   📄 Generating PDF...');
+        execSync(`node "${exportPDFPath}" "${vpatPath}" --output "${pdfPath}" ${configArg}`, {
+          stdio: this.options.verbose ? 'inherit' : 'pipe'
+        });
+
+        this.log('   ✅ PDF exported successfully');
+      } catch (error) {
+        console.warn('   ⚠️  PDF export failed:', error.message);
+      }
+    }
+
+    // Export to CSV
+    if (this.options.exportCSV) {
+      try {
+        const jsonPath = path.join(this.options.outputDir, 'accessibility-analysis.json');
+        const csvPath = path.join(this.options.outputDir, 'exports', 'findings.csv');
+
+        const exportCSVPath = path.join(__dirname, 'export-csv.js');
+
+        console.log('   📊 Generating CSV...');
+        execSync(`node "${exportCSVPath}" "${jsonPath}" --output "${csvPath}"`, {
+          stdio: this.options.verbose ? 'inherit' : 'pipe'
+        });
+
+        this.log('   ✅ CSV exported successfully');
+      } catch (error) {
+        console.warn('   ⚠️  CSV export failed:', error.message);
+      }
+    }
+
+    // Create issues
+    if (this.options.createIssues) {
+      try {
+        const jsonPath = path.join(this.options.outputDir, 'accessibility-analysis.json');
+        const platform = this.options.createIssues.toLowerCase();
+
+        if (platform !== 'github' && platform !== 'jira') {
+          throw new Error(`Unknown platform: ${platform}. Use 'github' or 'jira'`);
+        }
+
+        if (!this.options.config || !fs.existsSync(this.options.config)) {
+          throw new Error('Config file required for issue creation. Use --config <path>');
+        }
+
+        const generateIssuesPath = path.join(__dirname, 'generate-issues.js');
+
+        console.log(`   🐛 Creating ${platform} issues...`);
+        execSync(`node "${generateIssuesPath}" "${jsonPath}" --platform ${platform} --config "${this.options.config}" --min-severity High`, {
+          stdio: this.options.verbose ? 'inherit' : 'pipe'
+        });
+
+        this.log(`   ✅ ${platform} issues created successfully`);
+      } catch (error) {
+        console.warn('   ⚠️  Issue creation failed:', error.message);
+      }
+    }
+
+    console.log();
+  }
+
+  /**
+   * Handle fix generation (Phase 3.5)
+   */
+  async handleFixGeneration() {
+    console.log('\n🔧 Step 6: Generating accessibility fixes...\n');
+
+    try {
+      const jsonPath = path.join(this.options.outputDir, 'accessibility-analysis.json');
+      const generateFixesPath = path.join(__dirname, 'generate-fixes.js');
+
+      console.log('   🔨 Analyzing findings and generating fixes...');
+      execSync(`node "${generateFixesPath}" "${jsonPath}" --project "${this.projectPath}"`, {
+        stdio: this.options.verbose ? 'inherit' : 'pipe'
+      });
+
+      this.log('   ✅ Fixes generated successfully');
+      this.log(`   📁 Generated code saved to: ${this.options.outputDir}/generated-fixes/`);
+    } catch (error) {
+      console.warn('   ⚠️  Fix generation failed:', error.message);
+      if (this.options.verbose) {
+        console.error(error.stack);
+      }
+    }
+
+    console.log();
+  }
+
+  /**
    * Handle compliance tracking (Phase 3.2)
    */
   async handleComplianceTracking() {
-    console.log('\n📊 Step 5: Compliance Tracking...\n');
+    console.log('\n📊 Step 7: Compliance Tracking...\n');
 
     const tracker = new ComplianceTracker(this.projectPath, {
       failOnHighIssues: this.options.failOnRegression
@@ -541,6 +666,12 @@ Options:
   --baseline                 Create/update baseline for compliance tracking (Phase 3.2)
   --track-compliance         Save audit snapshot to compliance-history/ (Phase 3.2)
   --fail-on-regression       Exit with code 1 if regressions detected vs baseline (Phase 3.2)
+  --export-pdf               Export VPAT report to PDF after analysis (Phase 3.4)
+  --export-csv               Export findings to CSV after analysis (Phase 3.4)
+  --create-issues <platform> Create issues on github or jira (Phase 3.4)
+  --template <path>          Use custom report template (Phase 3.4)
+  --config <path>            Export configuration file (default: config/export-config.json)
+  --generate-fixes           Generate C# code fixes for accessibility issues (Phase 3.5)
   --help, -h                 Show this help message
 
 Examples:
@@ -556,8 +687,20 @@ Examples:
   # Track compliance and fail on regression (CI/CD)
   node bin/audit.js /path/to/unity-project --track-compliance --fail-on-regression
 
-  # Full audit with compliance tracking
-  node bin/audit.js /path/to/unity-project --capture-screenshots --track-compliance --verbose
+  # Full audit with PDF and CSV export
+  node bin/audit.js /path/to/unity-project --capture-screenshots --export-pdf --export-csv
+
+  # Create GitHub issues for findings
+  node bin/audit.js /path/to/unity-project --create-issues github --config config/export-config.json
+
+  # Use custom report template
+  node bin/audit.js /path/to/unity-project --template templates/audit/custom/executive-summary.template.md
+
+  # Generate code fixes for accessibility issues
+  node bin/audit.js /path/to/unity-project --generate-fixes
+
+  # Full audit with all Phase 3 features
+  node bin/audit.js /path/to/unity-project --capture-screenshots --track-compliance --export-pdf --export-csv --generate-fixes --verbose
 
 Output:
   AccessibilityAudit/
@@ -580,7 +723,13 @@ Output:
     unityPath: null,
     baseline: false,
     trackCompliance: false,
-    failOnRegression: false
+    failOnRegression: false,
+    exportPDF: false,
+    exportCSV: false,
+    createIssues: null,
+    template: null,
+    config: null,
+    generateFixes: false
   };
 
   // Parse arguments
@@ -607,6 +756,21 @@ Output:
       options.trackCompliance = true;
     } else if (arg === '--fail-on-regression') {
       options.failOnRegression = true;
+    } else if (arg === '--export-pdf') {
+      options.exportPDF = true;
+    } else if (arg === '--export-csv') {
+      options.exportCSV = true;
+    } else if (arg === '--create-issues' && args[i + 1]) {
+      options.createIssues = args[i + 1];
+      i++;
+    } else if (arg === '--template' && args[i + 1]) {
+      options.template = args[i + 1];
+      i++;
+    } else if (arg === '--config' && args[i + 1]) {
+      options.config = args[i + 1];
+      i++;
+    } else if (arg === '--generate-fixes') {
+      options.generateFixes = true;
     } else if (!arg.startsWith('--')) {
       options.projectPath = arg;
     }
@@ -632,7 +796,13 @@ async function main() {
     unityPath: options.unityPath,
     baseline: options.baseline,
     trackCompliance: options.trackCompliance,
-    failOnRegression: options.failOnRegression
+    failOnRegression: options.failOnRegression,
+    exportPDF: options.exportPDF,
+    exportCSV: options.exportCSV,
+    createIssues: options.createIssues,
+    template: options.template,
+    config: options.config,
+    generateFixes: options.generateFixes
   });
 
   await auditor.run();
