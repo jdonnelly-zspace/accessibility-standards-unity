@@ -237,7 +237,7 @@ async function analyzeFindings(auditData, args) {
   // Analyze each finding
   for (const finding of relevantFindings) {
     // Determine fix category
-    const fixType = determineFix Type(finding);
+    const fixType = determineFixType(finding);
 
     if (fixType.includes('keyboard')) analysis.needsKeyboard = true;
     if (fixType.includes('focus')) analysis.needsFocus = true;
