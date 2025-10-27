@@ -10,22 +10,30 @@
  *   node bin/audit.js <unity-project-path> [options]
  *
  * Options:
- *   --output-dir <dir>   Output directory for audit reports (default: <project>/AccessibilityAudit)
- *   --format <format>    Output format: markdown (default), json, both
- *   --verbose            Enable verbose logging
+ *   --output-dir <dir>         Output directory for audit reports (default: <project>/AccessibilityAudit)
+ *   --format <format>          Output format: markdown (default), json, both
+ *   --capture-screenshots      Capture scene screenshots before analysis
+ *   --unity-path <path>        Path to Unity executable (for screenshot capture)
+ *   --verbose                  Enable verbose logging
  *
  * Output:
  *   AccessibilityAudit/
  *   ├── README.md
  *   ├── AUDIT-SUMMARY.md
  *   ├── VPAT-apps-<name>.md
- *   └── ACCESSIBILITY-RECOMMENDATIONS.md
+ *   ├── ACCESSIBILITY-RECOMMENDATIONS.md
+ *   └── screenshots/           (if --capture-screenshots is used)
+ *       ├── SceneName/
+ *       │   ├── SceneName_main.png
+ *       │   ├── SceneName_thumbnail.png
+ *       │   └── metadata.json
  */
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { UnityProjectAnalyzer } from './analyze-unity-project.js';
+import { captureScreenshots } from './capture-screenshots.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,7 +42,7 @@ const __dirname = path.dirname(__filename);
 // CONFIGURATION
 // ============================================================================
 
-const VERSION = '3.0.0';
+const VERSION = '3.1.0-phase1';
 const FRAMEWORK_NAME = 'accessibility-standards-unity';
 
 // ============================================================================
@@ -47,7 +55,9 @@ class AccessibilityAuditor {
     this.options = {
       outputDir: options.outputDir || path.join(this.projectPath, 'AccessibilityAudit'),
       format: options.format || 'markdown',
-      verbose: options.verbose || false
+      verbose: options.verbose || false,
+      captureScreenshots: options.captureScreenshots || false,
+      unityPath: options.unityPath || null
     };
     this.analysisReport = null;
     this.appName = path.basename(this.projectPath);
@@ -59,7 +69,7 @@ class AccessibilityAuditor {
   async run() {
     console.log('╔═══════════════════════════════════════════════════════════╗');
     console.log('║  zSpace Unity Accessibility Auditor                      ║');
-    console.log(`║  Version ${VERSION}                                          ║`);
+    console.log(`║  Version ${VERSION}                                   ║`);
     console.log('╚═══════════════════════════════════════════════════════════╝\n');
 
     this.log(`Auditing: ${this.appName}`);
@@ -67,13 +77,18 @@ class AccessibilityAuditor {
     this.log(`Output: ${this.options.outputDir}\n`);
 
     try {
+      // Step 0: Capture screenshots (if enabled)
+      if (this.options.captureScreenshots) {
+        await this.captureSceneScreenshots();
+      }
+
       // Step 1: Analyze Unity project
       await this.analyzeProject();
 
       // Step 2: Create output directory
       await this.createOutputDirectory();
 
-      // Step 3: Generate reports (templates will be added in Phase 1B)
+      // Step 3: Generate reports
       await this.generateReports();
 
       // Step 4: Display summary
@@ -88,6 +103,33 @@ class AccessibilityAuditor {
         console.error(error.stack);
       }
       process.exit(1);
+    }
+  }
+
+  /**
+   * Step 0: Capture scene screenshots
+   */
+  async captureSceneScreenshots() {
+    console.log('📸 Step 0: Capturing scene screenshots...\n');
+
+    const screenshotConfig = {
+      projectPath: this.projectPath,
+      unityPath: this.options.unityPath,
+      outputDir: path.join(this.options.outputDir, 'screenshots'),
+      width: 1920,
+      height: 1080,
+      thumbWidth: 320,
+      thumbHeight: 180,
+      logFile: path.join(this.options.outputDir, 'screenshot-capture.log'),
+      verbose: this.options.verbose
+    };
+
+    try {
+      await captureScreenshots(screenshotConfig);
+      this.log('\n✅ Screenshot capture complete\n');
+    } catch (error) {
+      console.warn('\n⚠️  Screenshot capture failed:', error.message);
+      console.warn('   Continuing with audit without screenshots...\n');
     }
   }
 
@@ -164,6 +206,23 @@ class AccessibilityAuditor {
   prepareTemplateVariables() {
     const report = this.analysisReport;
 
+    // Check for screenshots
+    const screenshotsDir = path.join(this.options.outputDir, 'screenshots');
+    const screenshotsCaptured = fs.existsSync(screenshotsDir);
+    let screenshotsCount = 0;
+
+    if (screenshotsCaptured) {
+      try {
+        const sceneDirs = fs.readdirSync(screenshotsDir).filter(item => {
+          const itemPath = path.join(screenshotsDir, item);
+          return fs.statSync(itemPath).isDirectory();
+        });
+        screenshotsCount = sceneDirs.length;
+      } catch (err) {
+        // Ignore errors
+      }
+    }
+
     return {
       APP_NAME: this.appName,
       PROJECT_PATH: this.projectPath,
@@ -194,7 +253,10 @@ class AccessibilityAuditor {
       SCREEN_READER_SUPPORT_FOUND: report.statistics.screenReaderSupportFound,
       FOCUS_INDICATORS_FOUND: report.statistics.focusIndicatorsFound,
       ACCESSIBILITY_COMPONENTS_FOUND: report.statistics.accessibilityComponentsFound,
-      STYLUS_ONLY_SCRIPTS_COUNT: report.statistics.stylusOnlyScripts ? report.statistics.stylusOnlyScripts.length : 0
+      STYLUS_ONLY_SCRIPTS_COUNT: report.statistics.stylusOnlyScripts ? report.statistics.stylusOnlyScripts.length : 0,
+      SCREENSHOTS_CAPTURED: screenshotsCaptured,
+      SCREENSHOTS_NOT_CAPTURED: !screenshotsCaptured,
+      SCREENSHOTS_COUNT: screenshotsCount
     };
   }
 
@@ -304,20 +366,25 @@ Arguments:
   <unity-project-path>    Path to Unity project root directory
 
 Options:
-  --output-dir <dir>      Output directory for reports (default: <project>/AccessibilityAudit)
-  --format <format>       Output format: markdown, json, both (default: markdown)
-  --verbose               Enable verbose logging
-  --help, -h              Show this help message
+  --output-dir <dir>         Output directory for reports (default: <project>/AccessibilityAudit)
+  --format <format>          Output format: markdown, json, both (default: markdown)
+  --capture-screenshots      Capture scene screenshots before analysis
+  --unity-path <path>        Path to Unity executable (for screenshot capture)
+  --verbose                  Enable verbose logging
+  --help, -h                 Show this help message
 
 Examples:
   # Audit a Unity project
   node bin/audit.js /path/to/unity-project
 
+  # Audit with screenshot capture
+  node bin/audit.js /path/to/unity-project --capture-screenshots
+
   # Audit with custom output directory
   node bin/audit.js /path/to/unity-project --output-dir ./reports
 
-  # Verbose mode
-  node bin/audit.js /path/to/unity-project --verbose
+  # Verbose mode with screenshots
+  node bin/audit.js /path/to/unity-project --capture-screenshots --verbose
 
 Output:
   AccessibilityAudit/
@@ -335,7 +402,9 @@ Output:
     projectPath: null,
     outputDir: null,
     format: 'markdown',
-    verbose: false
+    verbose: false,
+    captureScreenshots: false,
+    unityPath: null
   };
 
   // Parse arguments
@@ -348,6 +417,11 @@ Output:
     } else if (arg === '--format' && args[i + 1]) {
       options.format = args[i + 1];
       i++;
+    } else if (arg === '--unity-path' && args[i + 1]) {
+      options.unityPath = args[i + 1];
+      i++;
+    } else if (arg === '--capture-screenshots') {
+      options.captureScreenshots = true;
     } else if (arg === '--verbose') {
       options.verbose = true;
     } else if (!arg.startsWith('--')) {
@@ -370,7 +444,9 @@ async function main() {
   const auditor = new AccessibilityAuditor(options.projectPath, {
     outputDir: options.outputDir,
     format: options.format,
-    verbose: options.verbose
+    verbose: options.verbose,
+    captureScreenshots: options.captureScreenshots,
+    unityPath: options.unityPath
   });
 
   await auditor.run();
