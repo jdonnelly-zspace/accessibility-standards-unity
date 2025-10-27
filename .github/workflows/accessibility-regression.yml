@@ -1,0 +1,166 @@
+name: Accessibility Regression Check
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  accessibility-audit:
+    name: Run Accessibility Audit & Check Regressions
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for compliance tracking
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-type: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./accessibility-standards-unity
+
+      - name: Setup Unity (if screenshot capture needed)
+        if: inputs.capture-screenshots == 'true'
+        uses: game-ci/unity-builder@v4
+        with:
+          unityVersion: 2022.3.10f1
+          targetPlatform: StandaloneLinux64
+
+      - name: Run Accessibility Audit
+        id: audit
+        run: |
+          node bin/audit.js . --track-compliance --fail-on-regression --verbose
+        working-directory: ./
+        continue-on-error: true
+
+      - name: Upload Audit Reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: accessibility-audit-reports
+          path: |
+            AccessibilityAudit/
+            compliance-history/
+          retention-days: 30
+
+      - name: Compare with Baseline
+        if: always()
+        id: compare
+        run: |
+          if [ -f "compliance-history/baseline.json" ]; then
+            node accessibility-standards-unity/bin/compare-audits.js \
+              compliance-history/baseline.json \
+              AccessibilityAudit/accessibility-analysis.json \
+              --output diff-report.json
+          else
+            echo "No baseline found - creating baseline"
+            node accessibility-standards-unity/bin/audit.js . --baseline
+          fi
+        continue-on-error: true
+
+      - name: Upload Diff Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: diff-report
+          path: diff-report.json
+          retention-days: 30
+
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read audit summary
+            let summary = '## Accessibility Audit Results\n\n';
+
+            if (fs.existsSync('AccessibilityAudit/accessibility-analysis.json')) {
+              const audit = JSON.parse(fs.readFileSync('AccessibilityAudit/accessibility-analysis.json', 'utf8'));
+
+              summary += `**Compliance Score:** ${audit.complianceEstimate.score}%\n`;
+              summary += `**Level:** ${audit.complianceEstimate.level}\n\n`;
+
+              summary += `### Findings\n`;
+              summary += `- 🔴 Critical: ${audit.summary.criticalIssues}\n`;
+              summary += `- 🟠 High: ${audit.summary.highPriorityIssues}\n`;
+              summary += `- 🟡 Medium: ${audit.summary.mediumPriorityIssues}\n`;
+              summary += `- 🟢 Low: ${audit.summary.lowPriorityIssues}\n\n`;
+
+              // Add regression info if available
+              if (fs.existsSync('diff-report.json')) {
+                const diff = JSON.parse(fs.readFileSync('diff-report.json', 'utf8'));
+
+                summary += `### Changes from Baseline\n`;
+                summary += `**Status:** ${diff.status}\n`;
+                summary += `**Score Change:** ${diff.changes.complianceScoreDelta > 0 ? '+' : ''}${diff.changes.complianceScoreDelta}%\n`;
+
+                if (diff.newIssues.total > 0) {
+                  summary += `\n⚠️ **${diff.newIssues.total} new issues introduced**\n`;
+                  if (diff.newIssues.critical.length > 0) {
+                    summary += `- Critical: ${diff.newIssues.critical.join(', ')}\n`;
+                  }
+                }
+
+                if (diff.resolvedIssues.total > 0) {
+                  summary += `\n✅ **${diff.resolvedIssues.total} issues resolved**\n`;
+                }
+              }
+            }
+
+            summary += `\n[View full reports in artifacts](https://github.com/${{github.repository}}/actions/runs/${{github.run_id}})`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.name,
+              body: summary
+            });
+
+      - name: Check Exit Code
+        if: steps.audit.outcome == 'failure'
+        run: |
+          echo "❌ Accessibility audit failed or regressions detected"
+          exit 1
+
+  update-baseline:
+    name: Update Baseline (main branch only)
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: accessibility-audit
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./accessibility-standards-unity
+
+      - name: Update Baseline
+        run: |
+          node bin/audit.js . --baseline
+        working-directory: ./
+
+      - name: Commit Updated Baseline
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: Update accessibility baseline [skip ci]"
+          file_pattern: "compliance-history/baseline.json compliance-history/trends.json"
+          commit_user_name: "Accessibility Bot"
+          commit_user_email: "accessibility@bot.com"

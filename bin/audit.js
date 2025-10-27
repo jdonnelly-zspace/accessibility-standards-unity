@@ -34,6 +34,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { UnityProjectAnalyzer } from './analyze-unity-project.js';
 import { captureScreenshots } from './capture-screenshots.js';
+import { ComplianceTracker } from './compliance-tracker.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,7 +58,10 @@ class AccessibilityAuditor {
       format: options.format || 'markdown',
       verbose: options.verbose || false,
       captureScreenshots: options.captureScreenshots || false,
-      unityPath: options.unityPath || null
+      unityPath: options.unityPath || null,
+      baseline: options.baseline || false,
+      trackCompliance: options.trackCompliance || false,
+      failOnRegression: options.failOnRegression || false
     };
     this.analysisReport = null;
     this.appName = path.basename(this.projectPath);
@@ -94,8 +98,24 @@ class AccessibilityAuditor {
       // Step 4: Display summary
       this.displaySummary();
 
+      // Step 5: Compliance tracking (Phase 3.2)
+      let regressionCheck = null;
+      if (this.options.baseline || this.options.trackCompliance || this.options.failOnRegression) {
+        regressionCheck = await this.handleComplianceTracking();
+      }
+
       console.log('\n✅ Audit complete!');
       console.log(`📁 Reports saved to: ${this.options.outputDir}\n`);
+
+      // Handle CI/CD exit codes
+      if (this.options.failOnRegression && regressionCheck) {
+        const tracker = new ComplianceTracker(this.projectPath);
+        const exitCode = tracker.getExitCode(regressionCheck);
+        if (exitCode !== 0) {
+          console.log(`\n⚠️  Exiting with code ${exitCode} due to regressions`);
+          process.exit(exitCode);
+        }
+      }
 
     } catch (error) {
       console.error('\n❌ Audit failed:', error.message);
@@ -104,6 +124,35 @@ class AccessibilityAuditor {
       }
       process.exit(1);
     }
+  }
+
+  /**
+   * Handle compliance tracking (Phase 3.2)
+   */
+  async handleComplianceTracking() {
+    console.log('\n📊 Step 5: Compliance Tracking...\n');
+
+    const tracker = new ComplianceTracker(this.projectPath, {
+      failOnHighIssues: this.options.failOnRegression
+    });
+
+    // Create or update baseline
+    if (this.options.baseline) {
+      tracker.createBaseline(this.analysisReport);
+    }
+
+    // Save snapshot for historical tracking
+    if (this.options.trackCompliance && !this.options.baseline) {
+      tracker.saveSnapshot(this.analysisReport);
+    }
+
+    // Check for regressions
+    let regressionCheck = null;
+    if (this.options.failOnRegression) {
+      regressionCheck = tracker.checkRegression(this.analysisReport);
+    }
+
+    return regressionCheck;
   }
 
   /**
@@ -489,6 +538,9 @@ Options:
   --capture-screenshots      Capture scene screenshots before analysis
   --unity-path <path>        Path to Unity executable (for screenshot capture)
   --verbose                  Enable verbose logging
+  --baseline                 Create/update baseline for compliance tracking (Phase 3.2)
+  --track-compliance         Save audit snapshot to compliance-history/ (Phase 3.2)
+  --fail-on-regression       Exit with code 1 if regressions detected vs baseline (Phase 3.2)
   --help, -h                 Show this help message
 
 Examples:
@@ -498,11 +550,14 @@ Examples:
   # Audit with screenshot capture
   node bin/audit.js /path/to/unity-project --capture-screenshots
 
-  # Audit with custom output directory
-  node bin/audit.js /path/to/unity-project --output-dir ./reports
+  # Create compliance baseline
+  node bin/audit.js /path/to/unity-project --baseline
 
-  # Verbose mode with screenshots
-  node bin/audit.js /path/to/unity-project --capture-screenshots --verbose
+  # Track compliance and fail on regression (CI/CD)
+  node bin/audit.js /path/to/unity-project --track-compliance --fail-on-regression
+
+  # Full audit with compliance tracking
+  node bin/audit.js /path/to/unity-project --capture-screenshots --track-compliance --verbose
 
 Output:
   AccessibilityAudit/
@@ -522,7 +577,10 @@ Output:
     format: 'markdown',
     verbose: false,
     captureScreenshots: false,
-    unityPath: null
+    unityPath: null,
+    baseline: false,
+    trackCompliance: false,
+    failOnRegression: false
   };
 
   // Parse arguments
@@ -542,6 +600,13 @@ Output:
       options.captureScreenshots = true;
     } else if (arg === '--verbose') {
       options.verbose = true;
+    } else if (arg === '--baseline') {
+      options.baseline = true;
+      options.trackCompliance = true; // Baseline implies tracking
+    } else if (arg === '--track-compliance') {
+      options.trackCompliance = true;
+    } else if (arg === '--fail-on-regression') {
+      options.failOnRegression = true;
     } else if (!arg.startsWith('--')) {
       options.projectPath = arg;
     }
@@ -564,7 +629,10 @@ async function main() {
     format: options.format,
     verbose: options.verbose,
     captureScreenshots: options.captureScreenshots,
-    unityPath: options.unityPath
+    unityPath: options.unityPath,
+    baseline: options.baseline,
+    trackCompliance: options.trackCompliance,
+    failOnRegression: options.failOnRegression
   });
 
   await auditor.run();
