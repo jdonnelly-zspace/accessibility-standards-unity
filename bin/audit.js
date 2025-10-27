@@ -174,10 +174,23 @@ class AccessibilityAuditor {
       output = output.replace(regex, variables[key]);
     });
 
-    // Conditional sections: {{#if VARIABLE}}content{{/if}}
-    output = output.replace(/{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g, (match, varName, content) => {
-      return variables[varName] ? content : '';
-    });
+    // Conditional sections: {{#if VARIABLE}}content{{else}}alternative{{/if}}
+    // Process nested conditionals by running multiple passes until no more matches
+    // Use a more robust approach that matches balanced pairs
+    let maxIterations = 10; // Prevent infinite loops
+    let iteration = 0;
+    while (iteration < maxIterations && /{{#if\s+\w+}}/.test(output)) {
+      let changed = false;
+
+      // Find and process the innermost {{#if}} first
+      output = output.replace(/{{#if\s+(\w+)}}((?:(?!{{#if)[\s\S])*?)(?:{{else}}((?:(?!{{#if)[\s\S])*?))?{{\/if}}/g, (match, varName, ifContent, elseContent = '') => {
+        changed = true;
+        return variables[varName] ? ifContent : elseContent;
+      });
+
+      if (!changed) break; // No more replacements made
+      iteration++;
+    }
 
     // Loop sections: {{#each ARRAY}}content{{/each}}
     output = output.replace(/{{#each\s+(\w+)}}([\s\S]*?){{\/each}}/g, (match, arrayName, itemTemplate) => {
