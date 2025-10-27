@@ -1317,16 +1317,16 @@ CODE - PHASE 3.3 (Unity Editor Integration):
 [ ] implementation/unity/editor/AccessibilityMenuItems.cs
 
 CODE - PHASE 3.4 (Advanced Export):
-[ ] bin/export-pdf.js
-[ ] bin/export-csv.js
-[ ] bin/generate-issues.js
-[ ] bin/compare-projects.js
+[X] bin/export-pdf.js
+[X] bin/export-csv.js
+[X] bin/generate-issues.js
+[X] bin/compare-projects.js
 
 CODE - PHASE 3.5 (Code Generation):
-[ ] bin/code-generator/keyboard-scaffolding.js
-[ ] bin/code-generator/accessibility-api-integration.js
-[ ] bin/code-generator/focus-management.js
-[ ] bin/generate-fixes.js
+[X] bin/code-generator/keyboard-scaffolding.js
+[X] bin/code-generator/accessibility-api-integration.js
+[X] bin/code-generator/focus-management.js
+[X] bin/generate-fixes.js
 
 TEMPLATES - PHASE 2.5:
 [X] Updated: templates/audit/AUDIT-SUMMARY.template.md
@@ -1336,9 +1336,9 @@ TEMPLATES - PHASE 3:
 [ ] templates/audit/COMPONENT-RECOMMENDATIONS.template.md (3.1)
 [ ] templates/audit/DIFF-REPORT.template.md (3.2)
 [ ] templates/audit/TRENDS-REPORT.template.md (3.2)
-[ ] templates/audit/custom/ directory (3.4)
-[ ] templates/audit/GENERATED-FIXES.template.md (3.5)
-[ ] templates/code/AccessibilityTemplates.cs (3.5)
+[X] templates/audit/custom/ directory (3.4)
+[X] templates/audit/GENERATED-FIXES.template.md (3.5)
+[X] templates/code/AccessibilityTemplates.cs (3.5)
 
 DOCUMENTATION - EXISTING:
 [ ] Updated: README.md
@@ -1367,9 +1367,9 @@ DEPENDENCIES:
 [X] package-lock.json (generated after npm install)
 
 CONFIGURATION:
-[ ] config/export-config.json (Phase 3.4)
+[X] config/export-config.json (Phase 3.4)
 [ ] compliance-history/ directory (Phase 3.2)
-[ ] templates/audit/custom/ directory (Phase 3.4)
+[X] templates/audit/custom/ directory (Phase 3.4)
 
 TESTING - PHASES 1 & 2:
 [X] Test with career-explorer (51 scenes, 758 scripts)
