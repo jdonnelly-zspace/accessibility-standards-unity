@@ -38,6 +38,19 @@
 {{#if KEYBOARD_SUPPORT_FOUND}}- ✅ Keyboard support patterns detected in codebase{{/if}}
 {{#if SCREEN_READER_SUPPORT_FOUND}}- ✅ Screen reader compatibility patterns detected{{/if}}
 
+### Visual Accessibility Analysis
+{{#if VISUAL_ANALYSIS_PERFORMED}}
+- ✅ Screenshot capture completed ({{SCREENSHOTS_COUNT}} scenes)
+- ✅ Color contrast analysis (WCAG 2.1 standards)
+- ✅ Color-blind simulation (8 vision types)
+- ✅ Visual heatmap generation
+- ✅ Dominant color extraction
+{{/if}}
+{{#if VISUAL_ANALYSIS_NOT_PERFORMED}}
+- ⬜ Visual analysis not performed
+- ℹ️ Run with `--capture-screenshots` flag to enable visual analysis
+{{/if}}
+
 ### Standards Referenced
 - ✅ WCAG 2.2 Level A and AA Success Criteria
 - ✅ W3C XR Accessibility User Requirements (XAUR) - adapted for zSpace
@@ -92,7 +105,7 @@ The terms used in the Conformance Level information are defined as follows:
 | **1.3.3 Sensory Characteristics (Level A)** | ⚠️ Automated Analysis | **Manual Validation Required:** Automated analysis cannot determine if instructions rely solely on sensory characteristics (shape, color, location).<br><br>**Recommendation:** Review all instructions to ensure they don't rely exclusively on visual or spatial cues. |
 | **1.3.4 Orientation (Level AA - included for reference)** | ✅ Likely Supports | Desktop application with fixed orientation on zSpace display. Manual confirmation recommended. |
 | **1.3.5 Identify Input Purpose (Level AA - included for reference)** | N/A Not Applicable | Unity application - automated analysis cannot determine if personal data fields exist. |
-| **1.4.1 Use of Color (Level A)** | ⚠️ Automated Analysis | **Manual Validation Required:** Automated analysis cannot determine if color is the only visual means of conveying information.<br><br>**Recommendation:** Ensure interactive states use multiple visual cues (color + shape/icon/text). |
+| **1.4.1 Use of Color (Level A)** | {{#if COLOR_BLIND_ANALYSIS_PERFORMED}}{{#if COLOR_BLIND_ISSUES_FOUND}}⚠️ Partially Supports{{/if}}{{#if COLOR_BLIND_ISSUES_FOUND}}{{/if}}✅ Likely Supports{{/if}}{{#if COLOR_BLIND_ANALYSIS_PERFORMED}}{{/if}}⚠️ Automated Analysis | {{#if COLOR_BLIND_ANALYSIS_PERFORMED}}**Color-Blind Simulation Performed:** {{SCREENSHOTS_COUNT}} scenes tested with 8 vision types.<br><br>{{#if COLOR_BLIND_ISSUES_FOUND}}**Issues Detected:** Information loss detected in color-blind simulations. Review colorblind/ directories for comparison.<br><br>**Affected Simulations:** {{COLOR_BLIND_AFFECTED_TYPES}}<br><br>**Recommendation:** Add non-color cues (icons, patterns, text labels) to distinguish elements.{{/if}}{{#if COLOR_BLIND_ISSUES_FOUND}}{{/if}}**Analysis Complete:** No significant information loss detected in color-blind simulations.<br><br>**Result:** Visual information appears accessible across all 8 color vision types.{{/if}}{{#if COLOR_BLIND_ANALYSIS_PERFORMED}}{{/if}}**Manual Validation Required:** Automated analysis cannot determine if color is the only visual means of conveying information.<br><br>**Recommendation:** Ensure interactive states use multiple visual cues (color + shape/icon/text). |
 | **1.4.2 Audio Control (Level A)** | ⚠️ Automated Analysis | **Manual Validation Required:** Automated analysis cannot verify audio control mechanisms.<br><br>**Recommendation:** Ensure users can pause/stop/control volume of any audio >3 seconds. |
 | **2.1.1 Keyboard (Level A)** | {{#if KEYBOARD_SUPPORT_FOUND}}⚠️ Partially Supports{{/if}}{{#if KEYBOARD_SUPPORT_FOUND}}{{/if}}❌ Does Not Support | {{#if KEYBOARD_SUPPORT_FOUND}}**Partial Support Detected:** Keyboard input patterns found in {{KEYBOARD_SUPPORT_FOUND}} scripts, but comprehensive coverage not verified.<br><br>**Recommendation:** Validate all interactive functionality is keyboard accessible.{{/if}}{{#if KEYBOARD_SUPPORT_FOUND}}{{/if}}**Critical Issue:** No keyboard input patterns detected in codebase ({{STYLUS_ONLY_SCRIPTS_COUNT}} stylus-only scripts found).<br><br>**Impact:** Users who cannot use stylus/mouse are excluded (10-15% of users).<br><br>**Recommendation:** IMMEDIATE implementation of KeyboardStylusAlternative.cs component. |
 | **2.1.2 No Keyboard Trap (Level A)** | {{#if KEYBOARD_SUPPORT_FOUND}}⚠️ Requires Validation{{/if}}{{#if KEYBOARD_SUPPORT_FOUND}}{{/if}}N/A Not Applicable | {{#if KEYBOARD_SUPPORT_FOUND}}Keyboard support detected - manual testing required to verify no keyboard traps exist.{{/if}}{{#if KEYBOARD_SUPPORT_FOUND}}{{/if}}No keyboard navigation detected - criterion not applicable until keyboard support is implemented. |
@@ -132,7 +145,7 @@ The terms used in the Conformance Level information are defined as follows:
 | **1.2.5 Audio Description (Prerecorded) (Level AA)** | N/A Not Applicable | Unity application - automated analysis cannot determine if prerecorded video exists. |
 | **1.3.4 Orientation (Level AA)** | ✅ Likely Supports | Desktop application with fixed landscape orientation on zSpace display. |
 | **1.3.5 Identify Input Purpose (Level AA)** | N/A Not Applicable | Unity application - automated analysis cannot determine if personal data collection exists. |
-| **1.4.3 Contrast (Minimum) (Level AA)** | ⚠️ Automated Analysis | **UNVALIDATED - Manual Testing Required:** Color contrast ratios not verified by automated analysis.<br><br>**Requirements:**<br>- Normal text: ≥4.5:1 contrast ratio<br>- Large text: ≥3.0:1 contrast ratio<br>- UI components: ≥3.0:1 contrast ratio<br><br>**Recommendation:** Use ContrastCheckerZSpace.cs tool to validate all text and UI elements on actual zSpace display. |
+| **1.4.3 Contrast (Minimum) (Level AA)** | {{#if VISUAL_ANALYSIS_PERFORMED}}{{#if CONTRAST_ISSUES_FOUND}}⚠️ Partially Supports{{/if}}{{#if CONTRAST_ISSUES_FOUND}}{{/if}}✅ Supports{{/if}}{{#if VISUAL_ANALYSIS_PERFORMED}}{{/if}}⚠️ Automated Analysis | {{#if VISUAL_ANALYSIS_PERFORMED}}**Visual Analysis Performed:** {{CONTRAST_ANALYSIS_COMPONENTS}} UI components analyzed.<br><br>{{#if CONTRAST_ISSUES_FOUND}}**Issues Found:** {{CONTRAST_CRITICAL_COUNT}} critical issues (< 3.0:1), {{CONTRAST_WARNING_COUNT}} warnings (< 4.5:1)<br><br>**Compliance Rate:** {{CONTRAST_COMPLIANCE_RATE}}<br><br>**Recommendation:** Review contrast-analysis.json for specific failing components. Common fixes: darken text, lighten backgrounds, increase font weight.{{/if}}{{#if CONTRAST_ISSUES_FOUND}}{{/if}}**All Components Pass:** {{CONTRAST_ANALYSIS_COMPONENTS}} components meet WCAG AA standards.<br><br>**Compliance Rate:** {{CONTRAST_COMPLIANCE_RATE}}{{/if}}{{#if VISUAL_ANALYSIS_PERFORMED}}{{/if}}**UNVALIDATED - Manual Testing Required:** Color contrast ratios not verified by automated analysis.<br><br>**Requirements:**<br>- Normal text: ≥4.5:1 contrast ratio<br>- Large text: ≥3.0:1 contrast ratio<br>- UI components: ≥3.0:1 contrast ratio<br><br>**Recommendation:** Use ContrastCheckerZSpace.cs tool to validate all text and UI elements on actual zSpace display. |
 | **1.4.4 Resize Text (Level AA)** | ⚠️ Automated Analysis | **Manual Validation Required:** Text scaling to 200% not tested.<br><br>**Recommendation:** Test all {{TOTAL_SCENES}} scenes with text size increased to 200%, ensure no loss of content or functionality. |
 | **1.4.5 Images of Text (Level AA)** | ⚠️ Automated Analysis | **Manual Validation Required:** Automated analysis cannot detect images of text.<br><br>**Recommendation:** Verify all text uses actual text rendering (TextMesh Pro), not images. |
 | **1.4.10 Reflow (Level AA)** | N/A Not Applicable | Desktop application with fixed resolution on zSpace display - reflow not applicable. |
@@ -188,12 +201,83 @@ The W3C XR Accessibility User Requirements (XAUR) specification provides guidanc
 {{#if SCREEN_READER_SUPPORT_FOUND}}- Screen reader compatibility patterns detected{{/if}}
 {{#if FOCUS_INDICATORS_FOUND}}- Focus indicator patterns found{{/if}}
 {{#if ACCESSIBILITY_COMPONENTS_FOUND}}- Accessibility framework components detected{{/if}}
+{{#if VISUAL_ANALYSIS_PERFORMED}}- Visual accessibility analysis completed ({{SCREENSHOTS_COUNT}} scenes){{/if}}
+{{#if CONTRAST_ISSUES_FOUND}}{{/if}}- Contrast analysis: {{CONTRAST_COMPLIANCE_RATE}} compliance rate{{/if}}
+{{#if COLOR_BLIND_ANALYSIS_PERFORMED}}- Color-blind simulation: 8 vision types tested{{/if}}
 
 **❌ Critical Gaps:**
 {{#if KEYBOARD_SUPPORT_FOUND}}{{/if}}{{#if KEYBOARD_SUPPORT_FOUND}}{{/if}}- No keyboard input patterns detected ({{STYLUS_ONLY_SCRIPTS_COUNT}} stylus-only scripts)
 {{#if SCREEN_READER_SUPPORT_FOUND}}{{/if}}{{#if SCREEN_READER_SUPPORT_FOUND}}{{/if}}- No screen reader support patterns found
 {{#if FOCUS_INDICATORS_FOUND}}{{/if}}{{#if FOCUS_INDICATORS_FOUND}}{{/if}}- No focus indicator patterns detected
 {{#if ACCESSIBILITY_COMPONENTS_FOUND}}{{/if}}{{#if ACCESSIBILITY_COMPONENTS_FOUND}}{{/if}}- No accessibility framework components found
+{{#if CONTRAST_ISSUES_FOUND}}- Contrast issues: {{CONTRAST_CRITICAL_COUNT}} critical, {{CONTRAST_WARNING_COUNT}} warnings{{/if}}
+{{#if COLOR_BLIND_ISSUES_FOUND}}- Color-blind accessibility issues detected{{/if}}
+
+### Visual Accessibility Results
+
+{{#if VISUAL_ANALYSIS_PERFORMED}}
+**Screenshot Capture:**
+- **Scenes Captured:** {{SCREENSHOTS_COUNT}}
+- **Resolutions:** 1920x1080 (main), 320x180 (thumbnails)
+- **Location:** `AccessibilityAudit/screenshots/`
+
+**Contrast Analysis:**
+{{#if CONTRAST_ANALYSIS_PERFORMED}}
+- **Components Analyzed:** {{CONTRAST_ANALYSIS_COMPONENTS}}
+- **Passing:** {{CONTRAST_PASSING_COMPONENTS}} ({{CONTRAST_COMPLIANCE_RATE}})
+- **Failing:** {{CONTRAST_FAILING_COMPONENTS}}
+  - Critical (< 3.0:1): {{CONTRAST_CRITICAL_COUNT}}
+  - Warnings (< 4.5:1): {{CONTRAST_WARNING_COUNT}}
+- **Report:** `AccessibilityAudit/contrast-analysis.json`
+{{/if}}
+{{#if CONTRAST_ANALYSIS_PERFORMED}}{{/if}}
+- **Status:** Not performed - UI data extraction required
+- **Action:** Run AccessibilityContentExtractor.cs to enable contrast analysis
+{{/if}}
+
+**Color-Blind Simulation:**
+{{#if COLOR_BLIND_ANALYSIS_PERFORMED}}
+- **Vision Types Tested:** 8 (Protanopia, Deuteranopia, Tritanopia, Protanomaly, Deuteranomaly, Tritanomaly, Achromatopsia, Normal)
+- **Scenes Simulated:** {{SCREENSHOTS_COUNT}}
+- **Comparison Pages:** `screenshots/[SceneName]/colorblind/comparison.html`
+{{#if COLOR_BLIND_ISSUES_FOUND}}
+- **Issues Found:** Information loss detected in: {{COLOR_BLIND_AFFECTED_TYPES}}
+- **Recommendation:** Review comparison pages and add non-color distinguishing features
+{{/if}}
+{{#if COLOR_BLIND_ISSUES_FOUND}}{{/if}}
+- **Result:** No significant information loss detected
+{{/if}}
+{{#if COLOR_BLIND_ANALYSIS_PERFORMED}}{{/if}}
+- **Status:** Not performed
+- **Action:** Run ColorBlindSimulator.cs to generate simulations
+{{/if}}
+
+**Visual Analysis Heatmaps:**
+{{#if HEATMAPS_GENERATED}}
+- **Heatmaps Created:** {{HEATMAPS_COUNT}}
+- **Location:** `AccessibilityAudit/visual-analysis/heatmaps/`
+- **Purpose:** Visual overlay showing low-contrast regions
+{{/if}}
+{{#if HEATMAPS_GENERATED}}{{/if}}
+- **Status:** Not generated
+- **Action:** Run analyze-visual-accessibility.js with --heatmap flag
+{{/if}}
+{{/if}}
+
+{{#if VISUAL_ANALYSIS_NOT_PERFORMED}}
+**Visual Analysis Status:** Not performed
+
+To enable comprehensive visual analysis, run:
+```bash
+node bin/audit.js <project-path> --capture-screenshots
+```
+
+This will provide:
+- Automated screenshot capture (all scenes)
+- WCAG contrast ratio analysis
+- Color-blind simulation (8 types)
+- Visual heatmap generation
+{{/if}}
 
 ### Compliance Estimate
 
