@@ -23,9 +23,13 @@
  *   node capture-screenshots.js "C:\MyProject" --verbose
  */
 
-const { spawn } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { spawn } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Parse command line arguments
 function parseArgs() {
@@ -283,8 +287,8 @@ async function main() {
 }
 
 // Run if called directly
-if (require.main === module) {
+if (process.argv[1] === __filename) {
     main();
 }
 
-module.exports = { captureScreenshots, findUnityExecutable, validateUnityProject };
+export { captureScreenshots, findUnityExecutable, validateUnityProject };

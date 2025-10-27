@@ -16,6 +16,9 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { KeyboardAnalyzer } from './pattern-detectors/keyboard-analyzer.js';
+import { UIToolkitAnalyzer } from './pattern-detectors/ui-toolkit-analyzer.js';
+import { XRAccessibilityAnalyzer } from './pattern-detectors/xr-accessibility-analyzer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -172,20 +175,90 @@ class UnityProjectAnalyzer {
   async detectAccessibilityPatterns() {
     console.log('🔎 Detecting accessibility patterns...');
 
-    // Check for accessibility components
+    // Legacy pattern detection (keeping for backward compatibility)
     this.detectAccessibilityComponents();
-
-    // Check for keyboard support
-    this.detectKeyboardSupport();
-
-    // Check for screen reader support
     this.detectScreenReaderSupport();
-
-    // Check for focus indicators
     this.detectFocusIndicators();
 
-    // Check for input handling patterns
-    this.detectInputPatterns();
+    // Phase 3.1: Advanced Pattern Detection with specialized analyzers
+    await this.runAdvancedPatternDetection();
+  }
+
+  /**
+   * Run advanced pattern detection (Phase 3.1)
+   */
+  async runAdvancedPatternDetection() {
+    console.log('🚀 Running advanced pattern detection (Phase 3.1)...');
+
+    // Keyboard accessibility analysis
+    const keyboardAnalyzer = new KeyboardAnalyzer(this.scripts);
+    const keyboardResults = keyboardAnalyzer.analyze();
+
+    // Merge keyboard statistics
+    this.statistics.keyboardSupportFound = keyboardResults.statistics.keyboardSupportFound;
+    this.statistics.keyboardSupportScripts = keyboardResults.statistics.scriptsWithKeyboardSupport.map(s => s.name);
+    this.statistics.stylusOnlyScripts = keyboardResults.statistics.scriptsWithoutKeyboardSupport.map(s => s.name);
+    this.statistics.inputSystemUsed = keyboardResults.statistics.inputSystemUsed;
+    this.statistics.eventSystemConfigured = keyboardResults.statistics.eventSystemConfigured;
+    this.statistics.focusManagementFound = keyboardResults.statistics.focusManagementFound;
+    this.statistics.keyboardConfidenceScore = keyboardResults.statistics.confidenceScore;
+
+    // Merge keyboard findings
+    keyboardResults.findings.forEach(finding => {
+      this.addFinding(finding);
+    });
+
+    // UI Toolkit accessibility analysis
+    const uiToolkitAnalyzer = new UIToolkitAnalyzer(this.projectPath, this.scripts);
+    const uiToolkitResults = uiToolkitAnalyzer.analyze();
+
+    // Merge UI Toolkit statistics
+    this.statistics.uiToolkitUsed = uiToolkitResults.statistics.uiToolkitUsed;
+    this.statistics.uxmlFilesFound = uiToolkitResults.statistics.uxmlFilesFound;
+    this.statistics.ussFilesFound = uiToolkitResults.statistics.ussFilesFound;
+    this.statistics.uiToolkitConfidenceScore = uiToolkitResults.statistics.confidenceScore;
+
+    // Merge UI Toolkit findings
+    uiToolkitResults.findings.forEach(finding => {
+      this.addFinding(finding);
+    });
+
+    // XR accessibility analysis
+    const xrAnalyzer = new XRAccessibilityAnalyzer(this.scripts);
+    const xrResults = xrAnalyzer.analyze();
+
+    // Merge XR statistics
+    this.statistics.xrUsed = xrResults.statistics.xrUsed;
+    this.statistics.xrSdks = xrResults.statistics.xrSdks;
+    this.statistics.xrInputMethods = xrResults.statistics.inputMethods;
+    this.statistics.xrAlternativeInputs = xrResults.statistics.alternativeInputsAvailable;
+    this.statistics.xrMissingAlternatives = xrResults.statistics.missingAlternatives;
+    this.statistics.xrConfidenceScore = xrResults.statistics.confidenceScore;
+
+    // Merge XR findings
+    xrResults.findings.forEach(finding => {
+      this.addFinding(finding);
+    });
+
+    console.log('   ✅ Advanced pattern detection complete');
+  }
+
+  /**
+   * Add finding to appropriate severity category
+   */
+  addFinding(finding) {
+    const severity = finding.severity || 'medium';
+
+    // Map severity to category
+    if (severity === 'critical') {
+      this.findings.critical.push(finding);
+    } else if (severity === 'high') {
+      this.findings.high.push(finding);
+    } else if (severity === 'medium') {
+      this.findings.medium.push(finding);
+    } else if (severity === 'low' || severity === 'info') {
+      this.findings.low.push(finding);
+    }
   }
 
   /**
@@ -213,33 +286,12 @@ class UnityProjectAnalyzer {
   }
 
   /**
-   * Detect keyboard support patterns
+   * Detect keyboard support patterns (DEPRECATED - replaced by KeyboardAnalyzer in Phase 3.1)
+   * Kept for backward compatibility but no longer used in analysis
    */
   detectKeyboardSupport() {
-    let keyboardScripts = [];
-
-    this.scripts.forEach(script => {
-      let hasKeyboardSupport = false;
-
-      WCAG_PATTERNS.keyboard.positive.forEach(pattern => {
-        if (script.content.includes(pattern)) {
-          hasKeyboardSupport = true;
-        }
-      });
-
-      if (hasKeyboardSupport) {
-        keyboardScripts.push(script.name);
-      }
-    });
-
-    this.statistics.keyboardSupportFound = keyboardScripts.length > 0;
-    this.statistics.keyboardSupportScripts = keyboardScripts;
-
-    if (keyboardScripts.length > 0) {
-      console.log(`   ✅ Keyboard support found in ${keyboardScripts.length} scripts`);
-    } else {
-      console.log('   ❌ No keyboard support patterns detected');
-    }
+    // This method is deprecated and replaced by KeyboardAnalyzer
+    // See runAdvancedPatternDetection() for new implementation
   }
 
   /**
@@ -297,36 +349,12 @@ class UnityProjectAnalyzer {
   }
 
   /**
-   * Detect input handling patterns
+   * Detect input handling patterns (DEPRECATED - replaced by XRAccessibilityAnalyzer in Phase 3.1)
+   * Kept for backward compatibility but no longer used in analysis
    */
   detectInputPatterns() {
-    let stylusOnly = [];
-    let hasAlternatives = [];
-
-    this.scripts.forEach(script => {
-      const hasStylus = script.content.includes('stylus') ||
-                        script.content.includes('ZPointer') ||
-                        script.content.includes('zSpace.Core');
-
-      const hasKeyboard = script.content.includes('Input.GetKey') ||
-                          script.content.includes('KeyCode');
-
-      const hasMouse = script.content.includes('Input.mouse') ||
-                       script.content.includes('GetMouseButton');
-
-      if (hasStylus && !hasKeyboard && !hasMouse) {
-        stylusOnly.push(script.name);
-      } else if (hasStylus && (hasKeyboard || hasMouse)) {
-        hasAlternatives.push(script.name);
-      }
-    });
-
-    this.statistics.stylusOnlyScripts = stylusOnly;
-    this.statistics.multiInputScripts = hasAlternatives;
-
-    if (stylusOnly.length > 0) {
-      console.log(`   ⚠️  ${stylusOnly.length} scripts are stylus-only (WCAG 2.1.1 violation)`);
-    }
+    // This method is deprecated and replaced by XRAccessibilityAnalyzer
+    // See runAdvancedPatternDetection() for new implementation
   }
 
   /**

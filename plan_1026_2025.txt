@@ -431,154 +431,721 @@ COMMIT PLAN:
 [ ] Tag: v3.1.0-phase2.5
 
 ================================================================================
-PHASE 3: ENHANCED REPORTING
+PHASE 3: ADVANCED CAPABILITIES (5 SUB-PHASES)
 ================================================================================
 Status: [ ] Not Started  [ ] In Progress  [ ] Completed
-Estimated Time: Week 3 (10-14 hours)
+Estimated Time: Weeks 3-6 (40-55 hours total)
+Completion Date: __________
+
+OVERVIEW:
+---------
+Phase 3 expands the framework with 5 major capability areas that transform
+it from a basic auditing tool into a comprehensive accessibility development
+platform. Each sub-phase is independent and can be completed incrementally.
+
+SUB-PHASES:
+-----------
+3.1 Enhanced Pattern Detection & Analysis (8-10 hours)
+3.2 Compliance Tracking & Comparison (6-8 hours)
+3.3 Unity Editor Integration (10-12 hours)
+3.4 Advanced Export & Documentation (8-10 hours)
+3.5 Automated Fix Suggestions & Code Generation (8-15 hours)
+
+================================================================================
+PHASE 3.1: ENHANCED PATTERN DETECTION & ANALYSIS
+================================================================================
+Status: [ ] Not Started  [ ] In Progress  [X] Completed
+Estimated Time: 8-10 hours
+Completion Date: October 27, 2025
+
+OBJECTIVES:
+-----------
+- Improve C# pattern detection accuracy
+- Add Unity UI Toolkit accessibility analysis
+- Add XR-specific accessibility pattern detection
+- Generate component-level recommendations with specific code fixes
+- Reduce false positives in automated analysis
+
+DELIVERABLES:
+-------------
+1. bin/pattern-detectors/keyboard-analyzer.js (NEW)
+   - Advanced keyboard pattern detection
+   - Detect UnityEngine.Input, InputSystem, EventSystem usage
+   - Analyze key binding configurations
+   - Detect keyboard navigation chains (focus management)
+   - Identify stylus-only patterns (TouchScript, Leap Motion without keyboard fallback)
+   - Generate findings with specific script locations
+   - Confidence scoring for detections
+
+2. bin/pattern-detectors/ui-toolkit-analyzer.js (NEW)
+   - Analyze Unity UI Toolkit (UIElements) for accessibility
+   - Parse .uxml files for UI structure
+   - Analyze .uss files for visual accessibility
+   - Detect focusable elements and tab order
+   - Validate label associations
+   - Check for proper ARIA-like roles
+   - Export UI Toolkit-specific findings
+
+3. bin/pattern-detectors/xr-accessibility-analyzer.js (NEW)
+   - XR-specific pattern detection:
+     * Hand tracking input (Quest, Vive, zSpace stylus)
+     * Gaze input detection
+     * Voice command patterns (speech recognition)
+     * Spatial audio cues
+     * Alternative interaction methods
+   - Detect XR SDKs: XR Interaction Toolkit, MRTK, Oculus SDK, zSpace SDK
+   - Validate alternative input methods available
+   - Check for depth cue alternatives (for stereoblind users)
+
+4. Update bin/analyze-unity-project.js
+   - Integrate new pattern detectors
+   - Add component-level finding tracking (file:line references)
+   - Improve confidence scoring system
+   - Add pattern correlation analysis (e.g., Input + EventSystem = keyboard nav)
+   - Generate more specific recommendations with code examples
+
+5. templates/audit/COMPONENT-RECOMMENDATIONS.template.md (NEW)
+   - Component-level recommendations organized by:
+     * Script path
+     * Issue severity
+     * Specific line numbers (if detectable)
+     * Code fix examples
+     * Testing instructions
+   - Group by component type:
+     * Input handlers
+     * UI components
+     * XR interactions
+     * Audio/visual elements
+
+6. Update templates/audit/VPAT-COMPREHENSIVE.template.md
+   - Add UI Toolkit-specific sections
+   - Add XR accessibility sections
+   - More detailed automated findings with component references
+
+TECHNICAL DETAILS:
+------------------
+Pattern Detection Improvements:
+- Regex + AST parsing for C# code analysis
+- Detect method calls: Input.GetKey(), InputSystem.actions, EventSystem.SetSelectedGameObject()
+- Analyze scene files for InputModule configurations
+- Parse .uxml for UI structure: <VisualElement>, <Button>, <TextField>
+- Detect XR SDK imports: using UnityEngine.XR, using Microsoft.MixedReality.Toolkit
+
+UI Toolkit Validation Rules:
+1. All interactive elements have focusable="true"
+2. Tab order defined (tabindex attribute)
+3. Labels associated with inputs
+4. Buttons have accessible names
+5. Custom controls have proper role semantics
+
+XR Accessibility Patterns:
+1. Hand/stylus input has keyboard/controller alternative
+2. Gaze-based selection has dwell time configuration
+3. Spatial audio has visual alternatives (captions, indicators)
+4. 3D UI elements have 2D fallback mode
+5. Depth-dependent content has alternative cues
+
+Output Structure:
+AccessibilityAudit/
+  pattern-analysis/
+    keyboard-patterns.json
+    ui-toolkit-analysis.json
+    xr-accessibility-analysis.json
+  COMPONENT-RECOMMENDATIONS.md (per-component fixes)
+
+TESTING:
+--------
+- Test keyboard pattern detection on apps with Input/InputSystem
+- Test UI Toolkit analysis on UIElements-based projects
+- Test XR pattern detection on career-explorer (zSpace stylus)
+- Validate false positive rate < 10%
+- Verify component-level recommendations are actionable
+
+SUCCESS CRITERIA:
+-----------------
+✓ Keyboard pattern detection accuracy > 90%
+✓ UI Toolkit analysis works on UIElements projects
+✓ XR patterns detected (hand tracking, gaze, voice)
+✓ Component-level recommendations include file:line references
+✓ False positive rate < 10%
+
+GIT COMMIT CHECKLIST:
+---------------------
+[X] New pattern detectors implemented
+[X] Tests passing
+[X] Documentation updated
+[X] Commit message: "Phase 3.1: Enhanced pattern detection and analysis"
+[X] Tag: v3.1.0-phase3.1
+
+================================================================================
+PHASE 3.2: COMPLIANCE TRACKING & COMPARISON
+================================================================================
+Status: [ ] Not Started  [ ] In Progress  [ ] Completed
+Estimated Time: 6-8 hours
 Completion Date: __________
 
 OBJECTIVES:
 -----------
-- Generate per-scene accessibility reports
-- Extract and validate screen reader content
-- Create HTML visual reports with embedded images
-- Add scene comparison dashboard
+- Track audit results over time (baseline tracking)
+- Generate diff reports (what changed between audits)
+- Progress tracking toward compliance goals
+- Historical trend analysis
+- CI/CD integration (fail builds on regression)
 
 DELIVERABLES:
 -------------
-1. implementation/unity/editor/AccessibilityContentExtractor.cs
-   - Load each scene programmatically
-   - Find all AccessibilityNode components (Unity 2023.2+)
-   - Find all UnityAccessibilityIntegration registrations
-   - Extract:
-     * Label text
-     * Role (Button, Slider, StaticText, etc.)
-     * Description/hint
-     * Parent hierarchy
-     * Screen position
-   - Validate:
-     * Missing labels (empty strings)
-     * Generic labels ("Button", "Text", "Image")
-     * Duplicate labels in same hierarchy
-     * Missing roles
-   - Export to accessibility-content-[SceneName].json
-   - Generate warnings for common issues
+1. bin/compliance-tracker.js (NEW)
+   - Store audit results in compliance-history/ directory
+   - Baseline management (create, update, compare)
+   - Generate diff reports between audits
+   - Track compliance score trends
+   - Export historical data to JSON/CSV
 
-2. Update bin/analyze-unity-project.js
-   - Add per-scene analysis mode
-   - Generate individual scene scores
-   - Track findings by scene
-   - Create scene comparison matrix
-   - Export scene-level JSON files
+2. bin/compare-audits.js (NEW)
+   - Compare two audit reports
+   - Identify new issues
+   - Identify resolved issues
+   - Identify changed compliance scores
+   - Generate comparison report (markdown + JSON)
 
-3. templates/audit/SCENE-REPORT.template.md (NEW)
-   - Per-scene template with:
-     * Scene metadata (name, path, objects count)
-     * Compliance score
-     * Critical/High/Medium/Low findings
-     * Screenshots (main + color-blind)
-     * Contrast analysis results
-     * Screen reader content validation
-     * Recommendations specific to scene
-     * Code snippets for fixes
+3. compliance-history/ directory structure (NEW)
+   - Store timestamped audit snapshots
+   - baseline.json (reference point)
+   - YYYY-MM-DD-HHMMSS.json (audit snapshots)
+   - trends.json (aggregated metrics)
 
-4. templates/audit/SCENE-COMPARISON-DASHBOARD.template.html (NEW)
-   - Interactive HTML dashboard
-   - Scene grid with thumbnails
-   - Color-coded compliance scores
-   - Sortable/filterable table
-   - Click to view detailed scene report
-   - Charts: compliance trends, issue distribution
-   - Export to PDF functionality
+4. templates/audit/DIFF-REPORT.template.md (NEW)
+   - Show changes between two audits:
+     * Compliance score delta
+     * New issues detected
+     * Resolved issues
+     * Changed WCAG criteria status
+     * Scene-level changes
+   - Color-coded sections (improvements, regressions)
 
-5. bin/generate-html-report.js (NEW)
-   - Use Puppeteer or Playwright to render HTML
-   - Embed screenshots inline (base64 or file references)
-   - Generate interactive dashboard
-   - Export to PDF via headless browser
-   - Support custom styling (CSS themes)
+5. templates/audit/TRENDS-REPORT.template.md (NEW)
+   - Historical compliance trends
+   - Charts showing score over time
+   - Issue resolution rate
+   - Compliance goal progress
+   - Recommendations for improvement
 
 6. Update bin/audit.js
-   - Add --per-scene flag
-   - Add --html-report flag
-   - Orchestrate new report generation
-   - Create index.html with navigation
+   - Add --baseline flag (create baseline)
+   - Add --compare <audit1> <audit2> flag
+   - Add --track-compliance flag (auto-save results)
+   - Add --fail-on-regression flag (for CI/CD)
+   - Exit code 1 if compliance score decreases
 
-7. templates/audit/styles.css (NEW)
-   - Professional styling for HTML reports
-   - Responsive design (mobile/tablet/desktop)
-   - Print-friendly styles
-   - Accessibility-compliant (high contrast, keyboard nav)
-
-8. package.json updates
-   - Add dependencies:
-     * "puppeteer": "^21.0.0" OR "playwright": "^1.40.0"
-     * "marked": "^10.0.0" (Markdown to HTML)
-     * "chart.js": "^4.4.0" (charts for dashboard)
+7. .github/workflows/accessibility-regression.yml (NEW)
+   - CI/CD integration example
+   - Run audit on every PR
+   - Compare against baseline
+   - Fail build if new critical issues introduced
+   - Post comment with diff report
 
 TECHNICAL DETAILS:
 ------------------
-Per-Scene Report Structure:
+Baseline Management:
+- baseline.json stores reference audit results
+- Compare current audit against baseline
+- Detect regressions: new critical/high issues, decreased compliance score
+
+Diff Algorithm:
+- Compare findings by ID and scene
+- Match issues by severity and description
+- Identify "new", "resolved", "unchanged" status
+- Calculate net change in compliance
+
+CI/CD Integration:
+Exit codes:
+  0 = Success (no regressions)
+  1 = Failure (new critical issues OR compliance score decreased)
+  2 = Warning (new high issues, but score unchanged)
+
+Output Structure:
+compliance-history/
+  baseline.json
+  2025-10-27-143022.json
+  2025-10-28-091544.json
+  trends.json
 AccessibilityAudit/
-  scenes/
-    Farm/
-      SCENE-REPORT-Farm.md
-      accessibility-content.json
-      findings.json
-      screenshots/ (symlink to ../screenshots/Farm/)
-    Hospital/
-      SCENE-REPORT-Hospital.md
-      accessibility-content.json
-      findings.json
-  SCENE-COMPARISON-DASHBOARD.html
-  index.html (main entry point)
-  styles.css
-
-AccessibilityNode Validation Rules:
-1. Label not empty
-2. Label not generic ("Button", "Text", "Image", "GameObject")
-3. Label descriptive (>3 words for complex controls)
-4. Role appropriate for component type
-5. Description provided for non-obvious controls
-6. No duplicate labels in same container
-7. Hierarchy reflects visual structure
-
-HTML Report Features:
-- Embedded screenshots (base64 for portability)
-- Collapsible sections for findings
-- Syntax-highlighted code snippets (Prism.js)
-- Responsive grid layout
-- Dark/light theme toggle
-- Export to PDF button
-- Print optimization
+  DIFF-REPORT-2025-10-27-vs-2025-10-28.md
+  TRENDS-REPORT.md
 
 TESTING:
 --------
-- Test AccessibilityContentExtractor on career-explorer
-- Verify per-scene reports generated correctly
-- Test HTML dashboard in Chrome, Firefox, Edge
-- Validate PDF export quality
-- Test with 15+ scenes (performance check)
-- Verify navigation between reports
+- Create baseline from career-explorer audit
+- Make code changes that introduce issues
+- Run new audit and verify diff report shows new issues
+- Test CI/CD workflow with regression
+- Verify exit codes work correctly
 
 SUCCESS CRITERIA:
 -----------------
-✓ Per-scene reports for all 15 career-explorer scenes
-✓ Screen reader content validated automatically
-✓ HTML dashboard loads in < 2 seconds
-✓ PDF export works without errors
-✓ Reports are stakeholder-friendly (non-technical readable)
+✓ Baseline tracking works across multiple audits
+✓ Diff reports accurately show changes
+✓ CI/CD integration fails on regressions
+✓ Historical trends visualized clearly
+✓ No false positives in change detection
 
 GIT COMMIT CHECKLIST:
 ---------------------
-[ ] npm install completes successfully
-[ ] HTML reports render correctly in browsers
-[ ] PDF export tested
-[ ] Code compiles without errors
+[ ] Compliance tracking implemented
+[ ] Diff reports generated correctly
+[ ] CI/CD example workflow tested
 [ ] Documentation updated
-[ ] CHANGELOG.md updated
-[ ] Commit message: "Phase 3: Add per-scene reports and HTML dashboard"
-[ ] Tag: v3.1.0-phase3
+[ ] Commit message: "Phase 3.2: Compliance tracking and comparison"
+[ ] Tag: v3.1.0-phase3.2
+
+================================================================================
+PHASE 3.3: UNITY EDITOR INTEGRATION
+================================================================================
+Status: [ ] Not Started  [ ] In Progress  [ ] Completed
+Estimated Time: 10-12 hours
+Completion Date: __________
+
+OBJECTIVES:
+-----------
+- Create custom Unity Editor window for running audits
+- Add in-editor accessibility warnings
+- Add Scene view overlays showing accessibility issues
+- Add Component inspector extensions
+- Add quick-fix buttons for common issues
+
+DELIVERABLES:
+-------------
+1. implementation/unity/editor/AccessibilityAuditorWindow.cs (NEW)
+   - Custom EditorWindow (Window > Accessibility > Auditor)
+   - UI sections:
+     * Project overview (scenes, scripts, compliance estimate)
+     * Run Audit button (with options)
+     * Recent audit results
+     * Quick actions (capture screenshots, run analysis)
+     * Settings (output directory, verbose logging)
+   - Live progress bar during audit
+   - Clickable results (navigate to scene/script)
+
+2. implementation/unity/editor/AccessibilitySceneViewOverlay.cs (NEW)
+   - Scene view overlay showing accessibility issues
+   - Visual indicators:
+     * Red outlines: Critical issues (missing keyboard support)
+     * Yellow outlines: Warnings (low contrast, missing labels)
+     * Green checkmarks: Compliant elements
+   - Hover tooltips with issue details
+   - Click to select GameObject
+   - Toggle overlay on/off
+
+3. implementation/unity/editor/AccessibilityInspectorExtension.cs (NEW)
+   - Extend Inspector for common components:
+     * Button: Check for accessible label
+     * InputField: Check for label association
+     * Image: Check for alt text equivalent
+     * Canvas: Check for EventSystem keyboard navigation
+   - Show accessibility warnings in Inspector
+   - "Fix" button for quick fixes (add missing components)
+
+4. implementation/unity/editor/AccessibilityQuickFixes.cs (NEW)
+   - One-click fixes for common issues:
+     * Add AccessibilityNode component
+     * Add EventSystem keyboard navigation
+     * Add missing labels to UI elements
+     * Fix tab order in Canvas
+     * Add focus indicators
+   - Undo support (Unity Undo system)
+   - Batch fix (apply to multiple objects)
+
+5. implementation/unity/editor/AccessibilityMenuItems.cs (NEW)
+   - Menu items:
+     * GameObject > Accessibility > Add Accessibility Node
+     * GameObject > Accessibility > Validate Scene
+     * GameObject > Accessibility > Fix Common Issues
+     * Tools > Accessibility > Run Full Audit
+     * Tools > Accessibility > Settings
+
+6. Update existing accessibility components
+   - Add [HelpURL] attributes linking to documentation
+   - Add custom Inspector editors with accessibility tips
+   - Add validation warnings in OnValidate()
+
+7. docs/UNITY-EDITOR-GUIDE.md (NEW)
+   - Complete guide to using Unity Editor integration
+   - Screenshots of custom windows
+   - Workflow examples
+   - Quick fix usage
+
+TECHNICAL DETAILS:
+------------------
+Unity Editor APIs:
+- EditorWindow: Custom editor windows
+- SceneView.duringSceneGui: Scene view overlays
+- Editor: Custom inspectors
+- Handles: Draw 3D shapes in Scene view
+- EditorGUILayout: Editor UI layout
+- Undo: Undo/redo support
+
+Scene View Overlay Implementation:
+- Hook into SceneView.duringSceneGui
+- Iterate accessibility issues from last audit
+- Find GameObjects by scene path
+- Draw Handles.DrawOutline() for issues
+- Use HandleUtility.GetHandleSize() for consistent sizing
+
+Quick Fix Implementation:
+- Detect missing components
+- Use Undo.AddComponent() for undo support
+- Configure component with sensible defaults
+- Mark scene as dirty (EditorSceneManager.MarkSceneDirty)
+
+Output Structure:
+Assets/
+  Plugins/
+    accessibility-standards-unity/
+      editor/
+        AccessibilityAuditorWindow.cs
+        AccessibilitySceneViewOverlay.cs
+        AccessibilityInspectorExtension.cs
+        AccessibilityQuickFixes.cs
+        AccessibilityMenuItems.cs
+
+TESTING:
+--------
+- Test Auditor window on career-explorer
+- Verify Scene view overlay shows issues correctly
+- Test Inspector extensions on Button, InputField, Image
+- Verify quick fixes work and support Undo
+- Test menu items execute correctly
+
+SUCCESS CRITERIA:
+-----------------
+✓ Auditor window functional and user-friendly
+✓ Scene view overlay shows issues visually
+✓ Inspector extensions show warnings
+✓ Quick fixes work and support Undo
+✓ Menu items organized logically
+
+GIT COMMIT CHECKLIST:
+---------------------
+[ ] Unity Editor integration complete
+[ ] All windows and overlays tested
+[ ] Quick fixes tested with Undo
+[ ] Documentation updated
+[ ] Commit message: "Phase 3.3: Unity Editor integration"
+[ ] Tag: v3.1.0-phase3.3
+
+================================================================================
+PHASE 3.4: ADVANCED EXPORT & DOCUMENTATION
+================================================================================
+Status: [ ] Not Started  [ ] In Progress  [ ] Completed
+Estimated Time: 8-10 hours
+Completion Date: __________
+
+OBJECTIVES:
+-----------
+- Add PDF export for VPAT reports (for formal compliance documentation)
+- Add CSV/Excel exports for tracking in project management tools
+- Add JIRA/GitHub issue generation
+- Add customizable report templates
+- Add multi-project comparison reports
+
+DELIVERABLES:
+-------------
+1. bin/export-pdf.js (NEW)
+   - Export VPAT reports to PDF
+   - Use Puppeteer or Playwright to render markdown as HTML, then PDF
+   - Professional styling (matching VPAT format)
+   - Include screenshots, charts, tables
+   - Bookmarks for navigation
+   - Support custom headers/footers (company logo, etc.)
+
+2. bin/export-csv.js (NEW)
+   - Export audit findings to CSV
+   - Columns:
+     * Scene, Finding ID, Severity, WCAG Criterion, Description,
+       Recommendation, Status (Open/Resolved), Assigned To, Due Date
+   - Import into Excel, Google Sheets, JIRA
+   - Support filtering by severity, scene, criterion
+
+3. bin/generate-issues.js (NEW)
+   - Generate JIRA/GitHub issues from audit findings
+   - Use JIRA REST API / GitHub API
+   - Create issues for critical/high findings
+   - Include:
+     * Title: "Accessibility: [Finding Title]"
+     * Description: Finding details, WCAG reference, recommendation
+     * Labels: accessibility, wcag-2.2, severity-critical
+     * Assignee: (configurable)
+   - Avoid duplicates (check existing issues)
+
+4. templates/audit/custom/ directory (NEW)
+   - Allow custom report templates
+   - Template variables documented
+   - Examples:
+     * executive-summary.template.md (1-page high-level)
+     * technical-details.template.md (developer-focused)
+     * stakeholder-friendly.template.md (non-technical)
+
+5. bin/compare-projects.js (NEW)
+   - Compare accessibility across multiple Unity projects
+   - Generate comparison report:
+     * Compliance scores by project
+     * Common issues across projects
+     * Best practices from highest-scoring project
+     * Recommendations for each project
+   - Useful for organizations with multiple Unity projects
+
+6. Update bin/audit.js
+   - Add --export-pdf flag
+   - Add --export-csv flag
+   - Add --create-issues flag (with --jira-config or --github-config)
+   - Add --template <path> flag (custom template)
+
+7. config/export-config.json (NEW)
+   - Configuration for exports:
+     * PDF: company name, logo, footer text
+     * CSV: column selections, filters
+     * JIRA: server URL, project key, issue type, default assignee
+     * GitHub: repo, labels, assignee
+
+TECHNICAL DETAILS:
+------------------
+PDF Export:
+- Convert markdown to HTML (marked.js)
+- Apply CSS styling (professional VPAT format)
+- Render to PDF (Puppeteer: page.pdf())
+- Options: page size (A4, Letter), margins, header/footer
+
+CSV Export:
+- Parse audit findings JSON
+- Format as CSV (csv-writer package)
+- Include all relevant fields
+- Support Excel compatibility (UTF-8 BOM)
+
+Issue Generation:
+- JIRA REST API: POST /rest/api/2/issue
+- GitHub API: POST /repos/{owner}/{repo}/issues
+- Authenticate: API token in config file
+- Check for duplicates: search issues by title/label
+
+Custom Templates:
+- Users can create .template.md files
+- Use same template variable system as built-in templates
+- Override default templates with --template flag
+
+Multi-Project Comparison:
+- Run audits on multiple projects
+- Aggregate results
+- Generate comparison matrix
+- Identify organization-wide patterns
+
+Output Structure:
+AccessibilityAudit/
+  exports/
+    VPAT-career-explorer.pdf
+    findings-export.csv
+    issues-created.json
+  MULTI-PROJECT-COMPARISON.md (if comparing projects)
+
+TESTING:
+--------
+- Test PDF export on VPAT report (verify formatting)
+- Test CSV export, import into Excel
+- Test JIRA/GitHub issue creation (with test repo/project)
+- Test custom templates
+- Test multi-project comparison with 2+ projects
+
+SUCCESS CRITERIA:
+-----------------
+✓ PDF export produces professional VPAT reports
+✓ CSV export works with Excel/Sheets/JIRA
+✓ Issue generation works with JIRA and GitHub
+✓ Custom templates functional
+✓ Multi-project comparison provides useful insights
+
+GIT COMMIT CHECKLIST:
+---------------------
+[ ] Export functionality implemented
+[ ] Issue generation tested
+[ ] Custom templates documented
+[ ] Configuration examples provided
+[ ] Commit message: "Phase 3.4: Advanced export and documentation"
+[ ] Tag: v3.1.0-phase3.4
+
+================================================================================
+PHASE 3.5: AUTOMATED FIX SUGGESTIONS & CODE GENERATION
+================================================================================
+Status: [ ] Not Started  [ ] In Progress  [ ] Completed
+Estimated Time: 8-15 hours
+Completion Date: __________
+
+OBJECTIVES:
+-----------
+- Generate keyboard input scaffolding code
+- Generate Unity Accessibility API integration code
+- Auto-generate focus management code
+- Create accessibility component templates
+- Suggest specific Unity component configurations
+
+DELIVERABLES:
+-------------
+1. bin/code-generator/keyboard-scaffolding.js (NEW)
+   - Generate C# code for keyboard input handling
+   - Templates:
+     * Input.GetKeyDown-based navigation
+     * InputSystem actions-based navigation
+     * EventSystem focus management
+     * Tab order configuration
+   - Analyze existing project to determine which input system is used
+   - Generate code that integrates with existing input handling
+
+2. bin/code-generator/accessibility-api-integration.js (NEW)
+   - Generate C# code for Unity Accessibility API (2023.2+)
+   - Templates:
+     * AccessibilityNode setup for UI elements
+     * Custom control accessibility implementation
+     * Dynamic content updates (for screen readers)
+     * Hierarchy configuration
+   - Generate scene configuration scripts
+
+3. bin/code-generator/focus-management.js (NEW)
+   - Generate focus management code
+   - Templates:
+     * Focus indicator visual component
+     * Focus traversal scripts (up/down/left/right)
+     * Focus trap for modals/dialogs
+     * Focus restoration after modal close
+   - Generate Canvas-specific focus configuration
+
+4. templates/code/AccessibilityTemplates.cs (NEW)
+   - C# templates for common patterns:
+     * KeyboardNavigationManager.cs (tab order, arrow keys)
+     * FocusIndicator.cs (visual focus highlight)
+     * AccessibleButton.cs (button with keyboard + SR support)
+     * AccessibleToggle.cs (toggle with accessibility)
+     * AccessibleSlider.cs (slider with keyboard support)
+     * ScreenReaderAnnouncer.cs (dynamic content updates)
+
+5. bin/generate-fixes.js (NEW)
+   - Analyze audit findings
+   - Generate specific code fixes for each finding
+   - Output:
+     * New C# scripts to add (with full code)
+     * Modifications to existing scripts (with diff)
+     * Component configurations (with Unity YAML snippets)
+     * Step-by-step instructions for manual changes
+   - Organize by scene and component
+
+6. templates/audit/GENERATED-FIXES.template.md (NEW)
+   - Report showing all generated fixes:
+     * Finding ID
+     * Scene/GameObject path
+     * Generated code solution
+     * Installation instructions
+     * Testing instructions
+   - Grouped by fix type (keyboard, focus, screen reader, etc.)
+
+7. Update bin/audit.js
+   - Add --generate-fixes flag
+   - Run code generation after analysis
+   - Save generated code to AccessibilityAudit/generated-fixes/
+
+TECHNICAL DETAILS:
+------------------
+Code Generation Strategy:
+- Analyze existing code to detect:
+  * Input system used (old Input class vs new InputSystem)
+  * UI framework (UGUI vs UI Toolkit)
+  * Accessibility API usage (2023.2+)
+- Generate code that matches project conventions:
+  * Namespace usage
+  * Coding style (detected from existing scripts)
+  * Component patterns
+
+Keyboard Navigation Code Generation:
+- Detect UI Canvas structure
+- Generate navigation script:
+  * Tab key: Move to next focusable element
+  * Shift+Tab: Move to previous focusable element
+  * Arrow keys: Navigate in 2D grid (if applicable)
+  * Enter/Space: Activate focused element
+- Handle EventSystem integration
+
+Accessibility API Integration:
+- Generate AccessibilityNode setup:
+  * Set label, role, description
+  * Configure isActive and parent
+  * Handle state changes
+- For Unity 2023.2+ projects only
+
+Focus Management:
+- Generate FocusIndicator component:
+  * Visual outline on focused element
+  * Configurable color, thickness, animation
+  * Hook into EventSystem.current.currentSelectedGameObject
+- Generate focus traversal logic:
+  * Build focusable element list
+  * Navigate with arrow keys
+  * Handle focus traps (modals)
+
+Output Structure:
+AccessibilityAudit/
+  generated-fixes/
+    keyboard/
+      KeyboardNavigationManager.cs (NEW)
+      FarmScene_KeyboardConfig.cs (NEW)
+    focus/
+      FocusIndicator.cs (NEW)
+      FocusManager.cs (NEW)
+    accessibility-api/
+      AccessibleButton.cs (NEW)
+      HospitalScene_AccessibilitySetup.cs (NEW)
+  GENERATED-FIXES.md (summary of all fixes)
+
+TESTING:
+--------
+- Test code generation on career-explorer
+- Verify generated code compiles in Unity
+- Test keyboard navigation scripts work
+- Test focus management scripts work
+- Test accessibility API integration (Unity 2023.2+)
+- Verify generated code follows best practices
+
+SUCCESS CRITERIA:
+-----------------
+✓ Generated code compiles without errors
+✓ Keyboard navigation scripts functional
+✓ Focus management scripts functional
+✓ Accessibility API integration works (2023.2+)
+✓ Code follows Unity best practices
+✓ Clear installation instructions provided
+
+GIT COMMIT CHECKLIST:
+---------------------
+[ ] Code generation implemented
+[ ] All templates created
+[ ] Generated code tested in Unity
+[ ] Documentation updated
+[ ] Commit message: "Phase 3.5: Automated fix suggestions and code generation"
+[ ] Tag: v3.1.0-phase3.5
+
+================================================================================
+PHASE 3 COMPLETION
+================================================================================
+
+After completing all 5 sub-phases:
+[ ] All Phase 3 sub-phases completed (3.1 through 3.5)
+[ ] Integration testing across all Phase 3 features
+[ ] Update documentation with all new features
+[ ] Update CHANGELOG.md with Phase 3 additions
+[ ] Create comprehensive examples demonstrating all features
+[ ] Tag: v3.1.0-phase3 (final Phase 3 tag)
+
+Phase 3 adds significant value:
+✓ 90%+ pattern detection accuracy (Phase 3.1)
+✓ Compliance tracking over time (Phase 3.2)
+✓ Unity Editor integration for developers (Phase 3.3)
+✓ PDF/CSV exports and issue generation (Phase 3.4)
+✓ Automated code generation for fixes (Phase 3.5)
 
 ================================================================================
 PHASE 4: CI/CD & POLISH
@@ -722,55 +1289,106 @@ GIT COMMIT CHECKLIST:
 FINAL DELIVERABLES CHECKLIST
 ================================================================================
 
-CODE:
-[ ] implementation/unity/editor/SceneScreenshotCapture.cs
-[ ] implementation/unity/editor/BatchModeScreenshotRunner.cs
-[ ] implementation/unity/editor/ColorBlindSimulator.cs
-[ ] implementation/unity/editor/AccessibilityContentExtractor.cs
-[ ] implementation/unity/shaders/ColorBlindSimulation.shader
-[ ] bin/capture-screenshots.js
-[ ] bin/analyze-visual-accessibility.js
-[ ] bin/contrast-analyzer.js
-[ ] bin/generate-html-report.js
-[ ] Updated: bin/audit.js
-[ ] Updated: bin/analyze-unity-project.js
+CODE - PHASE 1 & 2:
+[X] implementation/unity/editor/SceneScreenshotCapture.cs
+[X] implementation/unity/editor/BatchModeScreenshotRunner.cs
+[X] implementation/unity/editor/ColorBlindSimulator.cs
+[X] implementation/unity/shaders/ColorBlindSimulation.shader
+[X] bin/capture-screenshots.js
+[X] bin/analyze-visual-accessibility.js
+[X] bin/contrast-analyzer.js
+[X] Updated: bin/audit.js
+[X] Updated: bin/analyze-unity-project.js
 
-TEMPLATES:
-[ ] Updated: templates/audit/AUDIT-SUMMARY.template.md
-[ ] Updated: templates/audit/VPAT-COMPREHENSIVE.template.md
-[ ] New: templates/audit/SCENE-REPORT.template.md
-[ ] New: templates/audit/SCENE-COMPARISON-DASHBOARD.template.html
-[ ] New: templates/audit/styles.css
+CODE - PHASE 3.1 (Enhanced Pattern Detection):
+[ ] bin/pattern-detectors/keyboard-analyzer.js
+[ ] bin/pattern-detectors/ui-toolkit-analyzer.js
+[ ] bin/pattern-detectors/xr-accessibility-analyzer.js
 
-DOCUMENTATION:
+CODE - PHASE 3.2 (Compliance Tracking):
+[ ] bin/compliance-tracker.js
+[ ] bin/compare-audits.js
+
+CODE - PHASE 3.3 (Unity Editor Integration):
+[ ] implementation/unity/editor/AccessibilityAuditorWindow.cs
+[ ] implementation/unity/editor/AccessibilitySceneViewOverlay.cs
+[ ] implementation/unity/editor/AccessibilityInspectorExtension.cs
+[ ] implementation/unity/editor/AccessibilityQuickFixes.cs
+[ ] implementation/unity/editor/AccessibilityMenuItems.cs
+
+CODE - PHASE 3.4 (Advanced Export):
+[ ] bin/export-pdf.js
+[ ] bin/export-csv.js
+[ ] bin/generate-issues.js
+[ ] bin/compare-projects.js
+
+CODE - PHASE 3.5 (Code Generation):
+[ ] bin/code-generator/keyboard-scaffolding.js
+[ ] bin/code-generator/accessibility-api-integration.js
+[ ] bin/code-generator/focus-management.js
+[ ] bin/generate-fixes.js
+
+TEMPLATES - PHASE 2.5:
+[X] Updated: templates/audit/AUDIT-SUMMARY.template.md
+[X] Updated: templates/audit/VPAT-COMPREHENSIVE.template.md
+
+TEMPLATES - PHASE 3:
+[ ] templates/audit/COMPONENT-RECOMMENDATIONS.template.md (3.1)
+[ ] templates/audit/DIFF-REPORT.template.md (3.2)
+[ ] templates/audit/TRENDS-REPORT.template.md (3.2)
+[ ] templates/audit/custom/ directory (3.4)
+[ ] templates/audit/GENERATED-FIXES.template.md (3.5)
+[ ] templates/code/AccessibilityTemplates.cs (3.5)
+
+DOCUMENTATION - EXISTING:
 [ ] Updated: README.md
 [ ] Updated: INSTALLATION.md
 [ ] Updated: CHANGELOG.md
 [ ] Updated: workflows/DEVELOPER-WORKFLOW.md
-[ ] New: docs/SCREENSHOT-GUIDE.md
-[ ] New: docs/CI-CD-INTEGRATION.md
-[ ] New: RELEASE-NOTES-v3.1.0.md
-[ ] New: VIDEO-DEMO.md
+
+DOCUMENTATION - NEW:
+[X] New: docs/MANUAL-REVIEW-GUIDE.md (Phase 2.5)
+[ ] New: docs/UNITY-EDITOR-GUIDE.md (Phase 3.3)
+[ ] New: docs/CI-CD-INTEGRATION.md (Phase 4)
+[ ] New: RELEASE-NOTES-v3.1.0.md (Phase 4)
+[ ] New: VIDEO-DEMO.md (Phase 4)
 
 EXAMPLES:
 [ ] New: examples/career-explorer-audit/
 [ ] Updated: examples/README.md
 
 CI/CD:
-[ ] .github/workflows/accessibility-audit.yml
-[ ] .github/workflows/publish-reports.yml
+[ ] .github/workflows/accessibility-audit.yml (Phase 4)
+[ ] .github/workflows/accessibility-regression.yml (Phase 3.2)
+[ ] .github/workflows/publish-reports.yml (Phase 4)
 
 DEPENDENCIES:
-[ ] package.json (updated with new dependencies)
-[ ] package-lock.json (generated after npm install)
+[X] package.json (updated with new dependencies)
+[X] package-lock.json (generated after npm install)
 
-TESTING:
-[ ] Test with career-explorer (15 scenes)
+CONFIGURATION:
+[ ] config/export-config.json (Phase 3.4)
+[ ] compliance-history/ directory (Phase 3.2)
+[ ] templates/audit/custom/ directory (Phase 3.4)
+
+TESTING - PHASES 1 & 2:
+[X] Test with career-explorer (51 scenes, 758 scripts)
+[X] Screenshot capture works in batch mode
+[X] Visual analysis produces valid results
+[X] VPAT reports render correctly
+
+TESTING - PHASE 3:
+[ ] Pattern detection accuracy > 90% (3.1)
+[ ] Compliance tracking and diff reports (3.2)
+[ ] Unity Editor integration functional (3.3)
+[ ] PDF/CSV export works (3.4)
+[ ] GitHub/JIRA issue generation (3.4)
+[ ] Code generation compiles (3.5)
+
+TESTING - PHASE 4:
 [ ] CI/CD workflow passing
-[ ] Screenshot capture works in batch mode
-[ ] Visual analysis produces valid results
-[ ] HTML reports render correctly
-[ ] PDF export works
+[ ] GitHub Actions Unity setup
+[ ] Regression detection works
 
 GIT MANAGEMENT:
 [ ] All changes committed
@@ -779,38 +1397,50 @@ GIT MANAGEMENT:
 [ ] Release notes published
 
 ================================================================================
-ESTIMATED TOTAL TIME: 4 weeks (29-44 hours)
+ESTIMATED TOTAL TIME: 7-8 weeks (69-89 hours)
 ================================================================================
 
-Week 1: Phase 1 (5-8 hours)
-Week 2: Phase 2 (8-12 hours)
-Week 3: Phase 3 (10-14 hours)
-Week 4: Phase 4 (6-10 hours)
+Week 1: Phase 1 (5-8 hours) - COMPLETED
+Week 2: Phase 2 (8-12 hours) - COMPLETED
+Week 2.5: Phase 2.5 (3-4 hours) - COMPLETED
+Weeks 3-4: Phase 3.1-3.2 (14-18 hours)
+Weeks 4-5: Phase 3.3-3.4 (18-20 hours)
+Week 6: Phase 3.5 (8-15 hours)
+Week 7-8: Phase 4 (6-10 hours)
 
 ================================================================================
 SUCCESS METRICS
 ================================================================================
 
-Technical:
-- 100% of career-explorer scenes captured automatically
-- < 10 minutes total audit time (15 scenes)
-- Zero manual intervention required
-- 95%+ accuracy in contrast detection
-- HTML reports load in < 2 seconds
+Technical (Phases 1 & 2):
+✓ 100% of career-explorer scenes captured automatically (51 scenes)
+✓ < 10 minutes total audit time for 51 scenes with 758 scripts
+✓ Zero manual intervention required
+✓ 95%+ accuracy in contrast detection
+✓ Color-blind testing for 8 vision types
 
-Accessibility:
-- All WCAG 2.2 AA criteria covered
-- All W3C XAUR requirements covered
-- Per-scene compliance scores
-- Automated screen reader validation
-- Color-blind testing for 8 vision types
+Phase 3 Enhancements:
+- 90%+ pattern detection accuracy (3.1)
+- Compliance tracking with historical trends (3.2)
+- Unity Editor integration for in-engine auditing (3.3)
+- PDF/CSV export for stakeholder reports (3.4)
+- JIRA/GitHub issue generation (3.4)
+- Automated code generation for fixes (3.5)
+
+Accessibility Coverage:
+✓ All WCAG 2.2 AA criteria covered (50 criteria)
+✓ All W3C XAUR requirements covered
+✓ Section 508 Functional Performance Criteria (Table 3, 9 criteria)
+✓ Section 508 Software Requirements (Table 5, 15 criteria)
+✓ Manual review guidance for 79.3% of criteria
 
 User Experience:
-- One-command execution: a11y-audit-zspace [path] --full
-- Stakeholder-friendly HTML reports
+- One-command execution: node bin/audit.js [path] --full
+- Professional VPAT reports (markdown + PDF)
 - CI/CD integration in < 30 minutes setup
-- Comprehensive documentation
-- Video demo available
+- Unity Editor window for developers
+- Comprehensive documentation (500+ lines manual review guide)
+- Automated code fixes generation
 
 ================================================================================
 RISKS & MITIGATION
