@@ -1,0 +1,721 @@
+================================================================================
+ACCESSIBILITY AUTOMATION ENHANCEMENT PLAN
+Career Explorer Integration - October 26, 2025
+================================================================================
+
+PROJECT GOALS:
+--------------
+Enhance accessibility-standards-unity framework to:
+1. Automatically capture screenshots of all scenes
+2. Automate visual accessibility checks (contrast, color-blind testing)
+3. Generate comprehensive per-scene accessibility reports
+4. Integrate with career-explorer project (15+ scenes)
+5. Provide stakeholder-friendly visual reports
+
+TARGET PROJECTS:
+----------------
+- Framework: C:\Users\Jill\OneDrive\Documents\GitHub\accessibility-standards-unity
+- Test Subject: C:\Users\Jill\OneDrive\Documents\GitHub\apps.career-explorer
+  * 7 location scenes (Farm, Hospital, Hotel, InnovationHub, VehicleServiceCenter, etc.)
+  * 8 task simulation scenes
+  * 11,796 files total
+  * Unity 2022.3.59f1
+
+CURRENT STATE:
+--------------
+✅ Automated code analysis (audit.js, analyze-unity-project.js)
+✅ 8 C# accessibility components
+✅ 2 Unity Editor validation tools
+✅ 15+ automated tests
+✅ WCAG 2.2 AA + W3C XAUR compliance checking
+❌ NO screenshot capabilities
+❌ NO visual contrast analysis
+❌ NO per-scene reporting
+❌ NO color-blind simulation
+❌ NO screen reader content validation
+❌ NO HTML visual reports
+
+================================================================================
+PHASE 1: CORE SCREENSHOT SYSTEM
+================================================================================
+Status: [ ] Not Started  [ ] In Progress  [ ] Completed
+Estimated Time: Week 1 (5-8 hours)
+Completion Date: __________
+
+OBJECTIVES:
+-----------
+- Implement Unity Editor batch screenshot capture
+- Add CLI integration for batch mode operation
+- Export screenshots to audit reports
+- Capture multiple camera angles per scene
+
+DELIVERABLES:
+-------------
+1. implementation/unity/editor/SceneScreenshotCapture.cs
+   - Automatically discover all .unity scene files
+   - Load scenes in sequence (EditorSceneManager)
+   - Capture screenshots from Camera.main
+   - Support multiple resolutions (1920x1080, 1280x720, thumbnails)
+   - Save to AccessibilityAudit/screenshots/[SceneName]/
+   - Progress bar in Unity Editor
+   - Error handling for missing cameras
+   - Export metadata JSON (scene name, camera position, timestamp)
+
+2. implementation/unity/editor/BatchModeScreenshotRunner.cs
+   - Entry point for Unity batch mode execution
+   - Command-line argument parsing (-scenePath, -outputDir, -resolution)
+   - Headless execution support
+   - Exit code reporting (0 = success, 1 = error)
+
+3. bin/capture-screenshots.js
+   - Node.js CLI wrapper for Unity batch mode
+   - Launch Unity with: unity.exe -batchmode -quit -executeMethod
+   - Parse Unity log output
+   - Error detection and reporting
+   - Progress reporting to console
+
+4. Update bin/audit.js
+   - Add --capture-screenshots flag
+   - Integrate screenshot capture before analysis
+   - Link screenshots in generated reports
+
+5. Update templates/audit/AUDIT-SUMMARY.template.md
+   - Add screenshots section
+   - Embed scene thumbnails
+   - Link to full-resolution images
+
+6. Documentation
+   - Update README.md with screenshot feature
+   - Create SCREENSHOT-GUIDE.md in docs/
+   - Update DEVELOPER-WORKFLOW.md
+
+TECHNICAL DETAILS:
+------------------
+Unity APIs:
+- EditorSceneManager.OpenScene() - Load scenes
+- ScreenCapture.CaptureScreenshot() - Capture images
+- Camera.main.Render() - Force render
+- SceneManager.GetActiveScene() - Scene metadata
+
+File Structure:
+AccessibilityAudit/
+  screenshots/
+    Farm/
+      Farm_main.png (1920x1080)
+      Farm_thumbnail.png (320x180)
+      metadata.json
+    Hospital/
+      Hospital_main.png
+      Hospital_thumbnail.png
+      metadata.json
+  AUDIT-SUMMARY.md (updated with screenshots)
+  accessibility-analysis.json
+
+TESTING:
+--------
+- Test with career-explorer (15 scenes)
+- Verify all scenes captured successfully
+- Check screenshot quality and resolution
+- Validate metadata JSON structure
+- Test error handling (missing cameras, corrupted scenes)
+
+SUCCESS CRITERIA:
+-----------------
+✓ All 15 career-explorer scenes captured automatically
+✓ Screenshots embedded in audit reports
+✓ Batch mode execution works without Unity Editor GUI
+✓ Documentation complete
+✓ Zero manual intervention required
+
+GIT COMMIT CHECKLIST:
+---------------------
+[ ] Code compiles without errors
+[ ] Documentation updated
+[ ] CHANGELOG.md updated
+[ ] Tests pass (if applicable)
+[ ] Commit message: "Phase 1: Add automated scene screenshot capture system"
+[ ] Tag: v3.1.0-phase1
+
+================================================================================
+PHASE 2: VISUAL ANALYSIS
+================================================================================
+Status: [ ] Not Started  [ ] In Progress  [ ] Completed
+Estimated Time: Week 2 (8-12 hours)
+Completion Date: __________
+
+OBJECTIVES:
+-----------
+- Implement automated visual contrast analysis
+- Add color-blind simulation screenshots
+- Detect accessibility issues via image processing
+- Integrate findings into audit reports
+
+DELIVERABLES:
+-------------
+1. bin/analyze-visual-accessibility.js
+   - Load screenshots using 'sharp' library (Node.js)
+   - Extract dominant colors from UI regions
+   - Calculate WCAG contrast ratios (4.5:1 text, 3:1 UI)
+   - Detect low-contrast areas
+   - Generate heatmap overlays
+   - Export findings to JSON
+
+2. implementation/unity/editor/ColorBlindSimulator.cs
+   - Apply color-blind simulation shaders
+   - Support 8 types:
+     * Normal vision (baseline)
+     * Protanopia (red-blind)
+     * Deuteranopia (green-blind)
+     * Tritanopia (blue-blind)
+     * Protanomaly (red-weak)
+     * Deuteranomaly (green-weak)
+     * Tritanomaly (blue-weak)
+     * Achromatopsia (total color-blind)
+   - Capture screenshot in each mode
+   - Compare against baseline for information loss
+   - Flag color-dependent UI elements
+
+3. implementation/unity/shaders/ColorBlindSimulation.shader
+   - Matrix-based color transformation
+   - Real-time preview support
+   - Configurable simulation type via material property
+
+4. Update SceneScreenshotCapture.cs
+   - Add color-blind capture mode
+   - Generate comparison images
+   - Save to screenshots/[SceneName]/colorblind/
+
+5. bin/contrast-analyzer.js
+   - Parse Unity UI component data (extracted from scenes)
+   - Extract Text, Image, Button color properties
+   - Calculate foreground/background ratios
+   - Generate per-scene contrast reports
+   - Integration with analyze-visual-accessibility.js
+
+6. Update templates/audit/VPAT-COMPREHENSIVE.template.md
+   - Add visual analysis section
+   - Include contrast ratio findings
+   - Embed color-blind simulation results
+
+7. package.json updates
+   - Add dependencies:
+     * "sharp": "^0.33.0" (image processing)
+     * "color-contrast-checker": "^2.1.0" (WCAG calculations)
+
+TECHNICAL DETAILS:
+------------------
+Node.js Libraries:
+- sharp: Fast image processing (resize, analyze, overlay)
+- color-contrast-checker: WCAG 2.1 contrast calculations
+
+Color-Blind Simulation Matrices (sRGB):
+Protanopia:
+  [ 0.567, 0.433, 0.000 ]
+  [ 0.558, 0.442, 0.000 ]
+  [ 0.000, 0.242, 0.758 ]
+
+Deuteranopia:
+  [ 0.625, 0.375, 0.000 ]
+  [ 0.700, 0.300, 0.000 ]
+  [ 0.000, 0.300, 0.700 ]
+
+Tritanopia:
+  [ 0.950, 0.050, 0.000 ]
+  [ 0.000, 0.433, 0.567 ]
+  [ 0.000, 0.475, 0.525 ]
+
+Output Structure:
+AccessibilityAudit/
+  screenshots/
+    Farm/
+      Farm_main.png
+      colorblind/
+        Farm_protanopia.png
+        Farm_deuteranopia.png
+        Farm_tritanopia.png
+        comparison.html (side-by-side viewer)
+  visual-analysis/
+    contrast-report.json
+    heatmaps/
+      Farm_contrast_heatmap.png
+  VPAT-COMPREHENSIVE.md (updated)
+
+TESTING:
+--------
+- Test contrast detection on low-contrast UI
+- Verify color-blind simulations are accurate
+- Compare against Photoshop/GIMP color-blind filters
+- Test with career-explorer UI elements
+- Validate WCAG ratio calculations
+
+SUCCESS CRITERIA:
+-----------------
+✓ Automated contrast analysis for all scenes
+✓ 8 color-blind simulations per scene
+✓ Heatmaps highlight problem areas
+✓ Findings integrated in VPAT reports
+✓ No false positives in contrast detection
+
+GIT COMMIT CHECKLIST:
+---------------------
+[ ] npm install completes successfully
+[ ] sharp library works on Windows
+[ ] Code compiles without errors
+[ ] Documentation updated
+[ ] CHANGELOG.md updated
+[ ] Commit message: "Phase 2: Add visual contrast and color-blind analysis"
+[ ] Tag: v3.1.0-phase2
+
+================================================================================
+PHASE 3: ENHANCED REPORTING
+================================================================================
+Status: [ ] Not Started  [ ] In Progress  [ ] Completed
+Estimated Time: Week 3 (10-14 hours)
+Completion Date: __________
+
+OBJECTIVES:
+-----------
+- Generate per-scene accessibility reports
+- Extract and validate screen reader content
+- Create HTML visual reports with embedded images
+- Add scene comparison dashboard
+
+DELIVERABLES:
+-------------
+1. implementation/unity/editor/AccessibilityContentExtractor.cs
+   - Load each scene programmatically
+   - Find all AccessibilityNode components (Unity 2023.2+)
+   - Find all UnityAccessibilityIntegration registrations
+   - Extract:
+     * Label text
+     * Role (Button, Slider, StaticText, etc.)
+     * Description/hint
+     * Parent hierarchy
+     * Screen position
+   - Validate:
+     * Missing labels (empty strings)
+     * Generic labels ("Button", "Text", "Image")
+     * Duplicate labels in same hierarchy
+     * Missing roles
+   - Export to accessibility-content-[SceneName].json
+   - Generate warnings for common issues
+
+2. Update bin/analyze-unity-project.js
+   - Add per-scene analysis mode
+   - Generate individual scene scores
+   - Track findings by scene
+   - Create scene comparison matrix
+   - Export scene-level JSON files
+
+3. templates/audit/SCENE-REPORT.template.md (NEW)
+   - Per-scene template with:
+     * Scene metadata (name, path, objects count)
+     * Compliance score
+     * Critical/High/Medium/Low findings
+     * Screenshots (main + color-blind)
+     * Contrast analysis results
+     * Screen reader content validation
+     * Recommendations specific to scene
+     * Code snippets for fixes
+
+4. templates/audit/SCENE-COMPARISON-DASHBOARD.template.html (NEW)
+   - Interactive HTML dashboard
+   - Scene grid with thumbnails
+   - Color-coded compliance scores
+   - Sortable/filterable table
+   - Click to view detailed scene report
+   - Charts: compliance trends, issue distribution
+   - Export to PDF functionality
+
+5. bin/generate-html-report.js (NEW)
+   - Use Puppeteer or Playwright to render HTML
+   - Embed screenshots inline (base64 or file references)
+   - Generate interactive dashboard
+   - Export to PDF via headless browser
+   - Support custom styling (CSS themes)
+
+6. Update bin/audit.js
+   - Add --per-scene flag
+   - Add --html-report flag
+   - Orchestrate new report generation
+   - Create index.html with navigation
+
+7. templates/audit/styles.css (NEW)
+   - Professional styling for HTML reports
+   - Responsive design (mobile/tablet/desktop)
+   - Print-friendly styles
+   - Accessibility-compliant (high contrast, keyboard nav)
+
+8. package.json updates
+   - Add dependencies:
+     * "puppeteer": "^21.0.0" OR "playwright": "^1.40.0"
+     * "marked": "^10.0.0" (Markdown to HTML)
+     * "chart.js": "^4.4.0" (charts for dashboard)
+
+TECHNICAL DETAILS:
+------------------
+Per-Scene Report Structure:
+AccessibilityAudit/
+  scenes/
+    Farm/
+      SCENE-REPORT-Farm.md
+      accessibility-content.json
+      findings.json
+      screenshots/ (symlink to ../screenshots/Farm/)
+    Hospital/
+      SCENE-REPORT-Hospital.md
+      accessibility-content.json
+      findings.json
+  SCENE-COMPARISON-DASHBOARD.html
+  index.html (main entry point)
+  styles.css
+
+AccessibilityNode Validation Rules:
+1. Label not empty
+2. Label not generic ("Button", "Text", "Image", "GameObject")
+3. Label descriptive (>3 words for complex controls)
+4. Role appropriate for component type
+5. Description provided for non-obvious controls
+6. No duplicate labels in same container
+7. Hierarchy reflects visual structure
+
+HTML Report Features:
+- Embedded screenshots (base64 for portability)
+- Collapsible sections for findings
+- Syntax-highlighted code snippets (Prism.js)
+- Responsive grid layout
+- Dark/light theme toggle
+- Export to PDF button
+- Print optimization
+
+TESTING:
+--------
+- Test AccessibilityContentExtractor on career-explorer
+- Verify per-scene reports generated correctly
+- Test HTML dashboard in Chrome, Firefox, Edge
+- Validate PDF export quality
+- Test with 15+ scenes (performance check)
+- Verify navigation between reports
+
+SUCCESS CRITERIA:
+-----------------
+✓ Per-scene reports for all 15 career-explorer scenes
+✓ Screen reader content validated automatically
+✓ HTML dashboard loads in < 2 seconds
+✓ PDF export works without errors
+✓ Reports are stakeholder-friendly (non-technical readable)
+
+GIT COMMIT CHECKLIST:
+---------------------
+[ ] npm install completes successfully
+[ ] HTML reports render correctly in browsers
+[ ] PDF export tested
+[ ] Code compiles without errors
+[ ] Documentation updated
+[ ] CHANGELOG.md updated
+[ ] Commit message: "Phase 3: Add per-scene reports and HTML dashboard"
+[ ] Tag: v3.1.0-phase3
+
+================================================================================
+PHASE 4: CI/CD & POLISH
+================================================================================
+Status: [ ] Not Started  [ ] In Progress  [ ] Completed
+Estimated Time: Week 4 (6-10 hours)
+Completion Date: __________
+
+OBJECTIVES:
+-----------
+- Create GitHub Actions workflow for automated testing
+- Polish documentation and examples
+- Create demo using career-explorer
+- Publish updated framework
+
+DELIVERABLES:
+-------------
+1. .github/workflows/accessibility-audit.yml
+   - Trigger: Push to main, PR creation
+   - Jobs:
+     a) Setup Unity (GameCI/unity-builder action)
+     b) Install Node.js dependencies
+     c) Run accessibility audit with screenshot capture
+     d) Upload screenshots as artifacts
+     e) Fail build if critical issues > 0
+     f) Post comment on PR with compliance score
+   - Support matrix: Unity 2021.3, 2022.3, 2023.2
+
+2. .github/workflows/publish-reports.yml
+   - Trigger: Manual workflow dispatch or tag push
+   - Generate HTML reports
+   - Deploy to GitHub Pages
+   - Public accessibility dashboard
+
+3. examples/career-explorer-audit/ (NEW)
+   - Sample audit output using real career-explorer data
+   - All 15 scene reports
+   - HTML dashboard
+   - README explaining results
+   - Before/after examples
+
+4. docs/CI-CD-INTEGRATION.md (NEW)
+   - Complete guide for integrating with CI/CD
+   - Examples for:
+     * GitHub Actions
+     * GitLab CI
+     * Jenkins
+     * Azure DevOps
+   - Configuration options
+   - Troubleshooting guide
+
+5. Update README.md
+   - Add "Features" section with screenshots
+   - Update installation instructions
+   - Add CI/CD badge
+   - Add example reports section
+   - Update version to v3.1.0
+
+6. Update INSTALLATION.md
+   - Add npm dependencies installation
+   - Add Unity batch mode setup
+   - Add troubleshooting section
+   - Windows-specific instructions
+
+7. Create RELEASE-NOTES-v3.1.0.md
+   - Complete feature list
+   - Breaking changes (if any)
+   - Migration guide from v3.0.0
+   - Performance improvements
+   - Known issues
+
+8. Update package.json
+   - Version: 3.1.0
+   - Updated description
+   - New keywords: screenshot, visual-analysis, contrast-checker
+   - Updated repository URLs
+
+9. Create VIDEO-DEMO.md
+   - Step-by-step walkthrough
+   - Recording setup instructions
+   - Key features to demonstrate
+   - Talking points for presentations
+
+TECHNICAL DETAILS:
+------------------
+GitHub Actions Unity Setup:
+- Use GameCI/unity-builder@v4
+- Cache Library/ folder (speeds up builds)
+- Activate Unity license (free or Pro)
+- Run in headless mode (-batchmode -nographics)
+
+CI/CD Performance Optimizations:
+- Parallel scene processing
+- Incremental screenshots (only changed scenes)
+- Cache node_modules/
+- Skip screenshots for draft PRs
+
+Example Career Explorer Results:
+Baseline (before framework):
+- 15 scenes
+- 0% compliance
+- 45 critical issues
+- 120 total issues
+
+After Framework Implementation:
+- 15 scenes
+- 87% average compliance
+- 2 critical issues (documented exceptions)
+- 15 total issues (low priority)
+
+TESTING:
+--------
+- Test GitHub Actions workflow on fork
+- Verify Unity license activation works
+- Test with career-explorer repository
+- Validate artifact uploads
+- Test PR comment posting
+- Performance test (full audit time)
+
+SUCCESS CRITERIA:
+-----------------
+✓ CI/CD workflow runs successfully
+✓ Audit completes in < 10 minutes for 15 scenes
+✓ Documentation complete and accurate
+✓ Career-explorer example reports published
+✓ v3.1.0 released on GitHub
+
+GIT COMMIT CHECKLIST:
+---------------------
+[ ] CI/CD workflow tested and passing
+[ ] Example reports generated and committed
+[ ] All documentation updated
+[ ] CHANGELOG.md updated
+[ ] Version bumped to 3.1.0
+[ ] README badges updated
+[ ] Commit message: "Phase 4: Add CI/CD integration and finalize v3.1.0"
+[ ] Tag: v3.1.0
+[ ] GitHub Release created with notes
+
+================================================================================
+FINAL DELIVERABLES CHECKLIST
+================================================================================
+
+CODE:
+[ ] implementation/unity/editor/SceneScreenshotCapture.cs
+[ ] implementation/unity/editor/BatchModeScreenshotRunner.cs
+[ ] implementation/unity/editor/ColorBlindSimulator.cs
+[ ] implementation/unity/editor/AccessibilityContentExtractor.cs
+[ ] implementation/unity/shaders/ColorBlindSimulation.shader
+[ ] bin/capture-screenshots.js
+[ ] bin/analyze-visual-accessibility.js
+[ ] bin/contrast-analyzer.js
+[ ] bin/generate-html-report.js
+[ ] Updated: bin/audit.js
+[ ] Updated: bin/analyze-unity-project.js
+
+TEMPLATES:
+[ ] Updated: templates/audit/AUDIT-SUMMARY.template.md
+[ ] Updated: templates/audit/VPAT-COMPREHENSIVE.template.md
+[ ] New: templates/audit/SCENE-REPORT.template.md
+[ ] New: templates/audit/SCENE-COMPARISON-DASHBOARD.template.html
+[ ] New: templates/audit/styles.css
+
+DOCUMENTATION:
+[ ] Updated: README.md
+[ ] Updated: INSTALLATION.md
+[ ] Updated: CHANGELOG.md
+[ ] Updated: workflows/DEVELOPER-WORKFLOW.md
+[ ] New: docs/SCREENSHOT-GUIDE.md
+[ ] New: docs/CI-CD-INTEGRATION.md
+[ ] New: RELEASE-NOTES-v3.1.0.md
+[ ] New: VIDEO-DEMO.md
+
+EXAMPLES:
+[ ] New: examples/career-explorer-audit/
+[ ] Updated: examples/README.md
+
+CI/CD:
+[ ] .github/workflows/accessibility-audit.yml
+[ ] .github/workflows/publish-reports.yml
+
+DEPENDENCIES:
+[ ] package.json (updated with new dependencies)
+[ ] package-lock.json (generated after npm install)
+
+TESTING:
+[ ] Test with career-explorer (15 scenes)
+[ ] CI/CD workflow passing
+[ ] Screenshot capture works in batch mode
+[ ] Visual analysis produces valid results
+[ ] HTML reports render correctly
+[ ] PDF export works
+
+GIT MANAGEMENT:
+[ ] All changes committed
+[ ] Version tagged: v3.1.0
+[ ] GitHub Release created
+[ ] Release notes published
+
+================================================================================
+ESTIMATED TOTAL TIME: 4 weeks (29-44 hours)
+================================================================================
+
+Week 1: Phase 1 (5-8 hours)
+Week 2: Phase 2 (8-12 hours)
+Week 3: Phase 3 (10-14 hours)
+Week 4: Phase 4 (6-10 hours)
+
+================================================================================
+SUCCESS METRICS
+================================================================================
+
+Technical:
+- 100% of career-explorer scenes captured automatically
+- < 10 minutes total audit time (15 scenes)
+- Zero manual intervention required
+- 95%+ accuracy in contrast detection
+- HTML reports load in < 2 seconds
+
+Accessibility:
+- All WCAG 2.2 AA criteria covered
+- All W3C XAUR requirements covered
+- Per-scene compliance scores
+- Automated screen reader validation
+- Color-blind testing for 8 vision types
+
+User Experience:
+- One-command execution: a11y-audit-zspace [path] --full
+- Stakeholder-friendly HTML reports
+- CI/CD integration in < 30 minutes setup
+- Comprehensive documentation
+- Video demo available
+
+================================================================================
+RISKS & MITIGATION
+================================================================================
+
+Risk 1: Unity batch mode instability
+Mitigation: Implement retry logic, extensive error handling
+
+Risk 2: Sharp library Windows compatibility
+Mitigation: Test on Windows early, use platform-specific builds
+
+Risk 3: Large screenshot file sizes
+Mitigation: Implement compression, thumbnail generation, cleanup scripts
+
+Risk 4: CI/CD Unity license costs
+Mitigation: Document free tier usage, provide alternatives
+
+Risk 5: Performance with 100+ scenes
+Mitigation: Implement parallel processing, incremental updates
+
+================================================================================
+MAINTENANCE PLAN
+================================================================================
+
+Post-Release:
+- Monitor GitHub issues
+- Respond to bug reports within 48 hours
+- Monthly dependency updates (npm audit)
+- Quarterly Unity version compatibility testing
+- Annual WCAG standard updates
+
+Documentation:
+- Maintain changelog
+- Update examples with new Unity versions
+- Create video tutorials
+- Write blog post announcement
+
+Community:
+- Announce on zSpace developer forums
+- Share on Unity forums
+- LinkedIn/Twitter announcement
+- Consider conference presentation
+
+================================================================================
+NOTES
+================================================================================
+
+- All development done with Claude Code
+- Target users: zSpace Unity developers (K-12, medical, CAD)
+- MIT License maintained
+- Free and open source
+- Compatible with Unity 2021.3 LTS through 2023.2+
+- Windows primary platform, Mac/Linux secondary
+
+================================================================================
+CONTEXT TRACKING
+================================================================================
+
+After each phase completion:
+1. Update status: [ ] → [X]
+2. Fill in completion date
+3. Check all items in Git Commit Checklist
+4. Commit changes with proper message
+5. Report remaining context budget
+6. Get user approval before proceeding to next phase
+
+Current Context Usage: _____ / 200000 tokens
+Remaining Context: _____ tokens
+
+================================================================================
+END OF PLAN
+================================================================================
