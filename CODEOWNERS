@@ -1,0 +1,70 @@
+# CODEOWNERS - Automated Review Assignments
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything in the repository
+# This ensures all PRs get reviewed by the maintainer
+* @jdonnelly-zspace
+
+# Standards Documentation
+# Critical accessibility standards that require careful review
+/standards/ @jdonnelly-zspace
+/standards/WCAG-2.2-LEVEL-AA.md @jdonnelly-zspace
+/standards/XR-ACCESSIBILITY-REQUIREMENTS.md @jdonnelly-zspace
+/standards/ZSPACE-ACCESSIBILITY-CHECKLIST.md @jdonnelly-zspace
+
+# Unity Implementation
+# Core accessibility components for Unity
+/implementation/unity/ @jdonnelly-zspace
+/implementation/unity/scripts/ @jdonnelly-zspace
+/implementation/unity/prefabs/ @jdonnelly-zspace
+/implementation/unity/editor/ @jdonnelly-zspace
+/implementation/unity/tests/ @jdonnelly-zspace
+
+# CLI Tools and Automation
+# Node.js auditing and code generation tools
+/bin/ @jdonnelly-zspace
+/bin/audit.js @jdonnelly-zspace
+/bin/code-generator/ @jdonnelly-zspace
+/bin/pattern-detectors/ @jdonnelly-zspace
+
+# CI/CD Workflows
+# GitHub Actions and automation workflows
+/.github/workflows/ @jdonnelly-zspace
+/.github/workflows/accessibility-audit.yml @jdonnelly-zspace
+/.github/workflows/publish-reports.yml @jdonnelly-zspace
+
+# Documentation
+# User-facing documentation requiring accuracy review
+/docs/ @jdonnelly-zspace
+/workflows/ @jdonnelly-zspace
+README.md @jdonnelly-zspace
+INSTALLATION.md @jdonnelly-zspace
+CONTRIBUTING.md @jdonnelly-zspace
+
+# Security
+# Security-related files require extra scrutiny
+SECURITY.md @jdonnelly-zspace
+/.github/ISSUE_TEMPLATE/ @jdonnelly-zspace
+
+# Package Configuration
+# Package distribution and versioning
+package.json @jdonnelly-zspace
+CHANGELOG.md @jdonnelly-zspace
+RELEASE-NOTES-*.md @jdonnelly-zspace
+
+# Configuration Files
+# Repository configuration that affects build/deployment
+.gitignore @jdonnelly-zspace
+.npmignore @jdonnelly-zspace
+.gitattributes @jdonnelly-zspace
+.editorconfig @jdonnelly-zspace
+
+# Templates
+# Audit and code generation templates
+/templates/ @jdonnelly-zspace
+/templates/audit/ @jdonnelly-zspace
+/templates/code/ @jdonnelly-zspace
+
+# Examples
+# Example projects and demonstrations
+/examples/ @jdonnelly-zspace
