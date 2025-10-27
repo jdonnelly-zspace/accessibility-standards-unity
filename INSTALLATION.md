@@ -1,15 +1,168 @@
-# Installation Guide - Unity zSpace Accessibility Framework
+# Installation Guide - Unity zSpace Accessibility Framework v3.1.0
 
-This guide shows how to install the zSpace Accessibility Standards Framework into your Unity projects.
+This guide shows how to install the zSpace Accessibility Standards Framework into your Unity projects and set up the CLI auditing tools.
 
 **Prerequisites:**
-- Unity 2021.3 LTS or newer
+- Unity 2021.3 LTS or newer (2023.2+ recommended for Unity Accessibility Module)
 - zSpace Unity SDK (download from https://developer.zspace.com/)
 - zSpace hardware (for testing) or zSpace simulator
+- **Node.js 18 LTS or newer** (for CLI auditing tools)
 
 ---
 
-## Quick Install Methods for Unity
+## Installation Options
+
+### Option A: CLI Tools Only (Auditing & Analysis)
+**Best for:** Auditing existing Unity projects, CI/CD integration, automated testing
+
+### Option B: Unity Framework Only (Components & Prefabs)
+**Best for:** Building accessible Unity applications from scratch
+
+### Option C: Full Installation (CLI Tools + Unity Framework)
+**Best for:** Complete accessibility development and auditing workflow
+
+---
+
+## Option A: CLI Tools Installation (v3.1.0)
+
+The CLI tools provide automated auditing, screenshot capture, visual analysis, compliance tracking, and CI/CD integration.
+
+### Prerequisites
+
+- **Node.js 18 LTS or newer** - [Download](https://nodejs.org/)
+- **npm** (included with Node.js)
+- **Git** (for cloning repository)
+
+### Step 1: Install CLI Tools Globally (Recommended)
+
+```bash
+# Install from GitHub
+npm install -g git+https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
+
+# Verify installation
+a11y-audit-zspace --version
+# Output: 3.1.0
+
+# Run audit on any Unity project
+a11y-audit-zspace /path/to/unity-project
+```
+
+**What this includes:**
+- ✅ Automated accessibility auditing
+- ✅ Screenshot capture (requires Unity batch mode)
+- ✅ Visual contrast analysis
+- ✅ Color-blind simulation (8 types)
+- ✅ Compliance tracking over time
+- ✅ PDF/CSV exports
+- ✅ JIRA/GitHub issue generation
+- ✅ Automated code generation
+- ✅ CI/CD integration support
+
+**Time:** ~2-3 minutes (depends on npm speed)
+
+### Step 2: Install CLI Tools Locally (Alternative)
+
+```bash
+# Clone repository
+git clone https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
+cd accessibility-standards-unity
+
+# Install Node.js dependencies
+npm install
+
+# Verify dependencies installed
+npm list --depth=0
+
+# Run audit from local installation
+node bin/audit.js /path/to/unity-project
+```
+
+**Time:** ~5 minutes
+
+### Step 3: Install Additional Dependencies (Optional)
+
+For full v3.1.0 features, ensure all dependencies are installed:
+
+```bash
+# Check for missing dependencies
+npm ci
+
+# Verify sharp (image processing)
+node -e "console.log(require('sharp').versions)"
+
+# Verify puppeteer (PDF generation)
+node -e "console.log(require('puppeteer').version)"
+```
+
+**Dependencies installed:**
+- `sharp@^0.33.0` - Image processing for screenshot analysis
+- `color-contrast-checker@^2.1.0` - WCAG contrast calculations
+- `puppeteer@^23.0.0` - PDF report generation
+- `marked@^15.0.0` - Markdown to HTML conversion
+- `csv-writer@^1.6.0` - CSV export functionality
+- `@octokit/rest@^21.0.0` - GitHub API integration
+
+### Step 4: Configure Unity for Screenshot Capture (Optional)
+
+For screenshot capture and visual analysis, Unity batch mode is required:
+
+```bash
+# Windows
+set UNITY_EXECUTABLE=C:\Program Files\Unity\Hub\Editor\2022.3.10f1\Editor\Unity.exe
+
+# macOS
+export UNITY_EXECUTABLE=/Applications/Unity/Hub/Editor/2022.3.10f1/Unity.app/Contents/MacOS/Unity
+
+# Linux
+export UNITY_EXECUTABLE=/opt/Unity/Editor/Unity
+
+# Verify Unity path
+echo $UNITY_EXECUTABLE  # macOS/Linux
+echo %UNITY_EXECUTABLE%  # Windows
+```
+
+### Step 5: Test Installation
+
+```bash
+# Test basic audit (no screenshots)
+node bin/audit.js /path/to/unity-project --verbose
+
+# Test full audit with all v3.1.0 features
+node bin/audit.js /path/to/unity-project \
+  --full \
+  --capture-screenshots \
+  --analyze-visual \
+  --generate-fixes \
+  --export-pdf \
+  --export-csv \
+  --verbose
+
+# Check output directory
+ls AccessibilityAudit/
+# Should contain: AUDIT-SUMMARY.md, VPAT-COMPREHENSIVE.md, screenshots/, etc.
+```
+
+**Expected output:**
+```
+✓ Project found: your-unity-project
+✓ Analyzing 15 scenes...
+✓ Scanning 127 scripts...
+✓ Capturing screenshots... (2-5 minutes)
+✓ Analyzing visual accessibility...
+✓ Generating code fixes...
+✓ Generating reports...
+
+Audit complete! Reports saved to:
+/path/to/unity-project/AccessibilityAudit/
+
+Compliance Score: 47% (Non-Conformant)
+Critical Issues: 3
+High Priority: 5
+```
+
+---
+
+## Option B: Quick Install Methods for Unity
 
 ### Method 1: Unity Package Manager (Recommended) ⭐
 
@@ -377,6 +530,98 @@ cat scrapers/CHANGELOG-STANDARDS.md
 
 ---
 
-**Document Version:** 2.0 (zSpace-adapted)
-**Last Updated:** October 2025
+---
+
+## Option C: Full Installation (CLI Tools + Unity Framework)
+
+For the complete accessibility development and auditing workflow:
+
+### Step 1: Install CLI Tools
+
+Follow **Option A** steps above to install Node.js dependencies and CLI tools.
+
+### Step 2: Install Unity Framework
+
+Follow **Option B Method 1** or **Method 2** above to install Unity components.
+
+### Step 3: Verify Complete Installation
+
+```bash
+# Test CLI tools
+node bin/audit.js /path/to/unity-project --verbose
+
+# In Unity Editor:
+# 1. Window → Accessibility → Auditor (verify custom window opens)
+# 2. Window → General → Test Runner (verify accessibility tests present)
+# 3. GameObject → Accessibility menu (verify menu items present)
+```
+
+**Time:** ~10-15 minutes total
+
+---
+
+## CI/CD Integration
+
+For automated accessibility testing in CI/CD pipelines, see:
+- **GitHub Actions:** `.github/workflows/accessibility-audit.yml`
+- **Complete Guide:** `docs/CI-CD-INTEGRATION.md`
+
+Supports: GitHub Actions, GitLab CI, Jenkins, Azure DevOps
+
+---
+
+## Troubleshooting v3.1.0
+
+### Node.js/npm Issues
+
+**"npm command not found"**
+- Install Node.js 18 LTS from https://nodejs.org/
+- Restart terminal after installation
+
+**"sharp install failed"**
+```bash
+# Rebuild native modules
+npm rebuild sharp
+
+# Or use prebuilt binaries
+npm install --platform=win32 --arch=x64 sharp
+```
+
+**"puppeteer download failed"**
+```bash
+# Skip Chromium download (use system Chrome)
+PUPPETEER_SKIP_DOWNLOAD=1 npm install
+
+# Or set custom executable
+export PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+```
+
+### Unity Batch Mode Issues
+
+**"Unity.exe not found"**
+- Set UNITY_EXECUTABLE environment variable
+- Verify Unity installed at expected path
+
+**"Screenshot capture times out"**
+- Increase timeout in `bin/capture-screenshots.js`
+- Check Unity project compiles without errors
+- Verify Unity license activated
+
+### Visual Analysis Issues
+
+**"Contrast analysis returns no results"**
+- Ensure screenshots captured successfully
+- Check `AccessibilityAudit/screenshots/` directory
+- Verify sharp library installed correctly
+
+**"Color-blind simulations missing"**
+- Check Unity shader compilation
+- Verify `ColorBlindSimulation.shader` imported
+- Review Unity console for shader errors
+
+---
+
+**Document Version:** 3.1.0 (Automation & CI/CD Complete)
+**Last Updated:** October 27, 2025
 **Platform:** zSpace + Unity 2021.3+
+**New in v3.1.0:** CLI tools, screenshot capture, visual analysis, compliance tracking, Unity Editor integration, code generation, CI/CD workflows

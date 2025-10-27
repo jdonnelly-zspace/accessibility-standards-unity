@@ -1,0 +1,290 @@
+name: Accessibility Audit with Screenshots
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      capture-screenshots:
+        description: 'Capture screenshots during audit'
+        required: false
+        default: 'true'
+        type: boolean
+      unity-version:
+        description: 'Unity version to use'
+        required: false
+        default: '2022.3.10f1'
+        type: string
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+  UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
+jobs:
+  accessibility-audit:
+    name: Run Full Accessibility Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        unity-version: ['2021.3.31f1', '2022.3.10f1', '2023.2.0f1']
+      fail-fast: false
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for compliance tracking
+          lfs: false  # Disable LFS for faster checkout
+
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Cache Unity Library
+        uses: actions/cache@v3
+        with:
+          path: |
+            Library/
+            Temp/
+          key: Library-${{ matrix.unity-version }}-${{ hashFiles('**/ProjectSettings/**') }}
+          restore-keys: |
+            Library-${{ matrix.unity-version }}-
+            Library-
+
+      - name: Install Node.js Dependencies
+        run: |
+          npm ci
+          npm list --depth=0
+        continue-on-error: true
+
+      - name: Verify Dependencies
+        run: |
+          echo "Checking required dependencies..."
+          node -e "console.log('sharp:', require('sharp').versions); console.log('puppeteer:', require('puppeteer').version)"
+        continue-on-error: true
+
+      - name: Setup Unity
+        if: github.event.inputs.capture-screenshots != 'false'
+        uses: game-ci/unity-builder@v4
+        with:
+          unityVersion: ${{ matrix.unity-version }}
+          targetPlatform: StandaloneLinux64
+          allowDirtyBuild: true
+
+      - name: Activate Unity License
+        if: github.event.inputs.capture-screenshots != 'false'
+        uses: game-ci/unity-activate@v3
+        with:
+          unityVersion: ${{ matrix.unity-version }}
+
+      - name: Run Accessibility Audit (Full)
+        id: audit
+        run: |
+          echo "Running accessibility audit with all features..."
+
+          # Run full audit with all Phase 1-3 features
+          node bin/audit.js . \
+            --full \
+            --capture-screenshots \
+            --analyze-visual \
+            --generate-fixes \
+            --export-csv \
+            --track-compliance \
+            --verbose \
+            --output AccessibilityAudit
+
+          # Capture exit code
+          AUDIT_EXIT_CODE=$?
+          echo "audit-exit-code=$AUDIT_EXIT_CODE" >> $GITHUB_OUTPUT
+
+          # Count critical issues
+          if [ -f "AccessibilityAudit/accessibility-analysis.json" ]; then
+            CRITICAL_COUNT=$(node -e "const data = require('./AccessibilityAudit/accessibility-analysis.json'); console.log(data.summary.criticalIssues || 0)")
+            echo "critical-count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+          else
+            echo "critical-count=0" >> $GITHUB_OUTPUT
+          fi
+        continue-on-error: true
+
+      - name: Generate PDF Reports
+        if: always()
+        run: |
+          echo "Generating PDF reports..."
+          node bin/export-pdf.js \
+            AccessibilityAudit/VPAT-COMPREHENSIVE.md \
+            --output AccessibilityAudit/exports/VPAT-Report.pdf \
+            --logo resources/logo.png
+        continue-on-error: true
+
+      - name: Upload Audit Reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: accessibility-audit-reports-unity-${{ matrix.unity-version }}
+          path: |
+            AccessibilityAudit/**/*.md
+            AccessibilityAudit/**/*.json
+            AccessibilityAudit/exports/**/*.pdf
+            AccessibilityAudit/exports/**/*.csv
+          retention-days: 90
+
+      - name: Upload Screenshots
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: accessibility-screenshots-unity-${{ matrix.unity-version }}
+          path: |
+            AccessibilityAudit/screenshots/**/*.png
+            AccessibilityAudit/visual-analysis/**/*.png
+          retention-days: 30
+
+      - name: Upload Generated Fixes
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: generated-fixes-unity-${{ matrix.unity-version }}
+          path: |
+            AccessibilityAudit/generated-fixes/**/*.cs
+            AccessibilityAudit/GENERATED-FIXES.md
+          retention-days: 90
+
+      - name: Generate Audit Summary
+        if: always()
+        id: summary
+        run: |
+          if [ -f "AccessibilityAudit/accessibility-analysis.json" ]; then
+            node -e "
+              const fs = require('fs');
+              const audit = JSON.parse(fs.readFileSync('AccessibilityAudit/accessibility-analysis.json', 'utf8'));
+
+              console.log('## Accessibility Audit Summary');
+              console.log('');
+              console.log('**Unity Version:** ${{ matrix.unity-version }}');
+              console.log('**Compliance Score:** ' + audit.complianceEstimate.score + '%');
+              console.log('**Level:** ' + audit.complianceEstimate.level);
+              console.log('');
+              console.log('### Issues by Severity');
+              console.log('- 🔴 Critical: ' + (audit.summary.criticalIssues || 0));
+              console.log('- 🟠 High: ' + (audit.summary.highPriorityIssues || 0));
+              console.log('- 🟡 Medium: ' + (audit.summary.mediumPriorityIssues || 0));
+              console.log('- 🟢 Low: ' + (audit.summary.lowPriorityIssues || 0));
+              console.log('');
+              console.log('### WCAG 2.2 AA Coverage');
+              console.log('- ✅ Supports: ' + (audit.wcag22AA?.supports || 0));
+              console.log('- ⚠️ Partially Supports: ' + (audit.wcag22AA?.partiallySupports || 0));
+              console.log('- ❌ Does Not Support: ' + (audit.wcag22AA?.doesNotSupport || 0));
+              console.log('- 📝 Manual Review Required: ' + (audit.wcag22AA?.manualReview || 0));
+            " > audit-summary.md
+
+            cat audit-summary.md
+          else
+            echo "⚠️ Audit output not found" > audit-summary.md
+          fi
+
+      - name: Comment PR with Results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let summary = '## 📊 Accessibility Audit Results\n\n';
+            summary += '**Unity Version:** ${{ matrix.unity-version }}\n\n';
+
+            if (fs.existsSync('AccessibilityAudit/accessibility-analysis.json')) {
+              const audit = JSON.parse(fs.readFileSync('AccessibilityAudit/accessibility-analysis.json', 'utf8'));
+
+              const score = audit.complianceEstimate.score;
+              const scoreEmoji = score >= 90 ? '🟢' : score >= 70 ? '🟡' : '🔴';
+
+              summary += `${scoreEmoji} **Compliance Score:** ${score}%\n`;
+              summary += `**Level:** ${audit.complianceEstimate.level}\n\n`;
+
+              summary += `### Findings\n`;
+              summary += `- 🔴 Critical: ${audit.summary.criticalIssues || 0}\n`;
+              summary += `- 🟠 High: ${audit.summary.highPriorityIssues || 0}\n`;
+              summary += `- 🟡 Medium: ${audit.summary.mediumPriorityIssues || 0}\n`;
+              summary += `- 🟢 Low: ${audit.summary.lowPriorityIssues || 0}\n\n`;
+
+              if (audit.summary.criticalIssues > 0) {
+                summary += `\n⚠️ **Critical issues must be addressed before merging**\n\n`;
+              }
+
+              // Add screenshots info
+              if (audit.screenshots?.captured) {
+                summary += `\n📸 **Screenshots:** ${audit.screenshots.count} scenes captured\n`;
+              }
+
+              // Add visual analysis info
+              if (audit.visualAnalysis?.performed) {
+                summary += `🎨 **Visual Analysis:** Contrast checked, ${audit.visualAnalysis.issues} issues found\n`;
+              }
+
+              // Add generated fixes info
+              if (audit.generatedFixes?.count > 0) {
+                summary += `🔧 **Generated Fixes:** ${audit.generatedFixes.count} code solutions available\n`;
+              }
+            } else {
+              summary += '⚠️ Audit did not complete successfully. Check workflow logs.\n';
+            }
+
+            summary += `\n📁 [View full reports in artifacts](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})\n`;
+            summary += `\n<details>\n<summary>📖 View detailed breakdown</summary>\n\n`;
+            summary += fs.readFileSync('audit-summary.md', 'utf8');
+            summary += `\n</details>`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+      - name: Check for Critical Issues
+        if: steps.audit.outputs.critical-count > 0
+        run: |
+          echo "❌ Found ${{ steps.audit.outputs.critical-count }} critical accessibility issues"
+          echo "Critical issues must be resolved before merging"
+          exit 1
+
+      - name: Fail on Audit Error
+        if: steps.audit.outputs.audit-exit-code != 0 && steps.audit.outputs.audit-exit-code != ''
+        run: |
+          echo "❌ Accessibility audit failed with exit code ${{ steps.audit.outputs.audit-exit-code }}"
+          exit 1
+
+  consolidate-results:
+    name: Consolidate Audit Results
+    runs-on: ubuntu-latest
+    needs: accessibility-audit
+    if: always()
+
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: all-results
+
+      - name: Generate Comparison Report
+        run: |
+          echo "# Accessibility Audit - Unity Version Comparison" > comparison.md
+          echo "" >> comparison.md
+          echo "Tested on Unity versions: 2021.3 LTS, 2022.3 LTS, 2023.2" >> comparison.md
+          echo "" >> comparison.md
+          echo "See individual artifacts for detailed reports." >> comparison.md
+
+          ls -R all-results >> comparison.md
+
+      - name: Upload Comparison
+        uses: actions/upload-artifact@v3
+        with:
+          name: unity-version-comparison
+          path: comparison.md
+          retention-days: 90

@@ -7,6 +7,8 @@
 [![Unity](https://img.shields.io/badge/Unity-2021.3+-black)](https://unity.com/)
 [![zSpace](https://img.shields.io/badge/zSpace-Compatible-orange)](https://zspace.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-3.1.0-brightgreen)](https://github.com/jdonnelly-zspace/accessibility-standards-unity/releases)
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-Ready-success)](https://github.com/jdonnelly-zspace/accessibility-standards-unity/actions)
 
 ---
 
@@ -16,12 +18,17 @@ This repository contains **everything you need** to build accessible Unity zSpac
 
 ✅ **Complete Accessibility Standards** - W3C XAUR + WCAG 2.2 Level AA adapted for zSpace stereoscopic 3D
 ✅ **Unity C# Components** - Ready-to-use accessible UI, stylus interaction, and navigation scripts
+✅ **Automated Screenshot Capture** - Batch capture all Unity scenes with multiple camera angles
+✅ **Visual Accessibility Analysis** - Automated contrast checking and color-blind simulation (8 types)
+✅ **Pattern Detection** - Keyboard, UI Toolkit, and XR accessibility pattern analysis
+✅ **Compliance Tracking** - Historical trends, baseline comparison, regression detection
+✅ **Unity Editor Integration** - Custom windows, scene overlays, inspector extensions, quick-fix buttons
+✅ **Code Generation** - Automated accessibility fix suggestions and scaffolding
+✅ **Professional Reports** - VPAT, PDF exports, CSV tracking, JIRA/GitHub issue generation
+✅ **CI/CD Ready** - GitHub Actions, GitLab CI, Jenkins, Azure DevOps integration
 ✅ **zSpace-Specific Guidelines** - Stylus alternatives, spatial audio, depth cues, keyboard/mouse fallbacks
 ✅ **Role-specific workflows** - Unity Developers, zSpace Designers, QA Engineers, Product Owners
-✅ **Unity Test Framework examples** - Automated accessibility testing for zSpace projects
 ✅ **Testing tools catalog** - Unity packages, zSpace validators, and desktop accessibility tools
-✅ **VPAT 2.5 template** - zSpace desktop application compliance documentation for customers/legal
-✅ **Unity Editor tools** - Custom inspectors for accessibility validation during development
 ✅ **Real examples** - Production-ready accessible Unity zSpace scene
 
 **Target Platform:** zSpace (stereoscopic 3D display + tracked glasses + stylus)
@@ -198,19 +205,50 @@ zSpace Accessibility Acceptance Criteria:
 
 ```
 accessibility-standards-unity/
-├── bin/                                # Accessibility auditing tools ⭐ NEW
+├── bin/                                # Accessibility auditing tools ⭐ NEW v3.1.0
 │   ├── audit.js                        # Main audit orchestrator (CLI entry point)
 │   ├── analyze-unity-project.js        # Unity project analysis engine
-│   └── setup.js                        # Framework setup utility
+│   ├── setup.js                        # Framework setup utility
+│   ├── capture-screenshots.js          # Unity batch screenshot capture
+│   ├── analyze-visual-accessibility.js # Visual contrast analysis
+│   ├── contrast-analyzer.js            # WCAG contrast ratio checking
+│   ├── export-pdf.js                   # PDF report generation
+│   ├── export-csv.js                   # CSV export for tracking
+│   ├── generate-issues.js              # JIRA/GitHub issue creation
+│   ├── compare-audits.js               # Audit comparison & diff
+│   ├── compare-projects.js             # Multi-project comparison
+│   ├── generate-fixes.js               # Automated code generation
+│   ├── compliance-tracker.js           # Historical compliance tracking
+│   ├── pattern-detectors/              # Advanced pattern detection
+│   │   ├── keyboard-analyzer.js        # Keyboard input detection
+│   │   ├── ui-toolkit-analyzer.js      # UI Toolkit analysis
+│   │   └── xr-accessibility-analyzer.js # XR-specific patterns
+│   └── code-generator/                 # Code scaffolding tools
+│       ├── keyboard-scaffolding.js     # Keyboard input generation
+│       ├── accessibility-api-integration.js # Unity Accessibility API
+│       └── focus-management.js         # Focus system generation
 │
-├── templates/audit/                    # Audit report templates ⭐ NEW
+├── templates/audit/                    # Audit report templates ⭐ v3.1.0
 │   ├── README.template.md              # Audit overview template
 │   ├── AUDIT-SUMMARY.template.md       # Executive summary template
 │   ├── VPAT-COMPREHENSIVE.template.md  # Full VPAT 2.5 (all 50 WCAG criteria)
 │   ├── VPAT.template.md                # Quick VPAT summary (detected issues only)
-│   └── RECOMMENDATIONS.template.md     # Developer recommendations template
+│   ├── RECOMMENDATIONS.template.md     # Developer recommendations template
+│   ├── COMPONENT-RECOMMENDATIONS.template.md # Per-component fixes
+│   ├── DIFF-REPORT.template.md         # Audit comparison reports
+│   ├── TRENDS-REPORT.template.md       # Historical trends
+│   ├── GENERATED-FIXES.template.md     # Code generation output
+│   └── custom/                         # Custom template directory
 │
-├── .claude/commands/                   # Claude Code integration ⭐ NEW
+├── templates/code/                     # Code templates ⭐ NEW
+│   └── AccessibilityTemplates.cs       # C# component templates
+│
+├── .github/workflows/                  # CI/CD workflows ⭐ NEW
+│   ├── accessibility-audit.yml         # Full audit with screenshots
+│   ├── accessibility-regression.yml    # Regression checking
+│   └── publish-reports.yml             # GitHub Pages deployment
+│
+├── .claude/commands/                   # Claude Code integration
 │   └── audit-zspace.md                 # /audit-zspace slash command
 │
 ├── standards/                          # Accessibility standards documentation
@@ -238,9 +276,20 @@ accessibility-standards-unity/
 │   │   │   ├── AccessibleZSpaceMenu.prefab
 │   │   │   └── StylusInteractionUI.prefab
 │   │   │
-│   │   ├── editor/                    # Unity Editor tools
+│   │   ├── editor/                    # Unity Editor tools ⭐ v3.1.0
 │   │   │   ├── ZSpaceAccessibilityValidator.cs # Inspector validation tool
-│   │   │   └── ContrastCheckerZSpace.cs        # UI contrast validation
+│   │   │   ├── ContrastCheckerZSpace.cs        # UI contrast validation
+│   │   │   ├── SceneScreenshotCapture.cs       # Batch screenshot capture
+│   │   │   ├── BatchModeScreenshotRunner.cs    # CLI screenshot runner
+│   │   │   ├── ColorBlindSimulator.cs          # Color-blind simulation
+│   │   │   ├── AccessibilityAuditorWindow.cs   # Custom Editor window
+│   │   │   ├── AccessibilitySceneViewOverlay.cs # Scene view overlays
+│   │   │   ├── AccessibilityInspectorExtension.cs # Inspector extensions
+│   │   │   ├── AccessibilityQuickFixes.cs      # One-click fixes
+│   │   │   └── AccessibilityMenuItems.cs       # Menu commands
+│   │   │
+│   │   ├── shaders/                   # Accessibility shaders ⭐ NEW
+│   │   │   └── ColorBlindSimulation.shader     # Color vision simulation
 │   │   │
 │   │   └── tests/                     # Unity Test Framework tests
 │   │       └── ZSpaceAccessibilityTests.cs
@@ -254,25 +303,44 @@ accessibility-standards-unity/
 │   ├── QA-WORKFLOW.md                 # zSpace QA engineer guide
 │   └── PRODUCT-OWNER-WORKFLOW.md      # zSpace product owner guide
 │
-├── docs/                               # Documentation
-│   ├── AUDITING-GUIDE.md               # Internal auditing guide ⭐ NEW
-│   ├── PARTNER-ONBOARDING.md           # Partner onboarding guide ⭐ NEW
-│   ├── CLAUDE-PROMPTS.md               # Claude Code prompt engineering guide ⭐ NEW
-│   ├── unity-accessibility-integration.md  # Unity Accessibility Module setup guide ⭐
-│   ├── unity-accessibility-api-reference.md # Complete API reference ⭐
+├── docs/                               # Documentation ⭐ v3.1.0
+│   ├── AUDITING-GUIDE.md               # Internal auditing guide
+│   ├── PARTNER-ONBOARDING.md           # Partner onboarding guide
+│   ├── CLAUDE-PROMPTS.md               # Claude Code prompt engineering guide
+│   ├── MANUAL-REVIEW-GUIDE.md          # Manual testing guide (500+ lines)
+│   ├── CI-CD-INTEGRATION.md            # CI/CD setup guide (GitHub, GitLab, Jenkins, Azure)
+│   ├── UNITY-EDITOR-GUIDE.md           # Unity Editor integration guide
+│   ├── unity-accessibility-integration.md  # Unity Accessibility Module setup
+│   ├── unity-accessibility-api-reference.md # Complete API reference
 │   └── README.md                      # Documentation overview
+│
+├── config/                             # Configuration files ⭐ NEW
+│   └── export-config.json              # Export settings (PDF, CSV, JIRA, GitHub)
 │
 ├── resources/                          # Reference materials
 │   ├── NVDA-DEVELOPER-TOOLS-GUIDE.md  # NVDA developer tools reference ⭐
 │   ├── WEB-RESOURCES.md               # zSpace + accessibility resources
 │   └── TOOLS-CATALOG.md               # zSpace accessibility testing tools
 │
-└── examples/                           # Real-world examples
-    └── zspace-accessible-scene/       # Production accessible zSpace scene ⭐
-        ├── CASE-STUDY-ZSPACE.md       # How zSpace accessibility was achieved
-        ├── UnityAccessibilitySetup.md # Unity Accessibility Module setup guide ⭐
-        ├── AccessibleZSpaceScene.unity # Sample scene
-        └── README.md                  # Setup instructions
+├── examples/                           # Real-world examples
+│   ├── zspace-accessible-scene/       # Production accessible zSpace scene ⭐
+│   │   ├── CASE-STUDY-ZSPACE.md       # How zSpace accessibility was achieved
+│   │   ├── UnityAccessibilitySetup.md # Unity Accessibility Module setup guide ⭐
+│   │   ├── AccessibleZSpaceScene.unity # Sample scene
+│   │   └── README.md                  # Setup instructions
+│   └── career-explorer-audit/          # Sample audit output ⭐ NEW
+│       └── README.md                   # Example reports and dashboard
+│
+├── compliance-history/                 # Compliance tracking ⭐ NEW
+│   ├── baseline.json                   # Baseline compliance snapshot
+│   └── trends.json                     # Historical trends data
+│
+├── package.json                        # Node.js dependencies (v3.1.0)
+├── CHANGELOG.md                        # Version history
+├── RELEASE-NOTES-v3.1.0.md            # v3.1.0 release notes ⭐ NEW
+├── VIDEO-DEMO.md                      # Video demo guide ⭐ NEW
+├── INSTALLATION.md                    # Installation guide
+└── README.md                          # This file
 ```
 
 ---
@@ -282,10 +350,142 @@ accessibility-standards-unity/
 ### 📋 Complete zSpace Accessibility Standards
 
 - **W3C XAUR** - XR Accessibility User Requirements adapted for zSpace
-- **WCAG 2.2 Level AA** - Adapted for stereoscopic 3D desktop environments (57 criteria + zSpace context)
+- **WCAG 2.2 Level AA** - Adapted for stereoscopic 3D desktop environments (50 criteria + zSpace context)
 - **zSpace Accessibility Checklist** - Combined WCAG + XAUR checklist specific to zSpace + Unity
-- **Section 508 (US)** - Federal compliance mapping for zSpace applications
+- **Section 508 (US)** - Federal compliance mapping for zSpace applications (Tables 3 & 5)
 - **VPAT 2.5 Template** - zSpace desktop app compliance documentation
+
+### 📸 Automated Visual Analysis (Phase 1 & 2)
+
+- **Screenshot Capture** - Batch capture all Unity scenes automatically
+  - Multiple resolutions (1920x1080, thumbnails)
+  - Unity batch mode execution (headless)
+  - Multiple camera angles per scene
+  - Metadata JSON export (scene name, camera position, timestamp)
+- **Contrast Analysis** - WCAG contrast ratio checking (4.5:1 text, 3:1 UI)
+  - Automated UI component color extraction
+  - Heatmap overlays showing problem areas
+  - Component-level contrast reports
+  - Integration with VPAT reports
+- **Color-Blind Testing** - 8 vision type simulations:
+  - Protanopia (red-blind), Deuteranopia (green-blind), Tritanopia (blue-blind)
+  - Protanomaly (red-weak), Deuteranomaly (green-weak), Tritanomaly (blue-weak)
+  - Achromatopsia (total color-blind), Normal vision (baseline)
+  - Side-by-side comparison images
+  - Information loss detection
+
+### 🔍 Enhanced Pattern Detection (Phase 3.1)
+
+- **Keyboard Input Analysis** - Detect Input.GetKey(), InputSystem, EventSystem usage
+  - Confidence scoring for detections
+  - Component-level findings with file:line references
+  - Stylus-only pattern detection
+  - Tab order and focus management analysis
+- **UI Toolkit Analysis** - Analyze UIElements for accessibility
+  - Parse .uxml/.uss files
+  - Validate focusable elements and tab order
+  - Check label associations and ARIA-like roles
+- **XR Pattern Detection** - zSpace and XR-specific patterns
+  - Hand tracking, gaze input, voice commands
+  - Spatial audio cues detection
+  - Depth cue alternatives validation
+  - SDK detection (XR Interaction Toolkit, zSpace SDK, etc.)
+
+### 📊 Compliance Tracking & Comparison (Phase 3.2)
+
+- **Historical Tracking** - Store audit results over time
+  - Baseline management (create, update, compare)
+  - Compliance score trends
+  - Issue resolution rate tracking
+- **Diff Reports** - Compare audits
+  - Identify new/resolved issues
+  - Compliance score delta
+  - Scene-level changes
+  - Color-coded improvements/regressions
+- **CI/CD Integration** - Automated regression detection
+  - Exit code support (0=success, 1=failure, 2=warning)
+  - Fail builds on new critical issues
+  - PR comments with compliance scores
+  - Automated baseline updates
+
+### 🎨 Unity Editor Integration (Phase 3.3)
+
+- **Accessibility Auditor Window** - Custom Unity Editor window
+  - Project overview with compliance estimate
+  - One-click audit execution
+  - Recent audit results viewer
+  - Quick actions (screenshots, analysis)
+- **Scene View Overlays** - Visual issue indicators
+  - Red outlines for critical issues
+  - Yellow outlines for warnings
+  - Green checkmarks for compliant elements
+  - Hover tooltips with issue details
+- **Inspector Extensions** - Component validation
+  - Accessibility warnings in Inspector
+  - "Fix" buttons for quick corrections
+  - Label association checking
+  - Contrast validation
+- **Quick Fixes** - One-click accessibility improvements
+  - Add AccessibilityNode components
+  - Configure EventSystem keyboard navigation
+  - Fix tab order issues
+  - Add focus indicators
+  - Full Undo support
+
+### 📄 Advanced Export & Documentation (Phase 3.4)
+
+- **PDF Export** - Professional VPAT reports
+  - Company branding (logo, footer)
+  - Bookmarks for navigation
+  - Screenshots and charts included
+  - Puppeteer-based rendering
+- **CSV Export** - Project management integration
+  - Import into Excel, Google Sheets, JIRA
+  - Filterable by severity, scene, criterion
+  - Status tracking (Open/Resolved)
+  - Assignee and due date columns
+- **Issue Generation** - Automated ticket creation
+  - JIRA REST API integration
+  - GitHub API integration
+  - Deduplication (check existing issues)
+  - Automatic labeling (accessibility, wcag-2.2, severity)
+- **Custom Templates** - Flexible reporting
+  - Executive summary template
+  - Technical details template
+  - Stakeholder-friendly template
+  - Template variable system
+- **Multi-Project Comparison** - Organization-wide analysis
+  - Compare accessibility across multiple projects
+  - Common issues identification
+  - Best practices sharing
+  - Recommendations per project
+
+### 🔧 Automated Fix Suggestions & Code Generation (Phase 3.5)
+
+- **Keyboard Scaffolding** - Generate keyboard input code
+  - Input.GetKeyDown-based navigation
+  - InputSystem actions-based navigation
+  - EventSystem focus management
+  - Tab order configuration
+- **Accessibility API Integration** - Unity 2023.2+ code generation
+  - AccessibilityNode setup for UI elements
+  - Custom control implementation
+  - Dynamic content updates (screen readers)
+  - Hierarchy configuration
+- **Focus Management** - Generate focus system code
+  - Focus indicator visual component
+  - Focus traversal scripts (arrow keys)
+  - Focus trap for modals/dialogs
+  - Focus restoration after modal close
+- **Component Templates** - Production-ready C# classes
+  - KeyboardNavigationManager
+  - FocusIndicator
+  - AccessibleButton/Toggle/Slider
+  - ScreenReaderAnnouncer
+- **Installation Instructions** - Step-by-step guides
+  - Code integration steps
+  - Testing procedures
+  - Unity component configuration
 
 ### 🛠️ Ready-to-Use Unity Implementation
 
@@ -298,9 +498,9 @@ accessibility-standards-unity/
   - Step-by-step setup guide
 - **Unity C# Scripts** - 8+ accessibility components ready for zSpace projects
 - **Unity Test Framework** - Automated accessibility testing (15+ tests for Unity 2023.2+)
-- **Unity Editor Tools** - Custom inspectors for zSpace accessibility validation
+- **Unity Editor Tools** - Custom inspectors and windows for zSpace accessibility validation
 - **8 zSpace Components** - Production-ready accessible scripts:
-  - UnityAccessibilityIntegration (Unity 2023.2+ screen reader support) **NEW**
+  - UnityAccessibilityIntegration (Unity 2023.2+ screen reader support)
   - AccessibleStylusButton (stylus + keyboard + screen reader support)
   - KeyboardStylusAlternative (keyboard/mouse as stylus fallback)
   - VoiceCommandManager (voice navigation)
@@ -310,6 +510,23 @@ accessibility-standards-unity/
   - SpatialAudioManager (audio descriptions in 3D space)
 - **Prefabs** - Plug-and-play accessible zSpace UI components
 - **Sample zSpace Scene** - Working example with all accessibility features
+
+### 🚀 CI/CD Integration (Phase 4)
+
+- **GitHub Actions** - Pre-configured workflows
+  - accessibility-audit.yml (full audit with screenshots)
+  - accessibility-regression.yml (regression checking)
+  - publish-reports.yml (GitHub Pages deployment)
+- **GitLab CI** - Example .gitlab-ci.yml configurations
+- **Jenkins** - Jenkinsfile examples (declarative & scripted)
+- **Azure DevOps** - azure-pipelines.yml templates
+- **Features**:
+  - Automated audits on every PR/push
+  - Screenshot capture with Unity in CI
+  - Fail builds on critical issues
+  - PR comments with compliance scores
+  - Artifact uploads (reports, screenshots)
+  - GitHub Pages dashboard deployment
 
 ### 📖 Role-Specific Workflows
 
@@ -338,13 +555,21 @@ accessibility-standards-unity/
 The accessibility auditor scans your zSpace Unity project and automatically:
 
 - ✅ **Analyzes** all Unity scenes, C# scripts, and project structure
+- ✅ **Captures screenshots** of all scenes in batch mode (optional)
 - ✅ **Detects** accessibility patterns (keyboard support, screen reader compatibility, depth cues)
+- ✅ **Analyzes visual accessibility** with contrast checking and color-blind simulations
 - ✅ **Identifies** WCAG 2.2 and W3C XAUR violations specific to zSpace
-- ✅ **Generates** 5 professional reports (VPAT, audit summary, recommendations, etc.)
+- ✅ **Generates** professional reports (VPAT, PDFs, CSVs, generated code fixes)
+- ✅ **Tracks compliance** over time with baseline comparison and regression detection
+- ✅ **Creates JIRA/GitHub issues** automatically for detected problems
+- ✅ **Generates code** fixes with implementation instructions
 - ✅ **Calculates** compliance score (0-100%) and legal risk level
 - ✅ **Provides** specific, actionable fixes with implementation steps
 
-**Execution time:** < 1 second for most projects
+**Execution time:**
+- Basic audit: < 1 second
+- With screenshots: 2-10 minutes (depends on scene count)
+- Full audit with all features: 5-15 minutes
 
 ### Three Ways to Audit
 
@@ -380,8 +605,48 @@ Claude will run the audit and explain the results in natural language.
 git clone https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
 cd accessibility-standards-unity
 
-# Run audit
-node bin/audit.js /path/to/your-unity-project --verbose
+# Install dependencies
+npm install
+
+# Run basic audit
+node bin/audit.js /path/to/your-unity-project
+
+# Run full audit with all v3.1.0 features
+node bin/audit.js /path/to/your-unity-project \
+  --full \
+  --capture-screenshots \
+  --analyze-visual \
+  --generate-fixes \
+  --export-pdf \
+  --export-csv \
+  --track-compliance \
+  --verbose
+```
+
+### Audit Command Options (v3.1.0)
+
+```bash
+node bin/audit.js <project-path> [options]
+
+Options:
+  --full                   Run full audit with all features
+  --capture-screenshots    Capture scene screenshots in batch mode
+  --analyze-visual         Run contrast and color-blind analysis
+  --generate-fixes         Generate automated code fixes
+  --export-pdf             Generate PDF VPAT reports
+  --export-csv             Export findings to CSV
+  --track-compliance       Enable historical compliance tracking
+  --fail-on-regression     Fail (exit 1) if compliance decreases
+  --baseline               Create/update compliance baseline
+  --compare <audit1> <audit2>  Compare two audit results
+  --create-issues          Generate JIRA/GitHub issues
+  --verbose                Detailed logging
+  --output <dir>           Custom output directory (default: AccessibilityAudit)
+
+CI/CD Exit Codes:
+  0 = Success (no critical issues, no regressions)
+  1 = Failure (critical issues OR compliance decreased)
+  2 = Warning (high priority issues, score unchanged)
 ```
 
 ### Generated Reports
@@ -715,8 +980,9 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 **Built with ❤️ for accessible zSpace applications**
 
-**Version:** 2.1.0 (Unity Accessibility Module Support)
+**Version:** 3.1.0 (Automation & CI/CD Complete)
 **Last Updated:** October 2025
-**Standards:** W3C XAUR + WCAG 2.2 (adapted for zSpace stereoscopic 3D)
+**Standards:** W3C XAUR + WCAG 2.2 + Section 508 (adapted for zSpace stereoscopic 3D)
 **Unity Version:** 2021.3 LTS or newer (2023.2+ recommended for Unity Accessibility Module)
 **Target Platform:** zSpace
+**New in v3.1.0:** Automated screenshot capture, visual analysis, compliance tracking, Unity Editor integration, code generation, CI/CD workflows, PDF/CSV exports

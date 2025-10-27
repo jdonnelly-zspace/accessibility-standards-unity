@@ -1,7 +1,7 @@
 {
   "name": "accessibility-standards-unity",
-  "version": "3.0.0",
-  "description": "Comprehensive accessibility standards framework for zSpace Unity applications - WCAG 2.2 Level AA + W3C XAUR compliance with automated auditing and depth perception alternatives for stereoscopic 3D",
+  "version": "3.1.0",
+  "description": "Comprehensive accessibility standards framework for zSpace Unity applications - WCAG 2.2 Level AA + W3C XAUR compliance with automated auditing, screenshot capture, visual analysis, compliance tracking, CI/CD integration, and code generation for stereoscopic 3D",
   "main": "index.js",
   "type": "module",
   "bin": {
