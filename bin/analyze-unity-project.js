@@ -335,61 +335,61 @@ class UnityProjectAnalyzer {
   async generateFindings() {
     console.log('📊 Generating findings...');
 
-    // CRITICAL: No keyboard alternatives
+    // No keyboard alternatives detected
     if (!this.statistics.keyboardSupportFound ||
         (this.statistics.stylusOnlyScripts && this.statistics.stylusOnlyScripts.length > 0)) {
       this.findings.critical.push({
         id: 'WCAG-2.1.1',
         title: 'No Keyboard Alternatives for Stylus Interactions',
         wcagLevel: 'A',
-        severity: 'CRITICAL',
-        description: 'Application requires stylus input with no keyboard alternatives. Users with motor disabilities cannot use the application.',
+        severity: 'High',
+        description: 'No keyboard input patterns detected in codebase analysis. Application may rely solely on stylus and mouse input.',
         files: this.statistics.stylusOnlyScripts || [],
-        impact: '10-15% of users excluded (motor disabilities, keyboard-only navigation)',
-        recommendation: 'Add KeyboardStylusAlternative.cs component and implement keyboard mappings for all stylus interactions.'
+        impact: 'Users unable to use pointing devices will be unable to access functionality',
+        recommendation: 'Implement keyboard alternatives for all stylus and mouse interactions'
       });
     }
 
-    // CRITICAL: No depth perception alternatives
+    // No depth perception alternatives detected
     if (!this.statistics.foundComponents ||
         !this.statistics.foundComponents.includes('DepthCueManager')) {
       this.findings.critical.push({
         id: 'XAUR-UN17',
         title: 'No Depth Perception Alternatives',
         wcagLevel: 'W3C XAUR',
-        severity: 'CRITICAL',
-        description: 'Application requires stereoscopic 3D vision. Users with stereoblindness cannot perceive spatial information.',
+        severity: 'High',
+        description: 'No depth cue system detected in codebase analysis. zSpace applications require alternatives for users who cannot perceive stereoscopic 3D.',
         files: [],
-        impact: '10-15% of users cannot perceive depth (stereoblindness, monocular vision, eye conditions)',
-        recommendation: 'Implement DepthCueManager.cs with size scaling, shadows, spatial audio, and haptic depth cues.'
+        impact: 'Users with stereoblindness or monocular vision (10-15% of population) may be unable to perceive spatial information',
+        recommendation: 'Implement multiple depth cues: relative size scaling, shadows, spatial audio, haptic feedback'
       });
     }
 
-    // CRITICAL: No screen reader support
+    // No assistive technology support detected
     if (!this.statistics.screenReaderSupportFound) {
       this.findings.critical.push({
         id: 'WCAG-4.1.2',
-        title: 'No Screen Reader Support',
+        title: 'No Assistive Technology API Implementation',
         wcagLevel: 'A',
-        severity: 'CRITICAL',
-        description: 'UI elements lack semantic information for screen readers. Blind and low-vision users cannot use the application.',
+        severity: 'High',
+        description: 'No Unity Accessibility API patterns detected in codebase analysis. UI elements may lack programmatic information for assistive technologies.',
         files: [],
-        impact: '2-3% of users excluded (NVDA, Narrator, JAWS users)',
-        recommendation: 'Add AccessibleStylusButton.cs to all UI buttons and implement Unity Accessibility API.'
+        impact: 'Assistive technology users may be unable to identify interactive elements, read labels, or perceive state changes',
+        recommendation: 'Implement Unity Accessibility API to expose name, role, and value information to assistive technologies'
       });
     }
 
-    // CRITICAL: No focus indicators
+    // No focus indicators detected
     if (!this.statistics.focusIndicatorsFound) {
       this.findings.critical.push({
         id: 'WCAG-2.4.7',
-        title: 'No Focus Indicators for Keyboard Users',
+        title: 'No Focus Indicator Implementation',
         wcagLevel: 'AA',
-        severity: 'CRITICAL',
-        description: 'Keyboard users cannot see which element has focus. Navigation is impossible without visual feedback.',
+        severity: 'High',
+        description: 'No focus indicator patterns detected in codebase analysis. Keyboard users (if keyboard support is added) will need visual feedback for focused elements.',
         files: [],
-        impact: 'Keyboard navigation unusable',
-        recommendation: 'Add ZSpaceFocusIndicator.cs component to all interactive objects and UI elements.'
+        impact: 'Keyboard navigation requires visible focus indicators with minimum 3:1 contrast ratio',
+        recommendation: 'Implement focus indicators with visual, audio, and haptic feedback for all focusable elements'
       });
     }
 

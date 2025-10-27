@@ -256,8 +256,113 @@ class AccessibilityAuditor {
       STYLUS_ONLY_SCRIPTS_COUNT: report.statistics.stylusOnlyScripts ? report.statistics.stylusOnlyScripts.length : 0,
       SCREENSHOTS_CAPTURED: screenshotsCaptured,
       SCREENSHOTS_NOT_CAPTURED: !screenshotsCaptured,
-      SCREENSHOTS_COUNT: screenshotsCount
+      SCREENSHOTS_COUNT: screenshotsCount,
+
+      // Visual Analysis Variables (Phase 2)
+      VISUAL_ANALYSIS_PERFORMED: false,
+      VISUAL_ANALYSIS_NOT_PERFORMED: true,
+      CONTRAST_ANALYSIS_PERFORMED: false,
+      CONTRAST_ANALYSIS_COMPONENTS: 0,
+      CONTRAST_ISSUES_FOUND: false,
+      CONTRAST_CRITICAL_COUNT: 0,
+      CONTRAST_WARNING_COUNT: 0,
+      CONTRAST_COMPLIANCE_RATE: '0%',
+      CONTRAST_PASSING_COMPONENTS: 0,
+      CONTRAST_FAILING_COMPONENTS: 0,
+      COLOR_BLIND_ANALYSIS_PERFORMED: false,
+      COLOR_BLIND_ISSUES_FOUND: false,
+      COLOR_BLIND_AFFECTED_TYPES: '',
+      CAPTIONS_DETECTED: false,
+      DEPTH_CUES_FOUND: false,
+      VOICE_COMMANDS_DETECTED: false,
+      HEATMAPS_GENERATED: false,
+      HEATMAPS_COUNT: 0,
+      ...this.loadVisualAnalysisVariables()
     };
+  }
+
+  /**
+   * Load visual analysis variables from Phase 2 outputs
+   */
+  loadVisualAnalysisVariables() {
+    const variables = {};
+
+    // Check for contrast analysis results
+    const contrastPath = path.join(this.options.outputDir, 'contrast-analysis.json');
+    if (fs.existsSync(contrastPath)) {
+      try {
+        const contrastData = JSON.parse(fs.readFileSync(contrastPath, 'utf8'));
+        variables.VISUAL_ANALYSIS_PERFORMED = true;
+        variables.VISUAL_ANALYSIS_NOT_PERFORMED = false;
+        variables.CONTRAST_ANALYSIS_PERFORMED = true;
+        variables.CONTRAST_ANALYSIS_COMPONENTS = contrastData.summary?.componentsAnalyzed || 0;
+        variables.CONTRAST_PASSING_COMPONENTS = contrastData.summary?.passingComponents || 0;
+        variables.CONTRAST_FAILING_COMPONENTS = contrastData.summary?.failingComponents || 0;
+        variables.CONTRAST_COMPLIANCE_RATE = contrastData.summary?.complianceRate || '0%';
+
+        // Count critical and warning issues
+        let criticalCount = 0;
+        let warningCount = 0;
+
+        if (contrastData.scenes) {
+          Object.values(contrastData.scenes).forEach(scene => {
+            if (scene.components) {
+              scene.components.forEach(comp => {
+                if (!comp.passes) {
+                  const ratio = parseFloat(comp.contrastRatio);
+                  if (ratio < 3.0) criticalCount++;
+                  else if (ratio < 4.5) warningCount++;
+                }
+              });
+            }
+          });
+        }
+
+        variables.CONTRAST_CRITICAL_COUNT = criticalCount;
+        variables.CONTRAST_WARNING_COUNT = warningCount;
+        variables.CONTRAST_ISSUES_FOUND = (criticalCount + warningCount) > 0;
+      } catch (err) {
+        this.log(`⚠️  Could not parse contrast-analysis.json: ${err.message}`);
+      }
+    }
+
+    // Check for color-blind simulation results
+    const screenshotsDir = path.join(this.options.outputDir, 'screenshots');
+    if (fs.existsSync(screenshotsDir)) {
+      const sceneDirs = fs.readdirSync(screenshotsDir).filter(item => {
+        const itemPath = path.join(screenshotsDir, item);
+        return fs.statSync(itemPath).isDirectory();
+      });
+
+      if (sceneDirs.length > 0) {
+        // Check if any scene has colorblind simulations
+        sceneDirs.forEach(sceneDir => {
+          const colorblindDir = path.join(screenshotsDir, sceneDir, 'colorblind');
+          if (fs.existsSync(colorblindDir)) {
+            variables.VISUAL_ANALYSIS_PERFORMED = true;
+            variables.VISUAL_ANALYSIS_NOT_PERFORMED = false;
+            variables.COLOR_BLIND_ANALYSIS_PERFORMED = true;
+            // Could analyze comparison.html for issues, but for now just mark as performed
+          }
+        });
+      }
+    }
+
+    // Check for visual analysis heatmaps
+    const heatmapDir = path.join(this.options.outputDir, 'visual-analysis', 'heatmaps');
+    if (fs.existsSync(heatmapDir)) {
+      try {
+        const heatmaps = fs.readdirSync(heatmapDir).filter(f => f.endsWith('.png'));
+        if (heatmaps.length > 0) {
+          variables.HEATMAPS_GENERATED = true;
+          variables.HEATMAPS_COUNT = heatmaps.length;
+        }
+      } catch (err) {
+        // Ignore errors
+      }
+    }
+
+    return variables;
   }
 
   /**
