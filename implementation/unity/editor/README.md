@@ -1,8 +1,175 @@
 # Unity Editor Accessibility Tools
 
-This directory contains Unity Editor tools for accessibility validation and screenshot capture.
+This directory contains Unity Editor tools for accessibility validation, screenshot capture, and integrated audit management.
 
 ## Tools Overview
+
+### 🆕 Phase 3.3: Unity Editor Integration (v3.1.0-phase3.3)
+
+#### AccessibilityAuditorWindow.cs
+**Comprehensive accessibility audit management inside Unity**
+
+**Features:**
+- Run audits directly from Unity Editor
+- View compliance scores and findings in-editor
+- Filter findings by priority (Critical, High, Medium, Low)
+- Search through findings
+- Quick links to affected files
+- Integrated recommendations panel
+- Support for compliance tracking
+
+**Usage:**
+```
+Window → Accessibility → Auditor
+```
+
+**Tabs:**
+1. **Overview** - Compliance score, WCAG levels, summary statistics
+2. **Findings** - Detailed list of all accessibility issues with filtering
+3. **Statistics** - Keyboard support, UI Toolkit, XR capabilities analysis
+4. **Recommendations** - Actionable guidance based on audit results
+
+**Quick Actions:**
+- 🚀 Run Audit - Execute full accessibility audit
+- 📊 Run with Compliance Tracking - Audit with historical tracking
+- 🔄 Refresh - Reload latest audit results
+- 📂 Open Report Folder - View generated reports
+
+---
+
+#### AccessibilitySceneViewOverlay.cs
+**Visual accessibility indicators in Scene view**
+
+**Features:**
+- Overlay panel showing active findings
+- Colored gizmos on GameObjects with issues
+- Priority filtering (Critical, High, Medium, Low)
+- Real-time updates when audit report changes
+- Click findings to see details
+- Toggle visibility with F12 or menu
+
+**Usage:**
+```
+Automatically appears in Scene view after running audit
+Window → Accessibility → Toggle Scene Gizmos
+```
+
+**Visual Indicators:**
+- 🔴 Critical issues (red)
+- 🟠 High priority (orange)
+- 🟡 Medium priority (yellow)
+- 🟢 Low priority (light blue)
+
+**Gizmo Display:**
+- Colored spheres at GameObject positions
+- Labels showing issue count
+- Only shows for GameObjects with affected scripts
+
+---
+
+#### AccessibilityInspectorExtension.cs
+**Quick-fix buttons and warnings in Inspector**
+
+**Features:**
+- Shows accessibility issues for selected GameObjects
+- Quick-fix buttons for common problems
+- Context-aware recommendations
+- Links to Accessibility Auditor window
+- Support for UI components (Button, Selectable, EventTrigger)
+
+**Quick Fixes:**
+- Enable keyboard navigation on Buttons/Selectables
+- Add visual feedback transitions
+- Create EventSystem if missing
+- Add AccessibilityNode for screen readers (Unity 2023.2+)
+- Auto-populate labels from UI Text
+
+**Supported Components:**
+- UnityEngine.UI.Button
+- UnityEngine.UI.Selectable
+- UnityEngine.EventSystems.EventTrigger
+- Custom interactable scripts (auto-detected)
+
+**Usage:**
+Select any GameObject with interactive components in the hierarchy. The accessibility section appears at the bottom of the Inspector.
+
+---
+
+#### AccessibilityEditorSettings.cs
+**Centralized settings and preferences**
+
+**Features:**
+- Project-level settings stored in ProjectSettings/
+- Audit behavior configuration
+- Display preferences for gizmos/overlays
+- Framework path management
+- Notification preferences
+- Quick access menu items
+
+**Usage:**
+```
+Edit → Project Settings → Accessibility Standards
+```
+
+**Settings Categories:**
+
+**Audit Settings:**
+- Auto-Run on Build
+- Fail Build on Critical Issues
+- Track Compliance History
+- Verbose Logging
+
+**Display Settings:**
+- Show Scene Gizmos
+- Show Inspector Warnings
+- Show Scene Overlay
+- Show Critical Only
+
+**Framework Settings:**
+- Framework Path (auto-detect or manual)
+- Node.js Path
+
+**Notification Settings:**
+- Show Notifications
+- Notify on New Findings
+- Notify on Regression
+
+**Menu Items:**
+```
+Window → Accessibility → Auditor
+Window → Accessibility → Settings
+Window → Accessibility → Toggle Scene Gizmos (F12)
+Window → Accessibility → Open Audit Reports Folder
+Window → Accessibility → Documentation
+```
+
+---
+
+#### AccessibilityAuditData.cs
+**Data models for audit reports**
+
+**Purpose:**
+C# data structures matching the JSON schema from bin/audit.js. Includes helper methods for parsing and working with audit data.
+
+**Classes:**
+- `AccessibilityAuditReport` - Top-level audit report
+- `AuditMetadata` - Project and scan information
+- `AuditSummary` - Totals and counts
+- `AuditStatistics` - Detailed statistics (keyboard, UI Toolkit, XR)
+- `AuditFindings` - Findings grouped by priority
+- `Finding` - Individual accessibility issue
+- `ComplianceEstimate` - Score and WCAG levels
+
+**Helper Methods:**
+- `AuditDataParser.ParseFromJson()` - Load report from file
+- `AuditDataParser.GetFindingColor()` - Color coding by priority
+- `AuditDataParser.GetComplianceColor()` - Color coding by score
+- `AuditDataParser.GetAllFindings()` - Flatten findings list
+- `AuditDataParser.GroupFindingsByCategory()` - Organize by category
+
+---
+
+### Legacy Tools (Pre-Phase 3.3)
 
 ### 1. SceneScreenshotCapture.cs
 **Automated scene screenshot capture for accessibility audits**
@@ -253,6 +420,18 @@ Timing depends on:
 ---
 
 ## Version History
+
+**v3.1.0-phase3.3 (October 2025)**
+- Unity Editor Integration
+  - AccessibilityAuditorWindow.cs - Full-featured audit management window
+  - AccessibilitySceneViewOverlay.cs - Visual indicators in Scene view
+  - AccessibilityInspectorExtension.cs - Quick fixes in Inspector
+  - AccessibilityEditorSettings.cs - Centralized settings panel
+  - AccessibilityAuditData.cs - C# data models for audit reports
+- Menu items under Window → Accessibility
+- F12 shortcut for toggling scene gizmos
+- Project Settings integration
+- Auto-detection of framework path
 
 **v3.1.0-phase1 (October 2025)**
 - Initial release of screenshot capture tools
