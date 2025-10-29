@@ -1,29 +1,76 @@
-# Installation Guide - Unity zSpace Accessibility Framework v3.1.0
+# Installation Guide - Unity zSpace Accessibility Framework
 
-This guide shows how to install the zSpace Accessibility Standards Framework into your Unity projects and set up the CLI auditing tools.
+This guide shows how to install the zSpace Accessibility Standards Framework into your Unity projects.
+
+**Two Installation Paths:**
+
+1. **Unity Components** - Install accessibility scripts into your Unity project
+2. **Auditing Tool** - Install CLI tool to audit applications (NEW v3.4.0)
+
+Choose based on your role:
+- **Developers:** Install Unity components + auditing tool
+- **Product Managers / QA / Accessibility Teams:** Install auditing tool only
+
+---
+
+## Installation Path 1: Auditing Tool (Recommended First) ⭐
+
+**For:** Product Managers, Accessibility Teams, QA Engineers, Anyone auditing applications
+
+**Prerequisites:**
+- Node.js 18+ (download from https://nodejs.org/)
+- Access to Unity project source code (read-only)
+- Built Unity application (.exe file)
+
+**Installation Time:** 2-3 minutes
+
+### Quick Install
+
+```bash
+# Clone repository
+git clone https://github.com/jdonnelly-zspace/accessibility-standards-unity.git
+cd accessibility-standards-unity
+
+# Install dependencies
+npm install
+
+# Verify installation
+node bin/audit.js --version
+# Should show: 3.4.0-phase4 or higher
+```
+
+### What You Get
+
+- ✅ Complete auditing CLI tool
+- ✅ External application capture (no Unity Editor required)
+- ✅ Visual accessibility analysis
+- ✅ Professional VPAT reports
+- ✅ Compliance tracking
+- ✅ Code fix generation
+
+### Next Steps
+
+See **EXTERNAL-CAPTURE-GUIDE.md** for complete usage instructions.
+
+**Quick Test:**
+```bash
+node bin/audit.js "C:\Path\To\YourUnityProject"
+```
+
+---
+
+## Installation Path 2: Unity Components
+
+**For:** Unity Developers integrating accessibility into projects
 
 **Prerequisites:**
 - Unity 2021.3 LTS or newer (2023.2+ recommended for Unity Accessibility Module)
 - zSpace Unity SDK (download from https://developer.zspace.com/)
 - zSpace hardware (for testing) or zSpace simulator
-- **Node.js 18 LTS or newer** (for CLI auditing tools)
 
 ---
 
-## Installation Options
-
-### Option A: CLI Tools Only (Auditing & Analysis)
-**Best for:** Auditing existing Unity projects, CI/CD integration, automated testing
-
-### Option B: Unity Framework Only (Components & Prefabs)
-**Best for:** Building accessible Unity applications from scratch
-
-### Option C: Full Installation (CLI Tools + Unity Framework)
-**Best for:** Complete accessibility development and auditing workflow
-
----
-
-## Option A: CLI Tools Installation (v3.1.0)
+## Option A: CLI Tools Installation (v3.4.0)
 
 The CLI tools provide automated auditing, screenshot capture, visual analysis, compliance tracking, and CI/CD integration.
 
@@ -621,7 +668,16 @@ export PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 ---
 
-**Document Version:** 3.1.0 (Automation & CI/CD Complete)
-**Last Updated:** October 27, 2025
+## Additional Documentation
+
+- **EXTERNAL-CAPTURE-GUIDE.md** - Complete guide for auditing with external capture
+- **README.md** - Framework overview and features
+- **PHASE4-COMPLETE.md** - External capture implementation details
+- **bin/README-navigate-and-capture.md** - Navigation automation documentation
+
+---
+
+**Document Version:** 3.0 (External Capture Edition)
+**Last Updated:** October 2025
 **Platform:** zSpace + Unity 2021.3+
-**New in v3.1.0:** CLI tools, screenshot capture, visual analysis, compliance tracking, Unity Editor integration, code generation, CI/CD workflows
+**New in v3.4.0:** External application capture, auditing without Unity Editor

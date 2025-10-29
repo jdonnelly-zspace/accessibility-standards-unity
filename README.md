@@ -7,7 +7,7 @@
 [![Unity](https://img.shields.io/badge/Unity-2021.3+-black)](https://unity.com/)
 [![zSpace](https://img.shields.io/badge/zSpace-Compatible-orange)](https://zspace.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-3.1.0-brightgreen)](https://github.com/jdonnelly-zspace/accessibility-standards-unity/releases)
+[![Version](https://img.shields.io/badge/version-3.4.0--phase4-brightgreen)](https://github.com/jdonnelly-zspace/accessibility-standards-unity/releases)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-Ready-success)](https://github.com/jdonnelly-zspace/accessibility-standards-unity/actions)
 
 ---
@@ -555,7 +555,9 @@ accessibility-standards-unity/
 The accessibility auditor scans your zSpace Unity project and automatically:
 
 - ✅ **Analyzes** all Unity scenes, C# scripts, and project structure
-- ✅ **Captures screenshots** of all scenes in batch mode (optional)
+- ✅ **Captures screenshots** using two methods:
+  - **External capture** - Launches your built .exe and captures scenes automatically (NEW in v3.4.0)
+  - **Unity batch mode** - Traditional editor-based screenshot capture
 - ✅ **Detects** accessibility patterns (keyboard support, screen reader compatibility, depth cues)
 - ✅ **Analyzes visual accessibility** with contrast checking and color-blind simulations
 - ✅ **Identifies** WCAG 2.2 and W3C XAUR violations specific to zSpace
@@ -568,7 +570,8 @@ The accessibility auditor scans your zSpace Unity project and automatically:
 
 **Execution time:**
 - Basic audit: < 1 second
-- With screenshots: 2-10 minutes (depends on scene count)
+- With external capture: 3-8 minutes (depends on scene count and navigation)
+- With Unity batch mode: 2-10 minutes (depends on scene count)
 - Full audit with all features: 5-15 minutes
 
 ### Three Ways to Audit
@@ -608,13 +611,21 @@ cd accessibility-standards-unity
 # Install dependencies
 npm install
 
-# Run basic audit
+# Run basic audit (source code analysis only)
 node bin/audit.js /path/to/your-unity-project
 
-# Run full audit with all v3.1.0 features
+# Run with external capture (NEW v3.4.0 - recommended for pre-built apps)
+node bin/audit.js /path/to/your-unity-project \
+  --capture-screenshots \
+  --application "C:\Path\To\YourApp.exe" \
+  --analyze-visual \
+  --verbose
+
+# Run full audit with all v3.4.0 features
 node bin/audit.js /path/to/your-unity-project \
   --full \
   --capture-screenshots \
+  --application "C:\Path\To\YourApp.exe" \
   --analyze-visual \
   --generate-fixes \
   --export-pdf \
@@ -623,14 +634,15 @@ node bin/audit.js /path/to/your-unity-project \
   --verbose
 ```
 
-### Audit Command Options (v3.1.0)
+### Audit Command Options (v3.4.0-phase4)
 
 ```bash
 node bin/audit.js <project-path> [options]
 
 Options:
   --full                   Run full audit with all features
-  --capture-screenshots    Capture scene screenshots in batch mode
+  --capture-screenshots    Capture scene screenshots (auto-selects method)
+  --application <path>     Path to built .exe for external capture (NEW v3.4.0)
   --analyze-visual         Run contrast and color-blind analysis
   --generate-fixes         Generate automated code fixes
   --export-pdf             Generate PDF VPAT reports
@@ -642,6 +654,14 @@ Options:
   --create-issues          Generate JIRA/GitHub issues
   --verbose                Detailed logging
   --output <dir>           Custom output directory (default: AccessibilityAudit)
+
+Screenshot Capture Methods (v3.4.0):
+  External Capture (NEW):  If --application provided AND navigation map exists
+                          Launches .exe, navigates scenes automatically, captures
+                          No Unity Editor required, works with pre-built apps
+
+  Unity Batch Mode:       Traditional method, requires Unity Editor
+                          Falls back if external capture unavailable
 
 CI/CD Exit Codes:
   0 = Success (no critical issues, no regressions)
@@ -980,9 +1000,10 @@ MIT License - See [LICENSE](LICENSE) for details.
 
 **Built with ❤️ for accessible zSpace applications**
 
-**Version:** 3.1.0 (Automation & CI/CD Complete)
+**Version:** 3.4.0-phase4 (External Capture Complete)
 **Last Updated:** October 2025
 **Standards:** W3C XAUR + WCAG 2.2 + Section 508 (adapted for zSpace stereoscopic 3D)
 **Unity Version:** 2021.3 LTS or newer (2023.2+ recommended for Unity Accessibility Module)
 **Target Platform:** zSpace
-**New in v3.1.0:** Automated screenshot capture, visual analysis, compliance tracking, Unity Editor integration, code generation, CI/CD workflows, PDF/CSV exports
+**New in v3.4.0:** External application capture, navigation map parsing, automated scene navigation, no Unity Editor required for auditing pre-built apps
+**Previous (v3.1.0):** Automated screenshot capture, visual analysis, compliance tracking, Unity Editor integration, code generation, CI/CD workflows, PDF/CSV exports

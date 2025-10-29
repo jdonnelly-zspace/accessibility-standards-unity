@@ -1,11 +1,11 @@
 # Accessibility Auditor Requirements & Implementation Plan
 Date: October 28, 2025 (Updated: October 29, 2025)
-Project: zSpace Accessibility Standards Unity Framework v3.1.0
+Project: zSpace Accessibility Standards Unity Framework v3.4.0-phase4
 
 ## CURRENT IMPLEMENTATION STATUS
 
 **Approach:** Hybrid Option D - Source Analysis + External Execution
-**Phase:** 1 of 5 Complete ✅
+**Phase:** 4 of 5 Complete ✅
 
 **Completed:**
 - ✅ Phase 1: Navigation Map Parser (October 29, 2025)
@@ -14,13 +14,32 @@ Project: zSpace Accessibility Standards Unity Framework v3.1.0
   - Identifies 9 navigation buttons across 5 scenes
   - Outputs navigation-map.json for automation
 
+- ✅ Phase 2: External Application Controller (October 29, 2025)
+  - Launches applications and detects windows
+  - Captures screenshots via PowerShell
+  - Simulates mouse clicks via PowerShell
+  - Detects scenes via OCR (Tesseract.js)
+
+- ✅ Phase 3: Navigation Automation (October 29, 2025)
+  - Loads navigation map and implements BFS pathfinding
+  - Automatically traverses scenes and captures screenshots
+  - Includes retry logic and error handling
+  - Generates navigation-report.json
+
+- ✅ Phase 4: Integration with Audit Pipeline (October 28, 2025)
+  - Updated bin/audit.js to integrate external capture workflow
+  - Auto-detects navigation maps
+  - Intelligently routes to external capture OR Unity batch mode
+  - Added --application CLI option
+  - Graceful fallback if external fails
+  - Version: 3.4.0-phase4
+  - Committed to GitHub: commit 5a125f1
+
 **In Progress:**
-- ⚠️ Phase 2: External Application Controller (Next)
+- ⚠️ Phase 5: Documentation & Testing (Current)
 
 **Pending:**
-- ⏳ Phase 3: Navigation Automation
-- ⏳ Phase 4: Integration with Audit Pipeline
-- ⏳ Phase 5: Documentation & Testing
+- None - Final phase in progress
 
 **Key Achievement:**
 Created `bin/parse-navigation-map.js` - a read-only parser that extracts scene navigation structure from Unity source code without requiring Unity Editor, project modifications, or rebuilds. This enables non-developers (Product Managers, Accessibility Teams) to audit applications.
@@ -1132,27 +1151,46 @@ node bin/audit.js \
 
 ---
 
-#### PHASE 5: Documentation & Testing ⚠️ PENDING
+#### PHASE 5: Documentation & Testing ⚠️ IN PROGRESS
 
 **Goal:** Document new approach and test with Career Explorer
 
+**Date Started:** October 28, 2025
+
 **Tasks:**
-- [ ] Update README.md with new requirements
-- [ ] Create EXTERNAL-CAPTURE-GUIDE.md
-- [ ] Update INSTALLATION.md
-- [ ] Remove AccessibilityAuditor.cs requirement from docs
-- [ ] Test full workflow with Career Explorer
+- [✅] Update README.md with new requirements
+  - Updated version to 3.4.0-phase4
+  - Added external capture method documentation
+  - Updated audit command options
+  - Added --application flag examples
+- [✅] Create EXTERNAL-CAPTURE-GUIDE.md
+  - Comprehensive guide for non-developers (100+ sections)
+  - Step-by-step setup instructions
+  - Real-world Career Explorer example
+  - Troubleshooting section
+  - FAQ section
+- [✅] Update INSTALLATION.md
+  - Added "Installation Path 1: Auditing Tool" section
+  - Distinguished between Unity components and auditing tool
+  - Added role-based installation guidance
+  - Updated version to 3.0
+- [✅] Remove AccessibilityAuditor.cs requirement from docs
+  - Verified no user-facing docs require AccessibilityAuditor.cs
+  - External capture approach eliminates this requirement
+- [✅] Update plan_1028.txt with results
+  - Updated implementation status (4 of 5 complete)
+  - Marked Phase 5 tasks as completed
+- [ ] Test full workflow with Career Explorer (Next)
 - [ ] Create video demo (optional)
-- [ ] Update plan_1028.txt with results
 
 **Success Criteria:**
-- ✅ Documentation is clear for non-developers
-- ✅ Full audit runs successfully
-- ✅ All 13 scenes captured
-- ✅ Visual analysis completes
-- ✅ Reports generated
+- ✅ Documentation is clear for non-developers (EXTERNAL-CAPTURE-GUIDE.md)
+- ⏳ Full audit runs successfully (testing next)
+- ⏳ All 13 scenes captured (testing next)
+- ⏳ Visual analysis completes (testing next)
+- ⏳ Reports generated (testing next)
 
-**Estimated Time:** 2-3 hours
+**Estimated Time:** 2-3 hours (1.5 hours spent on documentation)
 
 ---
 
