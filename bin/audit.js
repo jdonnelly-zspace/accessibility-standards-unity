@@ -36,6 +36,7 @@ import { execSync } from 'child_process';
 import { UnityProjectAnalyzer } from './analyze-unity-project.js';
 import { captureScreenshots } from './capture-screenshots.js';
 import { ComplianceTracker } from './compliance-tracker.js';
+import { NavigationAutomation } from './navigate-and-capture.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -44,7 +45,7 @@ const __dirname = path.dirname(__filename);
 // CONFIGURATION
 // ============================================================================
 
-const VERSION = '3.3.0-phase2';
+const VERSION = '3.4.0-phase4';
 const FRAMEWORK_NAME = 'accessibility-standards-unity';
 
 // ============================================================================
@@ -60,6 +61,7 @@ class AccessibilityAuditor {
       verbose: options.verbose || false,
       captureScreenshots: options.captureScreenshots || false,
       unityPath: options.unityPath || null,
+      application: options.application || null, // Path to built .exe for external capture
       baseline: options.baseline || false,
       trackCompliance: options.trackCompliance || false,
       failOnRegression: options.failOnRegression || false,
@@ -281,10 +283,62 @@ class AccessibilityAuditor {
   }
 
   /**
+   * Check if navigation map exists for external capture
+   */
+  detectNavigationMap() {
+    const navigationMapPath = path.join(this.options.outputDir, 'navigation-map.json');
+
+    if (fs.existsSync(navigationMapPath)) {
+      this.log(`✅ Navigation map detected: ${navigationMapPath}`);
+      return navigationMapPath;
+    }
+
+    this.log('ℹ️  No navigation map found (external capture not available)');
+    return null;
+  }
+
+  /**
    * Step 0: Capture scene screenshots
+   * Automatically chooses between external capture (if navigation map exists)
+   * or Unity batch mode (traditional method)
    */
   async captureSceneScreenshots() {
     console.log('📸 Step 0: Capturing scene screenshots...\n');
+
+    // Check if navigation map exists
+    const navigationMapPath = this.detectNavigationMap();
+    const useExternalCapture = navigationMapPath && this.options.application;
+
+    if (useExternalCapture) {
+      // Phase 4: Use external navigation and capture
+      console.log('🚀 Using external capture method (navigation map detected)\n');
+
+      try {
+        await this.captureScreenshotsExternal(navigationMapPath);
+        this.log('\n✅ External screenshot capture complete\n');
+        return;
+      } catch (error) {
+        console.warn('\n⚠️  External capture failed:', error.message);
+
+        // Fallback to Unity batch mode if available
+        if (this.options.unityPath) {
+          console.warn('   Falling back to Unity batch mode...\n');
+        } else {
+          console.warn('   Continuing with audit without screenshots...\n');
+          return;
+        }
+      }
+    } else {
+      // Log why external capture is not used
+      if (!navigationMapPath) {
+        this.log('ℹ️  Navigation map not found, using Unity batch mode');
+      } else if (!this.options.application) {
+        this.log('ℹ️  Application path not provided (use --application), using Unity batch mode');
+      }
+    }
+
+    // Traditional Unity batch mode capture
+    console.log('🎮 Using Unity batch mode capture\n');
 
     const screenshotConfig = {
       projectPath: this.projectPath,
@@ -304,6 +358,59 @@ class AccessibilityAuditor {
     } catch (error) {
       console.warn('\n⚠️  Screenshot capture failed:', error.message);
       console.warn('   Continuing with audit without screenshots...\n');
+    }
+  }
+
+  /**
+   * Capture screenshots using external navigation automation (Phase 4)
+   */
+  async captureScreenshotsExternal(navigationMapPath) {
+    this.log('Initializing external navigation automation...');
+
+    const automation = new NavigationAutomation({
+      outputDir: path.join(this.options.outputDir, 'screenshots'),
+      verbose: this.options.verbose
+    });
+
+    try {
+      // Run the navigation automation
+      const report = await automation.run(this.options.application, navigationMapPath);
+
+      // Log summary
+      console.log(`\n✅ External capture complete:`);
+      console.log(`   Visited scenes: ${report.summary.visitedScenes} / ${report.summary.totalScenes}`);
+      console.log(`   Screenshots: ${report.summary.screenshotsCaptured}`);
+      console.log(`   Failed navigations: ${report.summary.failedNavigations}`);
+      console.log(`   Completion rate: ${report.summary.completionRate}`);
+
+      // Close the application
+      await automation.controller.closeApplication();
+
+      // Terminate OCR worker
+      if (automation.tesseractWorker) {
+        await automation.tesseractWorker.terminate();
+      }
+
+      return report;
+    } catch (error) {
+      // Clean up on error
+      if (automation.controller) {
+        try {
+          await automation.controller.closeApplication();
+        } catch (cleanupError) {
+          this.log(`Warning: Failed to close application: ${cleanupError.message}`);
+        }
+      }
+
+      if (automation.tesseractWorker) {
+        try {
+          await automation.tesseractWorker.terminate();
+        } catch (cleanupError) {
+          this.log(`Warning: Failed to terminate OCR worker: ${cleanupError.message}`);
+        }
+      }
+
+      throw error;
     }
   }
 
@@ -661,7 +768,8 @@ Options:
   --output-dir <dir>         Output directory for reports (default: <project>/AccessibilityAudit)
   --format <format>          Output format: markdown, json, both (default: markdown)
   --capture-screenshots      Capture scene screenshots before analysis
-  --unity-path <path>        Path to Unity executable (for screenshot capture)
+  --unity-path <path>        Path to Unity executable (for Unity batch mode capture)
+  --application <path>       Path to built application .exe (for external capture - Phase 4)
   --verbose                  Enable verbose logging
   --baseline                 Create/update baseline for compliance tracking (Phase 3.2)
   --track-compliance         Save audit snapshot to compliance-history/ (Phase 3.2)
@@ -678,8 +786,11 @@ Examples:
   # Audit a Unity project
   node bin/audit.js /path/to/unity-project
 
-  # Audit with screenshot capture
-  node bin/audit.js /path/to/unity-project --capture-screenshots
+  # Audit with Unity batch mode screenshot capture
+  node bin/audit.js /path/to/unity-project --capture-screenshots --unity-path "C:/Unity/Editor/Unity.exe"
+
+  # Audit with external capture (Phase 4) - automatically uses navigation map if available
+  node bin/audit.js /path/to/unity-project --capture-screenshots --application "C:/Program Files/MyApp/MyApp.exe"
 
   # Create compliance baseline
   node bin/audit.js /path/to/unity-project --baseline
@@ -699,8 +810,8 @@ Examples:
   # Generate code fixes for accessibility issues
   node bin/audit.js /path/to/unity-project --generate-fixes
 
-  # Full audit with all Phase 3 features
-  node bin/audit.js /path/to/unity-project --capture-screenshots --track-compliance --export-pdf --export-csv --generate-fixes --verbose
+  # Full audit with all features (Phase 4)
+  node bin/audit.js /path/to/unity-project --capture-screenshots --application "C:/Program Files/MyApp/MyApp.exe" --track-compliance --export-pdf --export-csv --generate-fixes --verbose
 
 Output:
   AccessibilityAudit/
@@ -721,6 +832,7 @@ Output:
     verbose: false,
     captureScreenshots: false,
     unityPath: null,
+    application: null,
     baseline: false,
     trackCompliance: false,
     failOnRegression: false,
@@ -744,6 +856,9 @@ Output:
       i++;
     } else if (arg === '--unity-path' && args[i + 1]) {
       options.unityPath = args[i + 1];
+      i++;
+    } else if (arg === '--application' && args[i + 1]) {
+      options.application = args[i + 1];
       i++;
     } else if (arg === '--capture-screenshots') {
       options.captureScreenshots = true;
@@ -794,6 +909,7 @@ async function main() {
     verbose: options.verbose,
     captureScreenshots: options.captureScreenshots,
     unityPath: options.unityPath,
+    application: options.application,
     baseline: options.baseline,
     trackCompliance: options.trackCompliance,
     failOnRegression: options.failOnRegression,
