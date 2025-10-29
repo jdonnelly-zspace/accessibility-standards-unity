@@ -44,7 +44,7 @@ const __dirname = path.dirname(__filename);
 // CONFIGURATION
 // ============================================================================
 
-const VERSION = '3.1.0-phase1';
+const VERSION = '3.3.0-phase2';
 const FRAMEWORK_NAME = 'accessibility-standards-unity';
 
 // ============================================================================

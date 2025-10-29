@@ -20,6 +20,17 @@ import { KeyboardAnalyzer } from './pattern-detectors/keyboard-analyzer.js';
 import { UIToolkitAnalyzer } from './pattern-detectors/ui-toolkit-analyzer.js';
 import { XRAccessibilityAnalyzer } from './pattern-detectors/xr-accessibility-analyzer.js';
 
+// Phase 1: Visual Analysis Tools
+import { analyzeTextContrast } from './analyze-text-contrast.js';
+
+// Phase 2: Semantic Analysis Tools
+import { analyzeSceneTitles } from './analyze-scene-titles.js';
+import { analyzeHeadingsAndLabels } from './analyze-headings-labels.js';
+import { analyzeFocusOrder } from './analyze-focus-order.js';
+import { analyzeConsistentNavigation } from './analyze-consistent-navigation.js';
+import { analyzeConsistentIdentification } from './analyze-consistent-identification.js';
+import { testTextResize } from './test-text-resize.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -79,6 +90,19 @@ class UnityProjectAnalyzer {
     };
     this.scenes = [];
     this.scripts = [];
+
+    // Phase 1 & 2 results
+    this.phase1Results = {
+      textContrast: null
+    };
+    this.phase2Results = {
+      sceneTitles: null,
+      headingsLabels: null,
+      focusOrder: null,
+      consistentNavigation: null,
+      consistentIdentification: null,
+      textResize: null
+    };
   }
 
   /**
@@ -92,11 +116,20 @@ class UnityProjectAnalyzer {
       throw new Error('Invalid Unity project structure');
     }
 
-    // Scan project
+    // Original analysis
     await this.scanScenes();
     await this.scanScripts();
     await this.detectAccessibilityPatterns();
     await this.generateFindings();
+
+    // Phase 1: Visual Analysis
+    await this.runPhase1Analysis();
+
+    // Phase 2: Semantic Analysis
+    await this.runPhase2Analysis();
+
+    // Merge all findings
+    await this.mergePhasedFindings();
 
     return this.generateReport();
   }
@@ -442,6 +475,177 @@ class UnityProjectAnalyzer {
   }
 
   /**
+   * Run Phase 1 Visual Analysis Tools
+   */
+  async runPhase1Analysis() {
+    console.log('\n📸 Phase 1: Visual Analysis (WCAG 2.2 Level AA)...');
+
+    try {
+      // Check if screenshots exist
+      const screenshotDir = path.join(this.projectPath, 'AccessibilityAudit', 'screenshots');
+
+      if (fs.existsSync(screenshotDir)) {
+        console.log('   Running text contrast analysis...');
+        this.phase1Results.textContrast = await analyzeTextContrast(screenshotDir);
+        console.log(`   ✅ Text contrast: ${this.phase1Results.textContrast.length} findings`);
+      } else {
+        console.log('   ⚠️  Screenshots not found. Skipping visual analysis.');
+        console.log('      Run with --capture-screenshots to enable visual analysis.');
+      }
+    } catch (error) {
+      console.warn(`   ⚠️  Phase 1 analysis error: ${error.message}`);
+      this.phase1Results.textContrast = [];
+    }
+  }
+
+  /**
+   * Run Phase 2 Semantic Analysis Tools
+   */
+  async runPhase2Analysis() {
+    console.log('\n🔍 Phase 2: Semantic Analysis (WCAG 2.2 Level A/AA)...');
+
+    try {
+      // Item 7: [2.4.2] Page Titled
+      console.log('   Analyzing scene titles...');
+      this.phase2Results.sceneTitles = await analyzeSceneTitles(this.projectPath);
+      console.log(`   ✅ Scene titles: ${this.phase2Results.sceneTitles.length} findings`);
+
+      // Item 8: [2.4.6] Headings and Labels
+      console.log('   Analyzing headings and labels...');
+      this.phase2Results.headingsLabels = await analyzeHeadingsAndLabels(this.projectPath);
+      console.log(`   ✅ Headings/labels: ${this.phase2Results.headingsLabels.length} findings`);
+
+      // Item 11: [2.4.3] Focus Order
+      console.log('   Analyzing focus order...');
+      this.phase2Results.focusOrder = await analyzeFocusOrder(this.projectPath);
+      console.log(`   ✅ Focus order: ${this.phase2Results.focusOrder.length} findings`);
+
+      // Item 9: [3.2.3] Consistent Navigation
+      console.log('   Analyzing consistent navigation...');
+      this.phase2Results.consistentNavigation = await analyzeConsistentNavigation(this.projectPath);
+      console.log(`   ✅ Consistent navigation: ${this.phase2Results.consistentNavigation.length} findings`);
+
+      // Item 10: [3.2.4] Consistent Identification
+      console.log('   Analyzing consistent identification...');
+      this.phase2Results.consistentIdentification = await analyzeConsistentIdentification(this.projectPath);
+      console.log(`   ✅ Consistent identification: ${this.phase2Results.consistentIdentification.length} findings`);
+
+      // Item 12: [1.4.4] Resize Text
+      console.log('   Testing text resize...');
+      this.phase2Results.textResize = await testTextResize(this.projectPath);
+      console.log(`   ✅ Text resize: ${this.phase2Results.textResize.length} findings`);
+
+    } catch (error) {
+      console.warn(`   ⚠️  Phase 2 analysis error: ${error.message}`);
+      // Initialize empty results for failed analyses
+      if (!this.phase2Results.sceneTitles) this.phase2Results.sceneTitles = [];
+      if (!this.phase2Results.headingsLabels) this.phase2Results.headingsLabels = [];
+      if (!this.phase2Results.focusOrder) this.phase2Results.focusOrder = [];
+      if (!this.phase2Results.consistentNavigation) this.phase2Results.consistentNavigation = [];
+      if (!this.phase2Results.consistentIdentification) this.phase2Results.consistentIdentification = [];
+      if (!this.phase2Results.textResize) this.phase2Results.textResize = [];
+    }
+  }
+
+  /**
+   * Merge Phase 1 and Phase 2 findings into main findings list
+   */
+  async mergePhasedFindings() {
+    console.log('\n🔗 Merging Phase 1 & 2 findings...');
+
+    let merged = 0;
+
+    // Merge Phase 1 findings
+    if (this.phase1Results.textContrast && Array.isArray(this.phase1Results.textContrast)) {
+      for (const finding of this.phase1Results.textContrast) {
+        this.addFinding(finding);
+        merged++;
+      }
+    }
+
+    // Merge Phase 2 findings
+    const phase2Arrays = [
+      this.phase2Results.sceneTitles,
+      this.phase2Results.headingsLabels,
+      this.phase2Results.focusOrder,
+      this.phase2Results.consistentNavigation,
+      this.phase2Results.consistentIdentification,
+      this.phase2Results.textResize
+    ];
+
+    for (const findingsArray of phase2Arrays) {
+      if (findingsArray && Array.isArray(findingsArray)) {
+        for (const finding of findingsArray) {
+          this.addFinding(finding);
+          merged++;
+        }
+      }
+    }
+
+    console.log(`   ✅ Merged ${merged} findings from Phase 1 & 2`);
+  }
+
+  /**
+   * Add a finding to the appropriate severity category
+   */
+  addFinding(finding) {
+    // Skip info and error level findings
+    if (finding.severity === 'info' || finding.severity === 'error') {
+      return;
+    }
+
+    // Map finding to our structure
+    const standardizedFinding = {
+      wcagCriterion: finding.wcagCriterion || 'Unknown',
+      wcagLevel: finding.level || 'AA',
+      severity: finding.severity || 'medium',
+      title: finding.issue || 'Accessibility Issue',
+      description: finding.explanation || finding.issue || '',
+      recommendation: finding.recommendation || '',
+      location: finding.scene || finding.scenePath || finding.element || 'Unknown',
+      howToFix: finding.howToFix || [],
+      category: this.getCategoryFromCriterion(finding.wcagCriterion),
+      automated: true, // Mark as automated finding
+      source: finding.source || 'Phase 1/2 Analysis'
+    };
+
+    // Add to appropriate severity category
+    const severityMap = {
+      'critical': this.findings.critical,
+      'high': this.findings.high,
+      'medium': this.findings.medium,
+      'low': this.findings.low
+    };
+
+    const targetArray = severityMap[finding.severity] || this.findings.medium;
+    targetArray.push(standardizedFinding);
+  }
+
+  /**
+   * Get category from WCAG criterion
+   */
+  getCategoryFromCriterion(criterion) {
+    if (!criterion) return 'General';
+
+    const criterionMap = {
+      '1.4.3': 'Visual Design',
+      '1.4.11': 'Visual Design',
+      '1.4.1': 'Visual Design',
+      '1.4.4': 'Visual Design',
+      '1.4.5': 'Visual Design',
+      '2.4.2': 'Navigation',
+      '2.4.3': 'Navigation',
+      '2.4.6': 'Content Structure',
+      '2.5.8': 'Input Modalities',
+      '2.3.1': 'Visual Design',
+      '3.2.3': 'Navigation',
+      '3.2.4': 'Navigation'
+    };
+
+    return criterionMap[criterion] || 'General';
+  }
+
+  /**
    * Generate final report
    */
   generateReport() {
@@ -453,7 +657,11 @@ class UnityProjectAnalyzer {
         projectPath: this.projectPath,
         scannedDate: new Date().toISOString().split('T')[0],
         analyzer: 'accessibility-standards-unity',
-        version: '2.2.0'
+        version: '3.3.0-phase2',
+        phases: {
+          phase1: 'Visual Analysis - 1 item (85% automation)',
+          phase2: 'Semantic Analysis - 6 items (75% avg automation)'
+        }
       },
       summary: {
         totalScenes: this.statistics.totalScenes,
@@ -462,11 +670,18 @@ class UnityProjectAnalyzer {
         criticalIssues: this.findings.critical.length,
         highPriorityIssues: this.findings.high.length,
         mediumPriorityIssues: this.findings.medium.length,
-        lowPriorityIssues: this.findings.low.length
+        lowPriorityIssues: this.findings.low.length,
+        automatedAnalysis: {
+          phase1Criteria: 1,
+          phase2Criteria: 6,
+          totalAutomated: 7
+        }
       },
       scenes: this.scenes,
       statistics: this.statistics,
       findings: this.findings,
+      phase1Results: this.phase1Results,
+      phase2Results: this.phase2Results,
       complianceEstimate: this.calculateComplianceScore()
     };
 
