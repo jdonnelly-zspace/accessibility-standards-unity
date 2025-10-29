@@ -2,20 +2,39 @@
 .git/
 .github/
 .gitignore
+.gitattributes
+.editorconfig
 .DS_Store
 *.log
 npm-debug.log*
 
-# Documentation not needed in published package
-turnkey_plan.txt
-CONTRIBUTING.md
+# Unity implementation (not needed for npm CLI tools)
+# Users can clone repo for Unity components
+implementation/
 
-# Examples (partners should clone repo for examples)
+# Examples (partners should clone repo for full examples)
 examples/
+
+# Planning documents (internal development)
+docs/planning/
+plan*.txt
+turnkey_plan.txt
+PHASE-*.md
+
+# Documentation not needed in published package
+CONTRIBUTING.md
+CODEOWNERS
+SECURITY.md
+VIDEO-DEMO.md
+PUBLISHING.md
+
+# Old release notes (keep only current version)
+RELEASE-NOTES-v3.0.0.md
 
 # Test files
 tests/
 *.test.js
+__tests__/
 
 # IDE files
 .vscode/
@@ -23,6 +42,7 @@ tests/
 *.swp
 *.swo
 *~
+.claude/
 
 # Build artifacts
 node_modules/
@@ -31,3 +51,20 @@ build/
 
 # OS files
 Thumbs.db
+
+# Unity-specific files
+*.meta
+*.unity
+*.prefab
+*.asset
+*.mat
+*.csproj
+*.sln
+
+# Audit outputs (testing artifacts)
+AccessibilityAudit/
+
+# Temporary files
+tmp/
+temp/
+*.tmp

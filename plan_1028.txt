@@ -1,0 +1,1278 @@
+# Accessibility Auditor Requirements & Implementation Plan
+Date: October 28, 2025 (Updated: October 29, 2025)
+Project: zSpace Accessibility Standards Unity Framework v3.4.0-phase4
+
+## CURRENT IMPLEMENTATION STATUS
+
+**Approach:** Hybrid Option D - Source Analysis + External Execution
+**Phase:** 4 of 5 Complete ✅
+
+**Completed:**
+- ✅ Phase 1: Navigation Map Parser (October 29, 2025)
+  - Successfully parses Unity project for navigation structure
+  - Extracts 13 scenes from EditorBuildSettings.asset
+  - Identifies 9 navigation buttons across 5 scenes
+  - Outputs navigation-map.json for automation
+
+- ✅ Phase 2: External Application Controller (October 29, 2025)
+  - Launches applications and detects windows
+  - Captures screenshots via PowerShell
+  - Simulates mouse clicks via PowerShell
+  - Detects scenes via OCR (Tesseract.js)
+
+- ✅ Phase 3: Navigation Automation (October 29, 2025)
+  - Loads navigation map and implements BFS pathfinding
+  - Automatically traverses scenes and captures screenshots
+  - Includes retry logic and error handling
+  - Generates navigation-report.json
+
+- ✅ Phase 4: Integration with Audit Pipeline (October 28, 2025)
+  - Updated bin/audit.js to integrate external capture workflow
+  - Auto-detects navigation maps
+  - Intelligently routes to external capture OR Unity batch mode
+  - Added --application CLI option
+  - Graceful fallback if external fails
+  - Version: 3.4.0-phase4
+  - Committed to GitHub: commit 5a125f1
+
+**In Progress:**
+- ⚠️ Phase 5: Documentation & Testing (Current)
+
+**Pending:**
+- None - Final phase in progress
+
+**Key Achievement:**
+Created `bin/parse-navigation-map.js` - a read-only parser that extracts scene navigation structure from Unity source code without requiring Unity Editor, project modifications, or rebuilds. This enables non-developers (Product Managers, Accessibility Teams) to audit applications.
+
+## CLARIFIED REQUIREMENTS
+
+### Target Users
+- Product Managers / Accessibility Teams
+- Designers
+- Developers
+
+### Required Components (ALL THREE)
+1. ✅ Built Application (.exe file)
+   - Path: C:\Program Files\zSpace\Career Explorer\zSpaceCareerExplorer.exe
+   - Purpose: Launch actual application on zSpace hardware
+
+2. ✅ zSpace Hardware
+   - Purpose: Run application in real environment, capture actual rendered output
+
+3. ✅ Unity Editor
+   - Path: C:\Program Files\Unity\Hub\Editor\2022.3.59f1\Editor\Unity.exe
+   - Purpose: Scene loading API, built-in screenshot capture
+
+### Additional Requirements
+- Node.js 18+
+- npm (comes with Node.js)
+- Unity project source code (local access)
+  - Path: C:\Users\Jill\OneDrive\Documents\GitHub\apps.career-explorer
+
+## CURRENT STATE
+
+### What Works ✅
+- Source code analysis (758 scripts analyzed)
+- Unity scene file parsing (51 scenes found)
+- Pattern detection (keyboard, UI Toolkit, XR)
+- VPAT report generation
+- Compliance scoring
+- Recommendations generation
+
+### What's Missing ❌
+- Launch built .exe application
+- Automated scene navigation in running application
+- Screenshot capture from running application
+- Visual accessibility analysis (contrast, color-blind)
+- Integration with zSpace hardware
+
+## INTENDED WORKFLOW
+
+### Command Syntax
+```bash
+node bin/audit.js \
+  --unity-project "C:\Users\Jill\OneDrive\Documents\GitHub\apps.career-explorer" \
+  --application "C:\Program Files\zSpace\Career Explorer\zSpaceCareerExplorer.exe" \
+  --unity-editor "C:\Program Files\Unity\Hub\Editor\2022.3.59f1\Editor\Unity.exe" \
+  --full --capture-screenshots --analyze-visual --verbose
+```
+
+### Execution Flow
+1. **Launch Application**
+   - Start zSpaceCareerExplorer.exe on zSpace hardware
+   - Wait for application initialization
+   - Verify application is running
+
+2. **Scene Navigation** (Unity Scene Loading API)
+   - Get list of all scenes from Unity project (51 scenes)
+   - For each scene:
+     a. Load scene using Unity API
+     b. Wait for scene to render
+     c. Capture screenshot using Unity's built-in screenshot
+     d. Save with metadata (scene name, timestamp)
+
+3. **Visual Analysis**
+   - Analyze all captured screenshots
+   - Check WCAG contrast ratios (4.5:1 text, 3:1 UI)
+   - Generate color-blind simulations (8 types)
+   - Create visual heatmaps
+
+4. **Code Analysis** (existing functionality)
+   - Scan C# scripts for patterns
+   - Detect accessibility components
+   - Identify issues
+
+5. **Report Generation**
+   - Merge visual + code findings
+   - Generate VPAT reports
+   - Create recommendations
+   - Calculate compliance score
+
+### Expected Execution Time
+- Scene navigation: 2-5 minutes (51 scenes)
+- Screenshot capture: 3-8 minutes
+- Visual analysis: 2-3 minutes
+- Code analysis: < 10 seconds
+- **Total: 10-20 minutes**
+
+## TECHNICAL APPROACH
+
+### 1. Scene Navigation (Unity Scene Loading API)
+- Use Unity's SceneManager.LoadScene() API
+- Create C# script injected into running application
+- Communicate with Node.js via file system or HTTP
+- Sequence through all scenes automatically
+
+### 2. Screenshot Capture (Unity Built-in)
+- Use Unity's ScreenCapture.CaptureScreenshot() API
+- Capture at configured resolution (1920x1080)
+- Generate thumbnails (320x180)
+- Save with JSON metadata
+
+### 3. Application Integration
+- Launch .exe via Node.js child_process
+- Wait for startup (configurable timeout)
+- Monitor process for crashes
+- Graceful shutdown after completion
+
+## IMPLEMENTATION TASKS
+
+### Phase 1: Application Launcher ⚠️ IN PROGRESS
+- [ ] Create bin/launch-application.js
+- [ ] Accept .exe path as parameter
+- [ ] Launch application via spawn/exec
+- [ ] Verify process started successfully
+- [ ] Add configurable startup timeout
+- [ ] Add process monitoring
+
+### Phase 2: Scene Navigation System
+- [ ] Create Unity C# script: SceneNavigator.cs
+- [ ] Implement SceneManager.LoadScene() loop
+- [ ] Add scene list from BuildSettings
+- [ ] Add wait/delay between scenes
+- [ ] Add progress reporting mechanism
+- [ ] Inject script into running application
+
+### Phase 3: Screenshot Integration
+- [ ] Create Unity C# script: ScreenshotCapture.cs
+- [ ] Implement ScreenCapture.CaptureScreenshot()
+- [ ] Save to AccessibilityAudit/screenshots/
+- [ ] Generate metadata JSON per screenshot
+- [ ] Create thumbnails
+- [ ] Integrate with scene navigator
+
+### Phase 4: Communication Bridge
+- [ ] Design Node.js <-> Unity communication
+  - Option A: File-based (JSON state files)
+  - Option B: HTTP server (Unity -> Node.js callbacks)
+  - Option C: Named pipes (Windows IPC)
+- [ ] Implement chosen method
+- [ ] Add error handling
+- [ ] Add timeout handling
+
+### Phase 5: Visual Analysis Integration
+- [ ] Update bin/analyze-visual-accessibility.js
+- [ ] Read screenshots from new capture method
+- [ ] Run contrast analysis
+- [ ] Generate color-blind simulations
+- [ ] Create visual reports
+
+### Phase 6: Command Line Interface
+- [ ] Update bin/audit.js argument parsing
+- [ ] Add --application flag
+- [ ] Add --unity-editor flag (keep existing)
+- [ ] Add --unity-project flag (keep existing)
+- [ ] Validate all paths before execution
+- [ ] Update help documentation
+
+### Phase 7: Documentation Updates
+- [ ] Update README.md with new requirements
+- [ ] Update INSTALLATION.md with all three requirements
+- [ ] Create QUICK-START.md for non-developers
+- [ ] Update docs/AUDITING-GUIDE.md
+- [ ] Update docs/PARTNER-ONBOARDING.md
+- [ ] Add troubleshooting section
+
+## CURRENT AUDIT RESULTS (SOURCE CODE ONLY)
+
+Application: apps.career-explorer
+Compliance Score: 0% (Non-Conformant)
+Scenes: 51
+Scripts: 758
+Findings: 58
+
+Critical Issues (3):
+1. No Keyboard Alternatives for Stylus Interactions (WCAG-2.1.1)
+2. No Depth Perception Alternatives (XAUR-UN17)
+3. No Assistive Technology API Implementation (WCAG-4.1.2)
+
+High Priority Issues (2): [Not detailed in output]
+Medium Priority Issues (52): Scene titles, navigation consistency
+Low Priority Issues (1): [Not detailed in output]
+
+## OPEN QUESTIONS
+
+1. **Scene Navigation Method:**
+   - How are scenes loaded in Career Explorer? (Menu? Automatic? API?)
+   - Can we programmatically trigger scene changes?
+   - DECISION: Use Unity Scene Loading API ✅
+
+2. **Screenshot Method:**
+   - Where should Unity capture from? (Game view? Scene view? zSpace output?)
+   - DECISION: Unity's built-in screenshot capture ✅
+
+3. **Application State:**
+   - Does .exe need command-line args to enable automation?
+   - How to detect when application is ready for commands?
+   - How to gracefully close application after audit?
+
+4. **Unity Editor Role:**
+   - Is Unity Editor used to BUILD the .exe only?
+   - Or does Unity Editor need to RUN alongside .exe?
+   - Clarification needed
+
+5. **zSpace Hardware:**
+   - Must audit run ON zSpace display?
+   - Can it run on regular monitor with zSpace emulation?
+   - Network access to remote zSpace machine?
+
+## NEXT STEPS
+
+### Immediate (Investigation Phase)
+1. Examine apps.career-explorer project structure
+2. Find scene loading implementation
+3. Check for existing screenshot capture code
+4. Review Unity scene list and dependencies
+5. Understand application architecture
+
+### Short-term (Prototyping)
+1. Create simple application launcher
+2. Test launching zSpaceCareerExplorer.exe from Node.js
+3. Create basic Unity scene navigator script
+4. Test screenshot capture in Unity
+5. Validate communication bridge concept
+
+### Medium-term (Integration)
+1. Integrate launcher with audit.js
+2. Connect scene navigator with screenshot capture
+3. Hook visual analysis to new screenshots
+4. Update all documentation
+5. Test end-to-end workflow
+
+### Long-term (Polish)
+1. Error handling and edge cases
+2. Performance optimization
+3. User feedback and iteration
+4. CI/CD integration testing
+5. Release v3.2.0 with new features
+
+## SUCCESS CRITERIA
+
+Audit command runs successfully and produces:
+- ✅ 51 scene screenshots from running application
+- ✅ Visual accessibility analysis (contrast, color-blind)
+- ✅ Code pattern analysis (existing)
+- ✅ Merged findings in VPAT reports
+- ✅ Compliance score based on visual + code analysis
+- ✅ Execution time under 20 minutes
+- ✅ No manual intervention required
+
+## DEPENDENCIES
+
+- Unity Scene Loading API documentation
+- Unity ScreenCapture API documentation
+- zSpace SDK documentation (if needed)
+- Windows process management (Node.js child_process)
+- File system monitoring (for communication bridge)
+
+## RISKS
+
+1. **Application Crashes:** .exe may crash during automation
+   - Mitigation: Process monitoring, retry logic, graceful failure
+
+2. **Scene Load Times:** Some scenes may take long to load
+   - Mitigation: Configurable timeouts per scene
+
+3. **zSpace Hardware Availability:** May not always have hardware access
+   - Mitigation: Fallback to source-code-only mode
+
+4. **Unity API Limitations:** Scene loading may not work as expected
+   - Mitigation: Research alternative methods (reflection, Unity APIs)
+
+5. **Communication Complexity:** Node.js <-> Unity bridge may be complex
+   - Mitigation: Start with simple file-based approach
+
+## PROJECT FILES TO INVESTIGATE
+
+Priority 1:
+- Assets/Scripts/SceneManagement/ (if exists)
+- Assets/Scripts/GameManager*.cs (common pattern)
+- ProjectSettings/EditorBuildSettings.asset (scene list)
+
+Priority 2:
+- Assets/Scenes/*.unity (all 51 scenes)
+- Any existing screenshot/capture scripts
+- Menu/navigation implementation
+
+Priority 3:
+- Build settings and configurations
+- Any automation or testing scripts
+- CI/CD integration (if exists)
+
+---
+
+## INVESTIGATION FINDINGS ✅ COMPLETE
+
+**Date:** October 28, 2025
+**Duration:** 45 minutes
+**Status:** Investigation Complete
+
+### Architecture Discovery
+
+#### 1. Scene System Architecture
+
+Career Explorer uses **TWO different scene systems**:
+
+**A. Unity Scene System (Standard)**
+- 13 scenes defined in EditorBuildSettings.asset
+- Uses Unity's `SceneManager.LoadSceneAsync()` API
+- Managed by `SceneLoader` singleton (Assets/Scripts/AppManagement/SceneLoader.cs)
+
+**B. Custom Scene System (zSpace CommonA3)**
+- Additional "scenes" managed as GameObject hierarchies
+- Managed by `zSpace.CommonA3.SceneManager` singleton
+- Scenes are enabled/disabled, not loaded/unloaded
+- Found in Assets/CommonA3/zSpace/Scripts/Scene/SceneManager.cs
+
+#### 2. Actual Build Scenes (13 total)
+
+From `ProjectSettings/EditorBuildSettings.asset`:
+
+**Initial & Navigation:**
+1. InitialLoading.unity
+2. LocationSelect.unity
+
+**Locations (5):**
+3. HealthcareCenter.unity
+4. Hotel.unity
+5. InnovationHub.unity
+6. SustainableFarm.unity
+7. VehicleServiceCenter.unity
+
+**Tasks (6):**
+8. WallFrameInstallation.unity
+9. WeldingRepair.unity
+10. AirFilter.unity
+11. RefrigeratorRepair.unity
+12. RoboticArm.unity
+13. Appendectomy.unity
+
+**Note:** The audit found "51 scenes" because it counted ALL .unity files in Assets/Scenes/, but only these 13 are actually built into the .exe.
+
+#### 3. Scene Navigation Implementation
+
+**File:** `Assets/Scripts/AppManagement/SceneLoader.cs`
+
+**Key APIs:**
+```csharp
+// Public interface
+SceneLoader.Instance.LoadScene(string sceneName)
+SceneLoader.Instance.LoadScene(SceneDefinition sceneDefinition)
+SceneLoader.Instance.GoToLocationSelect()
+SceneLoader.Instance.ReloadScene()
+
+// Internal implementation (line 144)
+SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single)
+```
+
+**Navigation Triggers:**
+- `NavigationObject` components (click handlers)
+- UI buttons calling SceneLoader methods
+- Menu systems
+
+**File:** `Assets/Scripts/LocationSelect/NavigationObject.cs`
+- Triggers scene loads on click: `SceneLoader.Instance.LoadScene(SceneDefinition)` (line 49)
+
+**File:** `Assets/Scripts/Locations/SceneDefinition.cs`
+- ScriptableObject defining scene metadata (name, type, ID)
+
+#### 4. Existing Screenshot System ✅
+
+**GOOD NEWS:** Career Explorer already has a thumbnail screenshot system!
+
+**File:** `Assets/CommonA3/zSpace/Scripts/Scene/SceneManager.cs` (lines 208-394)
+
+**Key Methods:**
+```csharp
+// Line 208: Create camera for thumbnails
+Camera CreateThumbnailCamera(string name, Vector3 pos, Quaternion rot, Vector3 scale)
+
+// Line 323: Queue thumbnail capture
+void takeThumbnail(Scene scene)
+
+// Line 339: Pre-render setup
+void onThumbnailCameraPreRender(Camera camera)
+
+// Line 377: Post-render cleanup
+void onThumbnailCameraPostRender(Camera camera)
+```
+
+**How it works:**
+1. Creates a Camera with RenderTexture (line 244)
+2. Temporarily activates scene GameObjects
+3. Renders to texture
+4. Saves to scene.ThumbnailTexture
+
+**Resolution:** ThumbnailWidth x ThumbnailHeight (defined in Scene class)
+
+#### 5. Camera Navigation System
+
+**File:** `Assets/RoomNavigation.cs`
+- Handles camera zoom in/out within scenes (ZFrame transitions)
+- Uses `zFrameTransitioner` for smooth camera movement
+- NOT scene loading, but camera positioning
+
+### Revised Technical Approach
+
+Based on findings, we need to implement **TWO integration methods**:
+
+#### Option A: Runtime DLL Injection (Complex but powerful)
+1. Launch zSpaceCareerExplorer.exe
+2. Inject C# automation DLL into running process
+3. Call SceneLoader.Instance.LoadScene() for each scene
+4. Hook existing thumbnail system or use ScreenCapture API
+5. Write screenshots to AccessibilityAudit folder
+6. Signal completion to Node.js
+
+**Pros:**
+- Direct control over running application
+- Can use existing screenshot system
+- No need to modify source code
+
+**Cons:**
+- Complex implementation (requires DLL injection)
+- May trigger anti-cheat/security systems
+- Harder to debug
+
+#### Option B: Build Automation Scene (Simpler, recommended)
+1. Add new scene to Unity project: "AccessibilityAutomation.unity"
+2. Create automation script that:
+   - Loads each scene from EditorBuildSettings
+   - Waits for load completion
+   - Captures screenshot using ScreenCapture.CaptureScreenshot()
+   - Saves metadata JSON
+   - Moves to next scene
+3. Build .exe with automation scene as first scene
+4. Node.js launches .exe with command-line flag: `-automation-mode`
+5. Automation scene runs, captures all screenshots, then exits
+6. Node.js detects completion and proceeds with analysis
+
+**Pros:**
+- Clean implementation using Unity's official APIs
+- Easy to debug in Unity Editor
+- No DLL injection required
+- Can reuse existing screenshot code
+
+**Cons:**
+- Requires adding automation scene to source project
+- Must rebuild .exe with automation enabled
+- Not suitable for pre-built applications
+
+#### Option C: External Control via Command-Line (Recommended for now)
+1. Modify Unity project to accept command-line arguments
+2. Add automation controller MonoBehaviour:
+   ```csharp
+   // Check for -automatedAudit flag on startup
+   if (CommandLineArgs.Contains("-automatedAudit"))
+   {
+       StartCoroutine(AutomatedScreenshotCapture());
+   }
+   ```
+3. Automation sequence:
+   - Read scene list from command-line or config file
+   - Load each scene sequentially
+   - Capture screenshot after load
+   - Write to specified output directory
+   - Exit when complete
+4. Node.js process:
+   - Launch with: `zSpaceCareerExplorer.exe -automatedAudit -outputDir "C:\..."`
+   - Monitor output directory for screenshots
+   - Detect completion (process exit or completion flag file)
+   - Proceed with visual analysis
+
+**Pros:**
+- Standard Unity command-line argument pattern
+- No DLL injection
+- Works with built .exe (after source modification)
+- Clean separation of concerns
+
+**Cons:**
+- Requires modifying Unity source code
+- Requires rebuilding .exe
+- User must use modified build for auditing
+
+### Implementation Recommendations
+
+#### Immediate Next Steps (Option C - Command-Line Control)
+
+1. **Create Unity Automation Script:**
+   - File: `Assets/Scripts/Accessibility/AccessibilityAuditor.cs`
+   - MonoBehaviour that checks for `-automatedAudit` flag
+   - Loads scenes from EditorBuildSettings
+   - Uses ScreenCapture.CaptureScreenshot()
+   - Writes completion marker file
+
+2. **Modify Application Startup:**
+   - Add AccessibilityAuditor to InitialLoading scene
+   - Parse command-line arguments on Awake()
+   - Bypass normal startup flow if in automation mode
+
+3. **Node.js Integration:**
+   - File: `bin/launch-application-automation.js`
+   - Launch .exe with flags
+   - Monitor screenshot directory
+   - Wait for completion marker
+   - Return control to audit.js
+
+4. **User Workflow:**
+   ```bash
+   # Step 1: User adds automation script to Unity project
+   # (One-time setup, documented in guide)
+
+   # Step 2: User rebuilds .exe with automation support
+
+   # Step 3: Run audit with automation
+   node bin/audit.js \
+     --application "C:\...\zSpaceCareerExplorer.exe" \
+     --capture-screenshots \
+     --analyze-visual
+   ```
+
+### Key Files Identified
+
+| File | Purpose | Line References |
+|------|---------|----------------|
+| `ProjectSettings/EditorBuildSettings.asset` | List of 13 scenes in build | Lines 8-46 |
+| `Assets/Scripts/AppManagement/SceneLoader.cs` | Scene loading singleton | Line 144 (LoadSceneAsync) |
+| `Assets/CommonA3/zSpace/Scripts/Scene/SceneManager.cs` | Custom scene system + thumbnail capture | Lines 208-394 |
+| `Assets/Scripts/Locations/SceneDefinition.cs` | Scene metadata | - |
+| `Assets/Scripts/LocationSelect/NavigationObject.cs` | Scene navigation triggers | Line 49 |
+| `Assets/RoomNavigation.cs` | Camera frame navigation | - |
+
+### Updated Open Questions
+
+1. **Unity Editor Role:** ✅ CLARIFIED
+   - Unity Editor NOT needed for running audit
+   - Only needed if rebuilding .exe with automation
+   - Can provide Unity Editor path for building step
+
+2. **Scene Count:** ✅ CLARIFIED
+   - 13 scenes in actual build (not 51)
+   - Audit should iterate through EditorBuildSettings, not all .unity files
+
+3. **Screenshot Method:** ✅ CLARIFIED
+   - Existing thumbnail system can be reused OR
+   - Use Unity's ScreenCapture.CaptureScreenshot()
+   - Resolution: 1920x1080 (configurable)
+
+4. **Application State:** ⚠️ STILL OPEN
+   - Does Career Explorer already support command-line args?
+   - Need to test: `zSpaceCareerExplorer.exe -help`
+   - May need to add arg parsing
+
+5. **zSpace Hardware:** ⚠️ STILL OPEN
+   - Can application run without zSpace hardware?
+   - Test with zSpace simulator/emulation
+   - May need special launch flags
+
+### Risks Identified
+
+1. **Build Requirement:**
+   - Users must rebuild .exe with automation script
+   - Adds complexity to setup
+   - Mitigation: Provide clear Unity project modification guide
+
+2. **Scene Load Order:**
+   - Some scenes may have dependencies on previous scenes
+   - May not load correctly in isolation
+   - Mitigation: Load LocationSelect first, then navigate properly
+
+3. **Initialization Requirements:**
+   - InitialLoading scene may perform critical setup
+   - Skipping may cause crashes
+   - Mitigation: Always load InitialLoading first, then proceed
+
+4. **zSpace SDK Dependencies:**
+   - Application may require zSpace hardware/SDK to run
+   - May crash without proper initialization
+   - Mitigation: Test with simulator, add error handling
+
+### Success Metrics
+
+- ✅ Identified actual scene count (13, not 51)
+- ✅ Found scene loading API (SceneLoader.LoadScene)
+- ✅ Discovered existing screenshot system
+- ✅ Mapped navigation architecture
+- ✅ Determined implementation approach (Option C)
+
+---
+
+## REVISED APPROACH: HYBRID OPTION D ✅ RECOMMENDED
+
+**Date:** October 28, 2025
+**Status:** Planning Complete - Ready for Phased Implementation
+
+### Why Options A-C Don't Meet Requirements
+
+After creating AccessibilityAuditor.cs (Option C), we realized a critical flaw:
+
+**Problem:** All previous options require Unity project modification and rebuilding the .exe:
+- **Option A (DLL Injection):** Complex, security issues
+- **Option B (Automation Scene):** Requires new scene + rebuild
+- **Option C (Command-Line Args):** Requires adding script + rebuild ❌
+
+**Why this is unacceptable:**
+1. ❌ Product Managers don't have Unity Editor or source code access
+2. ❌ Accessibility Teams can't rebuild applications
+3. ❌ Can't audit 3rd-party or already-deployed apps
+4. ❌ Too complex for non-developers
+
+**Target Users Cannot:**
+- Modify Unity source code
+- Rebuild .exe applications
+- Access Unity Editor
+
+**Target Users CAN:**
+- Access Unity project source code (read-only)
+- Run built .exe applications
+- Run Node.js commands
+
+### Hybrid Option D: Source Analysis + External Execution
+
+**Core Insight:** Combine what we can learn from source code with external application control.
+
+#### What We Extract From Unity Project Source (Read-Only)
+
+**Already Working (From Investigation):**
+1. ✅ **Scene List** - 13 scenes from EditorBuildSettings.asset
+2. ✅ **Scene Names & Build Indices** - Full scene manifest
+3. ✅ **Scene Loading API** - SceneLoader.Instance.LoadScene(sceneName)
+4. ✅ **Navigation Structure** - NavigationObject components
+5. ✅ **UI Element Hierarchy** - From .unity scene files
+6. ✅ **Scene Dependencies** - Load order, prerequisites
+
+**New Parsing Needed:**
+7. ⚠️ **Navigation Map** - Parse NavigationObject components to find:
+   - Which UI elements trigger scene loads
+   - Button positions and click targets
+   - Scene transition graph
+8. ⚠️ **UI Layout** - Parse Canvas/UI elements for:
+   - Button positions (world/screen coordinates)
+   - Clickable areas
+   - Navigation menu structure
+
+#### What We Control From External Process
+
+**External Application Control:**
+1. ⚠️ **Launch .exe** - Start application process
+2. ⚠️ **Window Capture** - Get application window handle
+3. ⚠️ **Input Simulation** - Send keyboard/mouse events
+4. ⚠️ **Screenshot Capture** - Windows API screen capture
+5. ⚠️ **Scene Detection** - OCR or pixel analysis to detect scene changes
+6. ⚠️ **Navigation Execution** - Click buttons based on parsed navigation map
+
+#### Complete Workflow
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ PHASE 1: Source Code Analysis (Read-Only)                  │
+├─────────────────────────────────────────────────────────────┤
+│ Input:  Unity project directory                             │
+│ Parse:  EditorBuildSettings.asset → 13 scenes              │
+│         NavigationObject.cs components → Click targets     │
+│         Scene files (.unity) → UI layout                    │
+│ Output: Navigation map (JSON)                               │
+│         {                                                    │
+│           "InitialLoading": { autoTransition: true },       │
+│           "LocationSelect": {                               │
+│             buttons: [                                       │
+│               { name: "Healthcare", scene: "HealthcareCenter", │
+│                 position: {x: 100, y: 200} }                │
+│             ]                                               │
+│           }                                                  │
+│         }                                                    │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ PHASE 2: Application Launch & Control                       │
+├─────────────────────────────────────────────────────────────┤
+│ 1. Launch .exe (no modifications)                           │
+│ 2. Detect main window handle                                │
+│ 3. Wait for initialization (InitialLoading scene)           │
+│ 4. Prepare screenshot directory                             │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ PHASE 3: Automated Navigation & Capture                     │
+├─────────────────────────────────────────────────────────────┤
+│ For each scene in navigation map:                           │
+│   1. Detect current scene (OCR scene title or pixel match)  │
+│   2. If target scene not reached:                           │
+│      a. Find navigation path in map                         │
+│      b. Simulate click on button                            │
+│      c. Wait for scene transition (detect loading)          │
+│   3. Once scene loaded:                                      │
+│      a. Wait for stabilization (2-3 seconds)                │
+│      b. Capture screenshot (Windows API)                    │
+│      c. Save with metadata                                   │
+│   4. Navigate to next scene                                  │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ PHASE 4: Visual Analysis (Existing)                         │
+├─────────────────────────────────────────────────────────────┤
+│ Input:  Screenshots from Phase 3                            │
+│ Run:    Contrast analysis, color-blind simulations         │
+│ Output: Visual accessibility findings                        │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│ PHASE 5: Merge & Report (Existing)                          │
+├─────────────────────────────────────────────────────────────┤
+│ Merge: Source code analysis + Visual analysis              │
+│ Generate: VPAT reports, recommendations, PDFs              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Technical Implementation Details
+
+#### Scene Navigation Parser (New)
+
+**File:** `bin/parse-navigation-map.js`
+
+**Purpose:** Parse Unity project to extract navigation structure
+
+**Input:**
+- Unity project path
+- EditorBuildSettings.asset (scene list)
+- Assets/Scripts/**/*NavigationObject*.cs (navigation triggers)
+- Assets/Scenes/**/*.unity (scene files with UI layout)
+
+**Output:**
+```json
+{
+  "scenes": [
+    {
+      "name": "LocationSelect",
+      "buildIndex": 1,
+      "navigableFrom": ["InitialLoading"],
+      "buttons": [
+        {
+          "name": "HealthcareButton",
+          "targetScene": "HealthcareCenter",
+          "position": { "x": 640, "y": 360 },
+          "clickMethod": "mouse"
+        }
+      ],
+      "autoTransition": false
+    }
+  ],
+  "navigationGraph": {
+    "InitialLoading": ["LocationSelect"],
+    "LocationSelect": ["HealthcareCenter", "Hotel", "InnovationHub", "SustainableFarm", "VehicleServiceCenter"],
+    "HealthcareCenter": ["WallFrameInstallation", "WeldingRepair"],
+    ...
+  }
+}
+```
+
+**Parsing Strategy:**
+1. Read EditorBuildSettings.asset (YAML) → scene list
+2. Glob for NavigationObject components: `**/*Navigation*.cs`
+3. Parse each .unity scene file (YAML) to find NavigationObject instances
+4. Extract SceneDefinition references → target scenes
+5. Parse UI element positions (RectTransform, GameObject positions)
+6. Build navigation graph (BFS from InitialLoading)
+
+#### External Application Controller (New)
+
+**File:** `bin/external-app-controller.js`
+
+**Dependencies:**
+- `robotjs` - Mouse/keyboard simulation
+- `screenshot-desktop` - Screen capture
+- `active-win` - Window detection
+- `tesseract.js` - OCR for scene detection
+
+**Key Functions:**
+
+```javascript
+// Launch application
+async function launchApplication(exePath) {
+  const process = spawn(exePath);
+  await waitForWindow("Career Explorer"); // Poll for window
+  return { process, windowHandle };
+}
+
+// Capture screenshot of application window
+async function captureWindow(windowHandle, outputPath) {
+  const screenshot = await screenshotDesktop({ screen: windowHandle });
+  await sharp(screenshot).toFile(outputPath);
+}
+
+// Simulate click at position
+async function clickAt(x, y) {
+  robot.moveMouse(x, y);
+  robot.mouseClick();
+  await sleep(500);
+}
+
+// Detect current scene via OCR
+async function detectScene(screenshotPath) {
+  const text = await tesseract.recognize(screenshotPath);
+  // Match against known scene names
+  return matchedSceneName;
+}
+
+// Navigate to target scene
+async function navigateToScene(currentScene, targetScene, navigationMap) {
+  const path = findPath(currentScene, targetScene, navigationMap);
+  for (const step of path) {
+    const button = navigationMap.scenes[step.from].buttons
+      .find(b => b.targetScene === step.to);
+    await clickAt(button.position.x, button.position.y);
+    await waitForSceneLoad(step.to);
+  }
+}
+```
+
+#### Screenshot Capture Manager (Enhanced)
+
+**File:** `bin/capture-screenshots-external.js`
+
+**Purpose:** Orchestrate external screenshot capture
+
+**Flow:**
+1. Parse navigation map from Unity project
+2. Launch application
+3. For each scene in map:
+   - Navigate to scene (using navigation map)
+   - Wait for scene load
+   - Capture screenshot
+   - Save metadata
+4. Close application
+5. Return screenshot paths
+
+### Phased Implementation Plan
+
+#### PHASE 1: Navigation Map Parser ✅ COMPLETE
+
+**Date Completed:** October 29, 2025
+**Status:** Successfully implemented and tested
+**Actual Time:** 2.5 hours
+
+**Goal:** Extract navigation structure from Unity project source code
+
+**Tasks:**
+- [✅] Create bin/parse-navigation-map.js
+- [✅] Parse EditorBuildSettings.asset (YAML) → scene list
+- [✅] Find NavigationObject components in project
+- [✅] Parse .unity scene files to extract UI positions
+- [✅] Build navigation graph
+- [✅] Output navigation-map.json
+- [✅] Test with Career Explorer project
+
+**Input:**
+```bash
+node bin/parse-navigation-map.js "C:\Users\Jill\OneDrive\Documents\GitHub\apps.career-explorer"
+```
+
+**Output:**
+```
+C:\Users\Jill\OneDrive\Documents\GitHub\apps.career-explorer\AccessibilityAudit\navigation-map.json
+```
+
+**Success Criteria:**
+- ✅ Identifies all 13 scenes from EditorBuildSettings.asset
+- ✅ Finds navigation buttons in LocationSelect scene (5 buttons found)
+- ✅ Maps scene transitions (navigation graph)
+- ✅ Extracts approximate button positions (where available)
+
+**Implementation Details:**
+
+**File Created:** `bin/parse-navigation-map.js` (500+ lines)
+
+**Key Features:**
+1. **EditorBuildSettings Parser**
+   - Parses Unity YAML format with custom tag handling
+   - Extracts all 13 scenes with paths and GUIDs
+
+2. **GUID Resolution System**
+   - Builds map of 6152 asset GUIDs to file paths
+   - Resolves SceneDefinition references via GUID lookup
+
+3. **Unity Scene File Parser**
+   - Custom YAML parser handling Unity `!u!` tags
+   - Extracts MonoBehaviour components
+   - Finds NavigationObject components by script GUID
+
+4. **NavigationObject Detection**
+   - Locates NavigationObject script: `aee13a4926e23d44bb340756a06ec6d7`
+   - Parses 13 scene files for NavigationObject instances
+   - Extracts SceneDefinition references and target scenes
+
+5. **Prefab Support**
+   - Scans known prefab directories for NavigationObjects
+   - Found 4 navigation prefabs in `Assets/Prefabs/map/Prefabs/BuildingsMain/`
+   - Maps prefab-based navigation (used in LocationSelect)
+
+6. **Transform Position Extraction**
+   - Parses Transform and RectTransform components
+   - Extracts 3D positions and UI anchored positions
+
+**Results:**
+
+**Navigation Map Statistics:**
+- Total scenes: 13
+- Scenes with navigation: 5
+- Total navigation buttons: 9
+
+**Navigation Structure Discovered:**
+
+1. **LocationSelect → 5 Locations**
+   - HealthcareCenter (scene-based NavigationObject)
+   - Hotel (prefab-based)
+   - InnovationHub (prefab-based)
+   - SustainableFarm (prefab-based)
+   - VehicleServiceCenter (prefab-based)
+
+2. **Location Scenes**
+   - Each has corresponding prefab navigation back to itself
+   - Likely used for in-scene navigation elements
+
+3. **Task Scenes**
+   - No NavigationObjects detected in task scenes
+   - Suggests different navigation mechanism (programmatic?)
+
+**Output File:** `AccessibilityAudit/navigation-map.json`
+```json
+{
+  "projectPath": "C:/Users/Jill/OneDrive/Documents/GitHub/apps.career-explorer",
+  "generatedAt": "2025-10-29T02:46:20.624Z",
+  "statistics": {
+    "totalScenes": 13,
+    "scenesWithNavigation": 5,
+    "totalNavigationButtons": 9
+  },
+  "scenes": {
+    "LocationSelect": {
+      "scenePath": "Assets/Scenes/LocationSelect.unity",
+      "enabled": true,
+      "navigationButtons": [
+        {
+          "targetScene": "HealthcareCenter",
+          "position": null,
+          "allowNavigation": true,
+          "source": "scene"
+        },
+        {
+          "targetScene": "Hotel",
+          "position": null,
+          "allowNavigation": true,
+          "source": "prefab",
+          "prefabPath": "Assets/Prefabs/map/Prefabs/BuildingsMain/Hotel.prefab"
+        },
+        // ... 3 more prefab-based buttons
+      ]
+    }
+    // ... other scenes
+  }
+}
+```
+
+**Technical Challenges Solved:**
+
+1. **Unity YAML Tag Handling**
+   - Problem: Standard YAML parser throws errors on Unity's `!u!114` tags
+   - Solution: Custom preprocessing to strip tags before parsing
+
+2. **Large Scene Files**
+   - Problem: Hotel.unity is 61MB, causes parsing delays
+   - Solution: Optimized YAML splitting and streaming
+
+3. **Prefab Scanning Performance**
+   - Problem: Full project scan was too slow (1000s of prefabs)
+   - Solution: Hardcoded known navigation prefab paths for now
+
+4. **GUID Resolution**
+   - Problem: SceneDefinition assets referenced by GUID only
+   - Solution: Build comprehensive GUID→path map at startup
+
+**Known Limitations:**
+
+1. **Position Accuracy**
+   - Transform positions extracted but may not be screen coordinates
+   - Need calibration or runtime position detection
+
+2. **Task Scene Navigation**
+   - No NavigationObjects found in task scenes
+   - Need to investigate alternative navigation (programmatic loading?)
+
+3. **Prefab Hardcoding**
+   - Currently uses hardcoded list of 4 known navigation prefabs
+   - Should auto-discover in future iteration
+
+4. **Scene Transition Logic**
+   - Doesn't detect auto-transitions (e.g., InitialLoading → LocationSelect)
+   - Need to add scene flow analysis
+
+**Next Steps for Phase 2:**
+- Use this navigation map to guide external click automation
+- May need OCR or visual detection since button positions are null
+- Consider alternative: Use keyboard navigation if available
+
+---
+
+#### PHASE 2: External Application Controller ⚠️ PENDING
+
+**Goal:** Launch .exe and control via external automation
+
+**Tasks:**
+- [ ] Create bin/external-app-controller.js
+- [ ] Install dependencies (robotjs, screenshot-desktop, active-win)
+- [ ] Implement launchApplication()
+- [ ] Implement captureWindow()
+- [ ] Implement clickAt()
+- [ ] Implement detectScene() with OCR
+- [ ] Test with Career Explorer .exe
+
+**Input:**
+```javascript
+const controller = new ExternalAppController();
+await controller.launch("C:\\Program Files\\zSpace\\Career Explorer\\zSpaceCareerExplorer.exe");
+await controller.captureWindow("screenshot.png");
+await controller.clickAt(640, 360);
+```
+
+**Success Criteria:**
+- ✅ Can launch Career Explorer
+- ✅ Can detect window handle
+- ✅ Can capture screenshots
+- ✅ Can simulate mouse clicks
+- ✅ Can detect scene via OCR
+
+**Estimated Time:** 3-4 hours
+
+---
+
+#### PHASE 3: Navigation Automation ⚠️ PENDING
+
+**Goal:** Automatically navigate through all scenes and capture screenshots
+
+**Tasks:**
+- [ ] Create bin/navigate-and-capture.js
+- [ ] Load navigation map from Phase 1
+- [ ] Implement scene detection logic
+- [ ] Implement path finding (BFS/DFS through navigation graph)
+- [ ] Integrate with external controller from Phase 2
+- [ ] Add retry logic for failed navigation
+- [ ] Test full sequence with Career Explorer
+
+**Input:**
+```bash
+node bin/navigate-and-capture.js \
+  --navigation-map "AccessibilityAudit/navigation-map.json" \
+  --application "C:\Program Files\zSpace\Career Explorer\zSpaceCareerExplorer.exe" \
+  --output-dir "AccessibilityAudit/screenshots"
+```
+
+**Output:**
+- 13 screenshots (one per scene)
+- metadata.json with capture info
+
+**Success Criteria:**
+- ✅ Navigates to all 13 scenes
+- ✅ Captures screenshot of each scene
+- ✅ Handles navigation errors gracefully
+- ✅ Completes in < 10 minutes
+
+**Estimated Time:** 4-5 hours
+
+---
+
+#### PHASE 4: Integration with Audit Pipeline ⚠️ PENDING
+
+**Goal:** Integrate external capture into main audit.js workflow
+
+**Tasks:**
+- [ ] Update bin/audit.js to detect if Unity project has navigation map
+- [ ] Add logic to choose between Unity batch mode vs external capture
+- [ ] If navigation map exists → use external capture
+- [ ] Pass screenshots to existing visual analysis
+- [ ] Merge findings into existing reports
+- [ ] Test end-to-end workflow
+
+**Input:**
+```bash
+node bin/audit.js \
+  --unity-project "C:\Users\Jill\OneDrive\Documents\GitHub\apps.career-explorer" \
+  --application "C:\Program Files\zSpace\Career Explorer\zSpaceCareerExplorer.exe" \
+  --full --capture-screenshots --analyze-visual --verbose
+```
+
+**Success Criteria:**
+- ✅ Automatically parses navigation map
+- ✅ Uses external capture for screenshots
+- ✅ Visual analysis works with external screenshots
+- ✅ Final reports include all findings
+- ✅ No manual intervention required
+
+**Estimated Time:** 2-3 hours
+
+---
+
+#### PHASE 5: Documentation & Testing ⚠️ IN PROGRESS
+
+**Goal:** Document new approach and test with Career Explorer
+
+**Date Started:** October 28, 2025
+
+**Tasks:**
+- [✅] Update README.md with new requirements
+  - Updated version to 3.4.0-phase4
+  - Added external capture method documentation
+  - Updated audit command options
+  - Added --application flag examples
+- [✅] Create EXTERNAL-CAPTURE-GUIDE.md
+  - Comprehensive guide for non-developers (100+ sections)
+  - Step-by-step setup instructions
+  - Real-world Career Explorer example
+  - Troubleshooting section
+  - FAQ section
+- [✅] Update INSTALLATION.md
+  - Added "Installation Path 1: Auditing Tool" section
+  - Distinguished between Unity components and auditing tool
+  - Added role-based installation guidance
+  - Updated version to 3.0
+- [✅] Remove AccessibilityAuditor.cs requirement from docs
+  - Verified no user-facing docs require AccessibilityAuditor.cs
+  - External capture approach eliminates this requirement
+- [✅] Update plan_1028.txt with results
+  - Updated implementation status (4 of 5 complete)
+  - Marked Phase 5 tasks as completed
+- [ ] Test full workflow with Career Explorer (Next)
+- [ ] Create video demo (optional)
+
+**Success Criteria:**
+- ✅ Documentation is clear for non-developers (EXTERNAL-CAPTURE-GUIDE.md)
+- ⏳ Full audit runs successfully (testing next)
+- ⏳ All 13 scenes captured (testing next)
+- ⏳ Visual analysis completes (testing next)
+- ⏳ Reports generated (testing next)
+
+**Estimated Time:** 2-3 hours (1.5 hours spent on documentation)
+
+---
+
+### Total Timeline
+
+**Development:** 13-18 hours (spread over 2-3 days)
+**Testing:** 4-6 hours
+**Documentation:** 2-3 hours
+**Total:** ~20-27 hours
+
+### Risk Mitigation
+
+**Risk 1: Scene Detection Fails (OCR inaccurate)**
+- Mitigation: Use pixel-based scene detection (compare screenshots)
+- Fallback: Manual navigation hints in config file
+
+**Risk 2: Button Positions Wrong (UI parsing inaccurate)**
+- Mitigation: Add calibration mode where user confirms button positions
+- Fallback: Manual position override in navigation map
+
+**Risk 3: Application Crashes During Navigation**
+- Mitigation: Process monitoring, automatic restart
+- Fallback: Save progress, resume from last successful scene
+
+**Risk 4: zSpace Hardware Required**
+- Mitigation: Test if app runs without hardware
+- Fallback: Document hardware requirement clearly
+
+**Risk 5: Window Focus Issues (clicks miss target)**
+- Mitigation: Ensure window is foreground, add focus checks
+- Fallback: Increase click retry attempts
+
+### Success Metrics
+
+**Phase 1 Complete When:**
+- ✅ navigation-map.json generated for Career Explorer
+- ✅ All 13 scenes identified
+- ✅ Navigation buttons located
+
+**Phase 2 Complete When:**
+- ✅ Can launch Career Explorer from Node.js
+- ✅ Can capture window screenshots
+- ✅ Can simulate clicks
+
+**Phase 3 Complete When:**
+- ✅ Full automation navigates through all 13 scenes
+- ✅ All screenshots captured successfully
+
+**Phase 4 Complete When:**
+- ✅ audit.js runs end-to-end with external capture
+- ✅ Reports generated with visual findings
+
+**Phase 5 Complete When:**
+- ✅ Documentation complete and tested
+- ✅ User can run audit without our help
+
+### Updated Requirements
+
+**What Users Need:**
+1. ✅ Node.js 18+ (runtime environment)
+2. ✅ npm (comes with Node.js)
+3. ✅ Unity project source code (read-only access)
+4. ✅ Built application (.exe file)
+5. ✅ zSpace hardware (for running application)
+6. ❌ Unity Editor NOT required
+7. ❌ Unity rebuild NOT required
+8. ❌ Source code modification NOT required
+
+**What Users CAN Do:**
+- ✅ Read Unity project files
+- ✅ Run built .exe applications
+- ✅ Run Node.js commands
+- ✅ Install npm packages
+
+**What Users CANNOT Do:**
+- ❌ Modify Unity source code
+- ❌ Rebuild applications
+- ❌ Access Unity Editor
+
+---
+
+**Status:** Planning Complete - Hybrid Option D Approved ✅
+**Next Action:** Implement Phase 1 (Navigation Map Parser)
+**Next Prompt:** "Let's begin Phase 1: Create the navigation map parser"
+**Estimated Phase 1 Duration:** 2-3 hours

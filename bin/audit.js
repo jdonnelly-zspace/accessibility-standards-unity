@@ -10,24 +10,42 @@
  *   node bin/audit.js <unity-project-path> [options]
  *
  * Options:
- *   --output-dir <dir>   Output directory for audit reports (default: <project>/AccessibilityAudit)
- *   --format <format>    Output format: markdown (default), json, both
- *   --verbose            Enable verbose logging
- *   --stakeholder-docs   Generate stakeholder communication templates (Quick Reference, Public Statement, FAQ)
+ *   --output-dir <dir>         Output directory for audit reports (default: <project>/AccessibilityAudit)
+ *   --format <format>          Output format: markdown (default), json, both
+ *   --capture-screenshots      Capture scene screenshots before analysis
+ *   --unity-path <path>        Path to Unity executable (for screenshot capture)
+ *   --application <path>       Path to built application .exe (for external capture)
+ *   --verbose                  Enable verbose logging
+ *   --stakeholder-docs         Generate stakeholder communication templates
+ *   --baseline                 Create/update baseline for compliance tracking
+ *   --track-compliance         Save audit snapshot to compliance-history/
+ *   --fail-on-regression       Exit with code 1 if regressions detected
+ *   --export-pdf               Export VPAT report to PDF
+ *   --export-csv               Export findings to CSV
+ *   --create-issues <platform> Create issues on github or jira
+ *   --generate-fixes           Generate C# code fixes for accessibility issues
  *
  * Output:
  *   AccessibilityAudit/
  *   ├── README.md
  *   ├── AUDIT-SUMMARY.md
  *   ├── VPAT-apps-<name>.md
- *   └── ACCESSIBILITY-RECOMMENDATIONS.md
+ *   ├── ACCESSIBILITY-RECOMMENDATIONS.md
+ *   └── screenshots/           (if --capture-screenshots is used)
+ *       ├── SceneName/
+ *       │   ├── SceneName_main.png
+ *       │   ├── SceneName_thumbnail.png
+ *       │   └── metadata.json
  */
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
+import { execSync } from 'child_process';
 import { UnityProjectAnalyzer } from './analyze-unity-project.js';
+import { captureScreenshots } from './capture-screenshots.js';
+import { ComplianceTracker } from './compliance-tracker.js';
+import { NavigationAutomation } from './navigate-and-capture.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,7 +54,7 @@ const __dirname = path.dirname(__filename);
 // CONFIGURATION
 // ============================================================================
 
-const VERSION = '3.0.0';
+const VERSION = '3.4.0-phase4';
 const FRAMEWORK_NAME = 'accessibility-standards-unity';
 
 // ============================================================================
@@ -49,7 +67,20 @@ class AccessibilityAuditor {
     this.options = {
       outputDir: options.outputDir || path.join(this.projectPath, 'AccessibilityAudit'),
       format: options.format || 'markdown',
-      verbose: options.verbose || false
+      verbose: options.verbose || false,
+      captureScreenshots: options.captureScreenshots || false,
+      unityPath: options.unityPath || null,
+      application: options.application || null, // Path to built .exe for external capture
+      baseline: options.baseline || false,
+      trackCompliance: options.trackCompliance || false,
+      failOnRegression: options.failOnRegression || false,
+      exportPDF: options.exportPDF || false,
+      exportCSV: options.exportCSV || false,
+      createIssues: options.createIssues || null,
+      template: options.template || null,
+      config: options.config || path.join(__dirname, '..', 'config', 'export-config.json'),
+      generateFixes: options.generateFixes || false,
+      generateStakeholderDocs: options.generateStakeholderDocs || false
     };
     this.analysisReport = null;
     this.appName = path.basename(this.projectPath);
@@ -61,7 +92,7 @@ class AccessibilityAuditor {
   async run() {
     console.log('╔═══════════════════════════════════════════════════════════╗');
     console.log('║  zSpace Unity Accessibility Auditor                      ║');
-    console.log(`║  Version ${VERSION}                                          ║`);
+    console.log(`║  Version ${VERSION}                                   ║`);
     console.log('╚═══════════════════════════════════════════════════════════╝\n');
 
     this.log(`Auditing: ${this.appName}`);
@@ -69,35 +100,56 @@ class AccessibilityAuditor {
     this.log(`Output: ${this.options.outputDir}\n`);
 
     try {
+      // Step 0: Capture screenshots (if enabled)
+      if (this.options.captureScreenshots) {
+        await this.captureSceneScreenshots();
+      }
+
       // Step 1: Analyze Unity project
       await this.analyzeProject();
 
       // Step 2: Create output directory
       await this.createOutputDirectory();
 
-      // Step 3: Run Quick Wins automation (if enabled)
-      if (this.options.runQuickWins) {
-        await this.runQuickWinsAutomation();
-      }
-
-      // Step 3.5: Run Visual Analysis (if enabled)
-      if (this.options.captureScreenshots) {
-        await this.runVisualAnalysis();
-      }
-
-      // Step 4: Generate reports
+      // Step 3: Generate reports
       await this.generateReports();
 
-      // Step 4.5: Generate stakeholder documentation (if requested)
+      // Step 4: Generate stakeholder documentation (if requested)
       if (this.options.generateStakeholderDocs) {
         await this.generateStakeholderDocumentation();
       }
 
-      // Step 5: Display summary
+      // Step 4.5: Display summary
       this.displaySummary();
+
+      // Step 5: Export reports (Phase 3.4)
+      if (this.options.exportPDF || this.options.exportCSV || this.options.createIssues) {
+        await this.handleExports();
+      }
+
+      // Step 6: Generate fixes (Phase 3.5)
+      if (this.options.generateFixes) {
+        await this.handleFixGeneration();
+      }
+
+      // Step 7: Compliance tracking (Phase 3.2)
+      let regressionCheck = null;
+      if (this.options.baseline || this.options.trackCompliance || this.options.failOnRegression) {
+        regressionCheck = await this.handleComplianceTracking();
+      }
 
       console.log('\n✅ Audit complete!');
       console.log(`📁 Reports saved to: ${this.options.outputDir}\n`);
+
+      // Handle CI/CD exit codes
+      if (this.options.failOnRegression && regressionCheck) {
+        const tracker = new ComplianceTracker(this.projectPath);
+        const exitCode = tracker.getExitCode(regressionCheck);
+        if (exitCode !== 0) {
+          console.log(`\n⚠️  Exiting with code ${exitCode} due to regressions`);
+          process.exit(exitCode);
+        }
+      }
 
     } catch (error) {
       console.error('\n❌ Audit failed:', error.message);
@@ -105,6 +157,275 @@ class AccessibilityAuditor {
         console.error(error.stack);
       }
       process.exit(1);
+    }
+  }
+
+  /**
+   * Handle report exports (Phase 3.4)
+   */
+  async handleExports() {
+    console.log('\n📤 Step 5: Exporting reports...\n');
+
+    // Export to PDF
+    if (this.options.exportPDF) {
+      try {
+        const vpatPath = path.join(this.options.outputDir, `VPAT-${this.appName}.md`);
+        const pdfPath = path.join(this.options.outputDir, 'exports', `VPAT-${this.appName}.pdf`);
+
+        // Ensure exports directory exists
+        const exportsDir = path.join(this.options.outputDir, 'exports');
+        if (!fs.existsSync(exportsDir)) {
+          fs.mkdirSync(exportsDir, { recursive: true });
+        }
+
+        const exportPDFPath = path.join(__dirname, 'export-pdf.js');
+        const configArg = this.options.config ? `--config "${this.options.config}"` : '';
+
+        console.log('   📄 Generating PDF...');
+        execSync(`node "${exportPDFPath}" "${vpatPath}" --output "${pdfPath}" ${configArg}`, {
+          stdio: this.options.verbose ? 'inherit' : 'pipe'
+        });
+
+        this.log('   ✅ PDF exported successfully');
+      } catch (error) {
+        console.warn('   ⚠️  PDF export failed:', error.message);
+      }
+    }
+
+    // Export to CSV
+    if (this.options.exportCSV) {
+      try {
+        const jsonPath = path.join(this.options.outputDir, 'accessibility-analysis.json');
+        const csvPath = path.join(this.options.outputDir, 'exports', 'findings.csv');
+
+        const exportCSVPath = path.join(__dirname, 'export-csv.js');
+
+        console.log('   📊 Generating CSV...');
+        execSync(`node "${exportCSVPath}" "${jsonPath}" --output "${csvPath}"`, {
+          stdio: this.options.verbose ? 'inherit' : 'pipe'
+        });
+
+        this.log('   ✅ CSV exported successfully');
+      } catch (error) {
+        console.warn('   ⚠️  CSV export failed:', error.message);
+      }
+    }
+
+    // Create issues
+    if (this.options.createIssues) {
+      try {
+        const jsonPath = path.join(this.options.outputDir, 'accessibility-analysis.json');
+        const platform = this.options.createIssues.toLowerCase();
+
+        if (platform !== 'github' && platform !== 'jira') {
+          throw new Error(`Unknown platform: ${platform}. Use 'github' or 'jira'`);
+        }
+
+        if (!this.options.config || !fs.existsSync(this.options.config)) {
+          throw new Error('Config file required for issue creation. Use --config <path>');
+        }
+
+        const generateIssuesPath = path.join(__dirname, 'generate-issues.js');
+
+        console.log(`   🐛 Creating ${platform} issues...`);
+        execSync(`node "${generateIssuesPath}" "${jsonPath}" --platform ${platform} --config "${this.options.config}" --min-severity High`, {
+          stdio: this.options.verbose ? 'inherit' : 'pipe'
+        });
+
+        this.log(`   ✅ ${platform} issues created successfully`);
+      } catch (error) {
+        console.warn('   ⚠️  Issue creation failed:', error.message);
+      }
+    }
+
+    console.log();
+  }
+
+  /**
+   * Handle fix generation (Phase 3.5)
+   */
+  async handleFixGeneration() {
+    console.log('\n🔧 Step 6: Generating accessibility fixes...\n');
+
+    try {
+      const jsonPath = path.join(this.options.outputDir, 'accessibility-analysis.json');
+      const generateFixesPath = path.join(__dirname, 'generate-fixes.js');
+
+      console.log('   🔨 Analyzing findings and generating fixes...');
+      execSync(`node "${generateFixesPath}" "${jsonPath}" --project "${this.projectPath}"`, {
+        stdio: this.options.verbose ? 'inherit' : 'pipe'
+      });
+
+      this.log('   ✅ Fixes generated successfully');
+      this.log(`   📁 Generated code saved to: ${this.options.outputDir}/generated-fixes/`);
+    } catch (error) {
+      console.warn('   ⚠️  Fix generation failed:', error.message);
+      if (this.options.verbose) {
+        console.error(error.stack);
+      }
+    }
+
+    console.log();
+  }
+
+  /**
+   * Handle compliance tracking (Phase 3.2)
+   */
+  async handleComplianceTracking() {
+    console.log('\n📊 Step 7: Compliance Tracking...\n');
+
+    const tracker = new ComplianceTracker(this.projectPath, {
+      failOnHighIssues: this.options.failOnRegression
+    });
+
+    // Create or update baseline
+    if (this.options.baseline) {
+      tracker.createBaseline(this.analysisReport);
+    }
+
+    // Save snapshot for historical tracking
+    if (this.options.trackCompliance && !this.options.baseline) {
+      tracker.saveSnapshot(this.analysisReport);
+    }
+
+    // Check for regressions
+    let regressionCheck = null;
+    if (this.options.failOnRegression) {
+      regressionCheck = tracker.checkRegression(this.analysisReport);
+    }
+
+    return regressionCheck;
+  }
+
+  /**
+   * Check if navigation map exists for external capture
+   */
+  detectNavigationMap() {
+    const navigationMapPath = path.join(this.options.outputDir, 'navigation-map.json');
+
+    if (fs.existsSync(navigationMapPath)) {
+      this.log(`✅ Navigation map detected: ${navigationMapPath}`);
+      return navigationMapPath;
+    }
+
+    this.log('ℹ️  No navigation map found (external capture not available)');
+    return null;
+  }
+
+  /**
+   * Step 0: Capture scene screenshots
+   * Automatically chooses between external capture (if navigation map exists)
+   * or Unity batch mode (traditional method)
+   */
+  async captureSceneScreenshots() {
+    console.log('📸 Step 0: Capturing scene screenshots...\n');
+
+    // Check if navigation map exists
+    const navigationMapPath = this.detectNavigationMap();
+    const useExternalCapture = navigationMapPath && this.options.application;
+
+    if (useExternalCapture) {
+      // Phase 4: Use external navigation and capture
+      console.log('🚀 Using external capture method (navigation map detected)\n');
+
+      try {
+        await this.captureScreenshotsExternal(navigationMapPath);
+        this.log('\n✅ External screenshot capture complete\n');
+        return;
+      } catch (error) {
+        console.warn('\n⚠️  External capture failed:', error.message);
+
+        // Fallback to Unity batch mode if available
+        if (this.options.unityPath) {
+          console.warn('   Falling back to Unity batch mode...\n');
+        } else {
+          console.warn('   Continuing with audit without screenshots...\n');
+          return;
+        }
+      }
+    } else {
+      // Log why external capture is not used
+      if (!navigationMapPath) {
+        this.log('ℹ️  Navigation map not found, using Unity batch mode');
+      } else if (!this.options.application) {
+        this.log('ℹ️  Application path not provided (use --application), using Unity batch mode');
+      }
+    }
+
+    // Traditional Unity batch mode capture
+    console.log('🎮 Using Unity batch mode capture\n');
+
+    const screenshotConfig = {
+      projectPath: this.projectPath,
+      unityPath: this.options.unityPath,
+      outputDir: path.join(this.options.outputDir, 'screenshots'),
+      width: 1920,
+      height: 1080,
+      thumbWidth: 320,
+      thumbHeight: 180,
+      logFile: path.join(this.options.outputDir, 'screenshot-capture.log'),
+      verbose: this.options.verbose
+    };
+
+    try {
+      await captureScreenshots(screenshotConfig);
+      this.log('\n✅ Screenshot capture complete\n');
+    } catch (error) {
+      console.warn('\n⚠️  Screenshot capture failed:', error.message);
+      console.warn('   Continuing with audit without screenshots...\n');
+    }
+  }
+
+  /**
+   * Capture screenshots using external navigation automation (Phase 4)
+   */
+  async captureScreenshotsExternal(navigationMapPath) {
+    this.log('Initializing external navigation automation...');
+
+    const automation = new NavigationAutomation({
+      outputDir: path.join(this.options.outputDir, 'screenshots'),
+      verbose: this.options.verbose
+    });
+
+    try {
+      // Run the navigation automation
+      const report = await automation.run(this.options.application, navigationMapPath);
+
+      // Log summary
+      console.log(`\n✅ External capture complete:`);
+      console.log(`   Visited scenes: ${report.summary.visitedScenes} / ${report.summary.totalScenes}`);
+      console.log(`   Screenshots: ${report.summary.screenshotsCaptured}`);
+      console.log(`   Failed navigations: ${report.summary.failedNavigations}`);
+      console.log(`   Completion rate: ${report.summary.completionRate}`);
+
+      // Close the application
+      await automation.controller.closeApplication();
+
+      // Terminate OCR worker
+      if (automation.tesseractWorker) {
+        await automation.tesseractWorker.terminate();
+      }
+
+      return report;
+    } catch (error) {
+      // Clean up on error
+      if (automation.controller) {
+        try {
+          await automation.controller.closeApplication();
+        } catch (cleanupError) {
+          this.log(`Warning: Failed to close application: ${cleanupError.message}`);
+        }
+      }
+
+      if (automation.tesseractWorker) {
+        try {
+          await automation.tesseractWorker.terminate();
+        } catch (cleanupError) {
+          this.log(`Warning: Failed to terminate OCR worker: ${cleanupError.message}`);
+        }
+      }
+
+      throw error;
     }
   }
 
@@ -362,10 +683,23 @@ class AccessibilityAuditor {
       output = output.replace(regex, variables[key]);
     });
 
-    // Conditional sections: {{#if VARIABLE}}content{{/if}}
-    output = output.replace(/{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g, (match, varName, content) => {
-      return variables[varName] ? content : '';
-    });
+    // Conditional sections: {{#if VARIABLE}}content{{else}}alternative{{/if}}
+    // Process nested conditionals by running multiple passes until no more matches
+    // Use a more robust approach that matches balanced pairs
+    let maxIterations = 10; // Prevent infinite loops
+    let iteration = 0;
+    while (iteration < maxIterations && /{{#if\s+\w+}}/.test(output)) {
+      let changed = false;
+
+      // Find and process the innermost {{#if}} first
+      output = output.replace(/{{#if\s+(\w+)}}((?:(?!{{#if)[\s\S])*?)(?:{{else}}((?:(?!{{#if)[\s\S])*?))?{{\/if}}/g, (match, varName, ifContent, elseContent = '') => {
+        changed = true;
+        return variables[varName] ? ifContent : elseContent;
+      });
+
+      if (!changed) break; // No more replacements made
+      iteration++;
+    }
 
     // Loop sections: {{#each ARRAY}}content{{/each}}
     output = output.replace(/{{#each\s+(\w+)}}([\s\S]*?){{\/each}}/g, (match, arrayName, itemTemplate) => {
@@ -393,6 +727,23 @@ class AccessibilityAuditor {
    */
   prepareTemplateVariables() {
     const report = this.analysisReport;
+
+    // Check for screenshots
+    const screenshotsDir = path.join(this.options.outputDir, 'screenshots');
+    const screenshotsCaptured = fs.existsSync(screenshotsDir);
+    let screenshotsCount = 0;
+
+    if (screenshotsCaptured) {
+      try {
+        const sceneDirs = fs.readdirSync(screenshotsDir).filter(item => {
+          const itemPath = path.join(screenshotsDir, item);
+          return fs.statSync(itemPath).isDirectory();
+        });
+        screenshotsCount = sceneDirs.length;
+      } catch (err) {
+        // Ignore errors
+      }
+    }
 
     return {
       APP_NAME: this.appName,
@@ -425,17 +776,115 @@ class AccessibilityAuditor {
       FOCUS_INDICATORS_FOUND: report.statistics.focusIndicatorsFound,
       ACCESSIBILITY_COMPONENTS_FOUND: report.statistics.accessibilityComponentsFound,
       STYLUS_ONLY_SCRIPTS_COUNT: report.statistics.stylusOnlyScripts ? report.statistics.stylusOnlyScripts.length : 0,
+      SCREENSHOTS_CAPTURED: screenshotsCaptured,
+      SCREENSHOTS_NOT_CAPTURED: !screenshotsCaptured,
+      SCREENSHOTS_COUNT: screenshotsCount,
 
-      // Visual Analysis Variables
-      VISUAL_ANALYSIS_PERFORMED: report.visualAnalysis && Object.keys(report.visualAnalysis).length > 0,
-      VISUAL_SCREENSHOTS_ANALYZED: report.visualAnalysis?.contrast?.summary?.screenshots_analyzed || 0,
-      VISUAL_CONTRAST_TOTAL_CHECKS: report.visualAnalysis?.contrast?.summary?.total_checks || 0,
-      VISUAL_CONTRAST_PASSED: report.visualAnalysis?.contrast?.summary?.total_passed || 0,
-      VISUAL_CONTRAST_FAILED: report.visualAnalysis?.contrast?.summary?.total_failed || 0,
-      VISUAL_CONTRAST_PASS_RATE: report.visualAnalysis?.contrast?.summary?.overall_pass_rate?.toFixed(1) || '0.0',
-      VISUAL_CONTRAST_COMPLIANT: report.visualAnalysis?.contrast?.summary?.wcag_compliant ? 'Yes ✅' : 'No ❌',
-      VISUAL_COLORBLIND_SIMULATIONS: report.visualAnalysis?.colorblind?.summary?.total_simulations || 0
+      // Visual Analysis Variables (Phase 2)
+      VISUAL_ANALYSIS_PERFORMED: false,
+      VISUAL_ANALYSIS_NOT_PERFORMED: true,
+      CONTRAST_ANALYSIS_PERFORMED: false,
+      CONTRAST_ANALYSIS_COMPONENTS: 0,
+      CONTRAST_ISSUES_FOUND: false,
+      CONTRAST_CRITICAL_COUNT: 0,
+      CONTRAST_WARNING_COUNT: 0,
+      CONTRAST_COMPLIANCE_RATE: '0%',
+      CONTRAST_PASSING_COMPONENTS: 0,
+      CONTRAST_FAILING_COMPONENTS: 0,
+      COLOR_BLIND_ANALYSIS_PERFORMED: false,
+      COLOR_BLIND_ISSUES_FOUND: false,
+      COLOR_BLIND_AFFECTED_TYPES: '',
+      CAPTIONS_DETECTED: false,
+      DEPTH_CUES_FOUND: false,
+      VOICE_COMMANDS_DETECTED: false,
+      HEATMAPS_GENERATED: false,
+      HEATMAPS_COUNT: 0,
+      ...this.loadVisualAnalysisVariables()
     };
+  }
+
+  /**
+   * Load visual analysis variables from Phase 2 outputs
+   */
+  loadVisualAnalysisVariables() {
+    const variables = {};
+
+    // Check for contrast analysis results
+    const contrastPath = path.join(this.options.outputDir, 'contrast-analysis.json');
+    if (fs.existsSync(contrastPath)) {
+      try {
+        const contrastData = JSON.parse(fs.readFileSync(contrastPath, 'utf8'));
+        variables.VISUAL_ANALYSIS_PERFORMED = true;
+        variables.VISUAL_ANALYSIS_NOT_PERFORMED = false;
+        variables.CONTRAST_ANALYSIS_PERFORMED = true;
+        variables.CONTRAST_ANALYSIS_COMPONENTS = contrastData.summary?.componentsAnalyzed || 0;
+        variables.CONTRAST_PASSING_COMPONENTS = contrastData.summary?.passingComponents || 0;
+        variables.CONTRAST_FAILING_COMPONENTS = contrastData.summary?.failingComponents || 0;
+        variables.CONTRAST_COMPLIANCE_RATE = contrastData.summary?.complianceRate || '0%';
+
+        // Count critical and warning issues
+        let criticalCount = 0;
+        let warningCount = 0;
+
+        if (contrastData.scenes) {
+          Object.values(contrastData.scenes).forEach(scene => {
+            if (scene.components) {
+              scene.components.forEach(comp => {
+                if (!comp.passes) {
+                  const ratio = parseFloat(comp.contrastRatio);
+                  if (ratio < 3.0) criticalCount++;
+                  else if (ratio < 4.5) warningCount++;
+                }
+              });
+            }
+          });
+        }
+
+        variables.CONTRAST_CRITICAL_COUNT = criticalCount;
+        variables.CONTRAST_WARNING_COUNT = warningCount;
+        variables.CONTRAST_ISSUES_FOUND = (criticalCount + warningCount) > 0;
+      } catch (err) {
+        this.log(`⚠️  Could not parse contrast-analysis.json: ${err.message}`);
+      }
+    }
+
+    // Check for color-blind simulation results
+    const screenshotsDir = path.join(this.options.outputDir, 'screenshots');
+    if (fs.existsSync(screenshotsDir)) {
+      const sceneDirs = fs.readdirSync(screenshotsDir).filter(item => {
+        const itemPath = path.join(screenshotsDir, item);
+        return fs.statSync(itemPath).isDirectory();
+      });
+
+      if (sceneDirs.length > 0) {
+        // Check if any scene has colorblind simulations
+        sceneDirs.forEach(sceneDir => {
+          const colorblindDir = path.join(screenshotsDir, sceneDir, 'colorblind');
+          if (fs.existsSync(colorblindDir)) {
+            variables.VISUAL_ANALYSIS_PERFORMED = true;
+            variables.VISUAL_ANALYSIS_NOT_PERFORMED = false;
+            variables.COLOR_BLIND_ANALYSIS_PERFORMED = true;
+            // Could analyze comparison.html for issues, but for now just mark as performed
+          }
+        });
+      }
+    }
+
+    // Check for visual analysis heatmaps
+    const heatmapDir = path.join(this.options.outputDir, 'visual-analysis', 'heatmaps');
+    if (fs.existsSync(heatmapDir)) {
+      try {
+        const heatmaps = fs.readdirSync(heatmapDir).filter(f => f.endsWith('.png'));
+        if (heatmaps.length > 0) {
+          variables.HEATMAPS_GENERATED = true;
+          variables.HEATMAPS_COUNT = heatmaps.length;
+        }
+      } catch (err) {
+        // Ignore errors
+      }
+    }
+
+    return variables;
   }
 
   /**
@@ -485,10 +934,10 @@ class AccessibilityAuditor {
   }
 
   /**
-   * Step 4.5: Generate stakeholder communication documentation
+   * Step 4: Generate stakeholder communication documentation
    */
   async generateStakeholderDocumentation() {
-    console.log('📢 Step 4.5: Generating stakeholder communication templates...\n');
+    console.log('📢 Step 4: Generating stakeholder communication templates...\n');
 
     // TODO: Implement stakeholder documentation generation
     // This should:
@@ -571,33 +1020,60 @@ Usage:
   node bin/audit.js <unity-project-path> [options]
 
 Arguments:
-  <unity-project-path>    Path to Unity project root directory
+  <unity-project-path>       Path to Unity project root directory
 
 Options:
-  --output-dir <dir>      Output directory for reports (default: <project>/AccessibilityAudit)
-  --format <format>       Output format: markdown, json, both (default: markdown)
-  --verbose               Enable verbose logging
-  --stakeholder-docs      Generate stakeholder communication templates (Quick Reference, Public Statement, FAQ)
-  --run-automation        Run Quick Wins automation tests (requires Python & dependencies)
-  --exe-path <path>       Path to Unity executable for automation testing
-  --log-path <path>       Path to Unity Player.log for log analysis
-  --interactive           Enable interactive automation tests (keyboard navigation, etc.)
-  --quick-wins <list>     Comma-separated list of Quick Wins to run (e.g., "1,2,5")
-  --capture-screenshots   Enable visual analysis with screenshot capture and contrast testing
-  --help, -h              Show this help message
+  --output-dir <dir>         Output directory for reports (default: <project>/AccessibilityAudit)
+  --format <format>          Output format: markdown, json, both (default: markdown)
+  --capture-screenshots      Capture scene screenshots before analysis
+  --unity-path <path>        Path to Unity executable (for Unity batch mode capture)
+  --application <path>       Path to built application .exe (for external capture - Phase 4)
+  --verbose                  Enable verbose logging
+  --stakeholder-docs         Generate stakeholder communication templates
+  --baseline                 Create/update baseline for compliance tracking (Phase 3.2)
+  --track-compliance         Save audit snapshot to compliance-history/ (Phase 3.2)
+  --fail-on-regression       Exit with code 1 if regressions detected vs baseline (Phase 3.2)
+  --export-pdf               Export VPAT report to PDF after analysis (Phase 3.4)
+  --export-csv               Export findings to CSV after analysis (Phase 3.4)
+  --create-issues <platform> Create issues on github or jira (Phase 3.4)
+  --template <path>          Use custom report template (Phase 3.4)
+  --config <path>            Export configuration file (default: config/export-config.json)
+  --generate-fixes           Generate C# code fixes for accessibility issues (Phase 3.5)
+  --help, -h                 Show this help message
 
 Examples:
   # Basic audit (static analysis only)
   node bin/audit.js /path/to/unity-project
 
-  # Audit with automation (log analysis only)
-  node bin/audit.js /path/to/unity-project --run-automation
+  # Audit with Unity batch mode screenshot capture
+  node bin/audit.js /path/to/unity-project --capture-screenshots --unity-path "C:/Unity/Editor/Unity.exe"
 
-  # Full audit with executable testing
-  node bin/audit.js /path/to/unity-project --run-automation --exe-path "C:/Program Files/MyApp/app.exe" --interactive
+  # Audit with external capture (Phase 4) - automatically uses navigation map if available
+  node bin/audit.js /path/to/unity-project --capture-screenshots --application "C:/Program Files/MyApp/MyApp.exe"
 
-  # Custom Quick Wins selection
-  node bin/audit.js /path/to/unity-project --run-automation --quick-wins "1,2"
+  # Generate stakeholder communication templates
+  node bin/audit.js /path/to/unity-project --stakeholder-docs
+
+  # Create compliance baseline
+  node bin/audit.js /path/to/unity-project --baseline
+
+  # Track compliance and fail on regression (CI/CD)
+  node bin/audit.js /path/to/unity-project --track-compliance --fail-on-regression
+
+  # Full audit with PDF and CSV export
+  node bin/audit.js /path/to/unity-project --capture-screenshots --export-pdf --export-csv
+
+  # Create GitHub issues for findings
+  node bin/audit.js /path/to/unity-project --create-issues github --config config/export-config.json
+
+  # Use custom report template
+  node bin/audit.js /path/to/unity-project --template templates/audit/custom/executive-summary.template.md
+
+  # Generate code fixes for accessibility issues
+  node bin/audit.js /path/to/unity-project --generate-fixes
+
+  # Full audit with all features (Phase 4)
+  node bin/audit.js /path/to/unity-project --capture-screenshots --application "C:/Program Files/MyApp/MyApp.exe" --track-compliance --export-pdf --export-csv --generate-fixes --stakeholder-docs --verbose
 
 Output:
   AccessibilityAudit/
@@ -624,12 +1100,19 @@ Quick Wins Automation:
     outputDir: null,
     format: 'markdown',
     verbose: false,
-    runQuickWins: false,
-    exePath: null,
-    logPath: null,
-    interactive: false,
-    quickWins: null,
-    captureScreenshots: false
+    captureScreenshots: false,
+    unityPath: null,
+    application: null,
+    baseline: false,
+    trackCompliance: false,
+    failOnRegression: false,
+    exportPDF: false,
+    exportCSV: false,
+    createIssues: null,
+    template: null,
+    config: null,
+    generateFixes: false,
+    generateStakeholderDocs: false
   };
 
   // Parse arguments
@@ -642,25 +1125,40 @@ Quick Wins Automation:
     } else if (arg === '--format' && args[i + 1]) {
       options.format = args[i + 1];
       i++;
+    } else if (arg === '--unity-path' && args[i + 1]) {
+      options.unityPath = args[i + 1];
+      i++;
+    } else if (arg === '--application' && args[i + 1]) {
+      options.application = args[i + 1];
+      i++;
+    } else if (arg === '--capture-screenshots') {
+      options.captureScreenshots = true;
     } else if (arg === '--verbose') {
       options.verbose = true;
     } else if (arg === '--stakeholder-docs') {
       options.generateStakeholderDocs = true;
-    } else if (arg === '--run-automation') {
-      options.runQuickWins = true;
-    } else if (arg === '--exe-path' && args[i + 1]) {
-      options.exePath = args[i + 1];
+    } else if (arg === '--baseline') {
+      options.baseline = true;
+      options.trackCompliance = true; // Baseline implies tracking
+    } else if (arg === '--track-compliance') {
+      options.trackCompliance = true;
+    } else if (arg === '--fail-on-regression') {
+      options.failOnRegression = true;
+    } else if (arg === '--export-pdf') {
+      options.exportPDF = true;
+    } else if (arg === '--export-csv') {
+      options.exportCSV = true;
+    } else if (arg === '--create-issues' && args[i + 1]) {
+      options.createIssues = args[i + 1];
       i++;
-    } else if (arg === '--log-path' && args[i + 1]) {
-      options.logPath = args[i + 1];
+    } else if (arg === '--template' && args[i + 1]) {
+      options.template = args[i + 1];
       i++;
-    } else if (arg === '--interactive') {
-      options.interactive = true;
-    } else if (arg === '--quick-wins' && args[i + 1]) {
-      options.quickWins = args[i + 1].split(',').map(n => parseInt(n.trim()));
+    } else if (arg === '--config' && args[i + 1]) {
+      options.config = args[i + 1];
       i++;
-    } else if (arg === '--capture-screenshots') {
-      options.captureScreenshots = true;
+    } else if (arg === '--generate-fixes') {
+      options.generateFixes = true;
     } else if (!arg.startsWith('--')) {
       options.projectPath = arg;
     }
@@ -682,12 +1180,19 @@ async function main() {
     outputDir: options.outputDir,
     format: options.format,
     verbose: options.verbose,
-    runQuickWins: options.runQuickWins,
-    exePath: options.exePath,
-    logPath: options.logPath,
-    interactive: options.interactive,
-    quickWins: options.quickWins,
-    captureScreenshots: options.captureScreenshots
+    captureScreenshots: options.captureScreenshots,
+    unityPath: options.unityPath,
+    application: options.application,
+    baseline: options.baseline,
+    trackCompliance: options.trackCompliance,
+    failOnRegression: options.failOnRegression,
+    exportPDF: options.exportPDF,
+    exportCSV: options.exportCSV,
+    createIssues: options.createIssues,
+    template: options.template,
+    config: options.config,
+    generateFixes: options.generateFixes,
+    generateStakeholderDocs: options.generateStakeholderDocs
   });
 
   await auditor.run();

@@ -38,6 +38,28 @@ This accessibility audit evaluates the **{{APP_NAME}}** zSpace Unity application
 - **Focus Indicators:** {{FOCUS_INDICATORS_STATUS}}
 - **Framework Components:** {{ACCESSIBILITY_COMPONENTS_FOUND}}/10 implemented
 
+### Scene Screenshots
+{{#if SCREENSHOTS_CAPTURED}}
+Screenshots have been captured for visual accessibility analysis:
+- **Location:** `screenshots/` directory
+- **Scenes Captured:** {{SCREENSHOTS_COUNT}}
+- **Resolutions:** 1920x1080 (main), 320x180 (thumbnails)
+
+See individual scene folders for:
+- Main screenshot (`SceneName_main.png`)
+- Thumbnail (`SceneName_thumbnail.png`)
+- Metadata (`metadata.json`)
+{{/if}}
+{{#if SCREENSHOTS_NOT_CAPTURED}}
+ℹ️ **Note:** No screenshots were captured during this audit.
+To include screenshots in future audits, use: `--capture-screenshots` flag
+
+Example:
+```bash
+node bin/audit.js /path/to/project --capture-screenshots
+```
+{{/if}}
+
 ---
 
 ## Critical Findings

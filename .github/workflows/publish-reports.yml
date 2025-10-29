@@ -1,0 +1,503 @@
+name: Publish Accessibility Reports
+
+on:
+  workflow_dispatch:
+    inputs:
+      project-path:
+        description: 'Path to Unity project to audit'
+        required: true
+        default: '.'
+      deploy-to-pages:
+        description: 'Deploy to GitHub Pages'
+        required: false
+        default: 'true'
+        type: boolean
+  push:
+    tags:
+      - 'v*.*.*'
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  generate-reports:
+    name: Generate Accessibility Dashboard
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          npm list --depth=0
+
+      - name: Setup Unity
+        uses: game-ci/unity-builder@v4
+        with:
+          unityVersion: 2022.3.10f1
+          targetPlatform: StandaloneLinux64
+
+      - name: Run Comprehensive Audit
+        run: |
+          echo "Running full accessibility audit for public dashboard..."
+
+          node bin/audit.js ${{ github.event.inputs.project-path || '.' }} \
+            --full \
+            --capture-screenshots \
+            --analyze-visual \
+            --generate-fixes \
+            --export-pdf \
+            --export-csv \
+            --track-compliance \
+            --verbose \
+            --output public/reports
+
+      - name: Generate HTML Dashboard
+        run: |
+          echo "Generating HTML dashboard..."
+
+          # Create dashboard directory structure
+          mkdir -p public/dashboard
+          mkdir -p public/dashboard/assets
+          mkdir -p public/dashboard/screenshots
+          mkdir -p public/dashboard/reports
+
+          # Copy screenshots
+          if [ -d "public/reports/screenshots" ]; then
+            cp -r public/reports/screenshots/* public/dashboard/screenshots/
+          fi
+
+          # Generate HTML index
+          node -e "
+            const fs = require('fs');
+            const marked = require('marked');
+
+            // Read audit summary
+            let audit = {};
+            if (fs.existsSync('public/reports/accessibility-analysis.json')) {
+              audit = JSON.parse(fs.readFileSync('public/reports/accessibility-analysis.json', 'utf8'));
+            }
+
+            // Generate HTML dashboard
+            const html = \`
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Accessibility Audit Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f5f5f5;
+    }
+
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .score-card {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .score-value {
+      font-size: 4rem;
+      font-weight: bold;
+      color: #667eea;
+      margin: 1rem 0;
+    }
+
+    .score-label {
+      font-size: 1.2rem;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .metric-card h3 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-critical { color: #e53e3e; }
+    .metric-high { color: #dd6b20; }
+    .metric-medium { color: #d69e2e; }
+    .metric-low { color: #38a169; }
+
+    .report-links {
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 2rem;
+    }
+
+    .report-links h2 {
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    .report-links ul {
+      list-style: none;
+    }
+
+    .report-links li {
+      margin-bottom: 0.75rem;
+    }
+
+    .report-links a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border: 2px solid #667eea;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .report-links a:hover {
+      background: #667eea;
+      color: white;
+      transform: translateX(5px);
+    }
+
+    .screenshot-gallery {
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .screenshot-gallery h2 {
+      margin-bottom: 1.5rem;
+      color: #333;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .gallery-item {
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .gallery-item:hover {
+      transform: scale(1.05);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .gallery-item p {
+      padding: 0.75rem;
+      background: #f8f9fa;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+      font-size: 0.9rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-success { background: #c6f6d5; color: #22543d; }
+    .badge-warning { background: #feebc8; color: #7c2d12; }
+    .badge-danger { background: #fed7d7; color: #742a2a; }
+
+    @media (max-width: 768px) {
+      header h1 { font-size: 2rem; }
+      .score-value { font-size: 3rem; }
+      .metrics-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌐 Accessibility Audit Dashboard</h1>
+    <p>WCAG 2.2 Level AA + Section 508 Compliance</p>
+    <p style='font-size: 0.9rem; margin-top: 0.5rem;'>Generated: \${new Date().toLocaleDateString()} | Framework v3.1.0</p>
+  </header>
+
+  <div class='container'>
+    <div class='score-card'>
+      <div class='score-label'>Compliance Score</div>
+      <div class='score-value'>\${audit.complianceEstimate?.score || 0}%</div>
+      <span class='badge \${
+        (audit.complianceEstimate?.score || 0) >= 90 ? 'badge-success' :
+        (audit.complianceEstimate?.score || 0) >= 70 ? 'badge-warning' :
+        'badge-danger'
+      }'>\${audit.complianceEstimate?.level || 'Unknown'}</span>
+    </div>
+
+    <div class='metrics-grid'>
+      <div class='metric-card'>
+        <h3>Critical Issues</h3>
+        <div class='metric-value metric-critical'>\${audit.summary?.criticalIssues || 0}</div>
+        <p>Must be fixed immediately</p>
+      </div>
+      <div class='metric-card'>
+        <h3>High Priority</h3>
+        <div class='metric-value metric-high'>\${audit.summary?.highPriorityIssues || 0}</div>
+        <p>Should be addressed soon</p>
+      </div>
+      <div class='metric-card'>
+        <h3>Medium Priority</h3>
+        <div class='metric-value metric-medium'>\${audit.summary?.mediumPriorityIssues || 0}</div>
+        <p>Plan to address</p>
+      </div>
+      <div class='metric-card'>
+        <h3>Low Priority</h3>
+        <div class='metric-value metric-low'>\${audit.summary?.lowPriorityIssues || 0}</div>
+        <p>Nice to have improvements</p>
+      </div>
+    </div>
+
+    <div class='report-links'>
+      <h2>📄 Detailed Reports</h2>
+      <ul>
+        <li><a href='reports/VPAT-COMPREHENSIVE.md' target='_blank'>📋 VPAT Comprehensive Report</a></li>
+        <li><a href='reports/AUDIT-SUMMARY.md' target='_blank'>📊 Audit Summary</a></li>
+        <li><a href='reports/GENERATED-FIXES.md' target='_blank'>🔧 Generated Code Fixes</a></li>
+        <li><a href='reports/exports/VPAT-Report.pdf' target='_blank'>📑 PDF Report</a></li>
+        <li><a href='reports/exports/findings-export.csv' target='_blank'>📈 CSV Export</a></li>
+        <li><a href='reports/accessibility-analysis.json' target='_blank'>📦 Raw JSON Data</a></li>
+      </ul>
+    </div>
+
+    <div class='screenshot-gallery'>
+      <h2>📸 Scene Screenshots</h2>
+      <div class='gallery-grid' id='gallery'></div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Generated by <strong>accessibility-standards-unity v3.1.0</strong></p>
+    <p>Framework: <a href='https://github.com/jdonnelly-zspace/accessibility-standards-unity'>GitHub Repository</a></p>
+  </footer>
+
+  <script>
+    // Load screenshot gallery
+    const gallery = document.getElementById('gallery');
+
+    // You can add dynamic screenshot loading here
+    // For now, we'll add a placeholder
+    if (gallery.children.length === 0) {
+      gallery.innerHTML = '<p style=\"grid-column: 1/-1; text-align: center; color: #999;\">Screenshot gallery will be populated during audit processing</p>';
+    }
+  </script>
+</body>
+</html>
+            \`;
+
+            fs.writeFileSync('public/dashboard/index.html', html);
+            console.log('✅ Dashboard generated successfully');
+          "
+
+      - name: Copy Reports to Dashboard
+        run: |
+          # Copy markdown reports
+          if [ -d "public/reports" ]; then
+            cp -r public/reports public/dashboard/
+          fi
+
+          # Copy PDFs
+          if [ -d "public/reports/exports" ]; then
+            mkdir -p public/dashboard/exports
+            cp public/reports/exports/*.pdf public/dashboard/exports/ 2>/dev/null || true
+            cp public/reports/exports/*.csv public/dashboard/exports/ 2>/dev/null || true
+          fi
+
+      - name: Create README for Dashboard
+        run: |
+          cat > public/dashboard/README.md << 'EOF'
+          # Accessibility Audit Dashboard
+
+          This directory contains automatically generated accessibility audit reports.
+
+          ## Contents
+
+          - `index.html` - Main dashboard with compliance scores and metrics
+          - `reports/` - Detailed audit reports (VPAT, summaries, generated fixes)
+          - `screenshots/` - Scene screenshots and visual analysis results
+          - `exports/` - PDF and CSV exports for stakeholders
+
+          ## Viewing Reports
+
+          Open `index.html` in a web browser to view the interactive dashboard.
+
+          ## Generated Reports
+
+          - **VPAT Comprehensive Report**: Complete WCAG 2.2 AA and Section 508 compliance details
+          - **Audit Summary**: High-level overview of findings
+          - **Generated Fixes**: Automated code solutions for detected issues
+          - **CSV Export**: Data for import into project management tools
+
+          ## Framework Version
+
+          Generated with accessibility-standards-unity v3.1.0
+
+          ## Last Updated
+
+          $(date)
+          EOF
+
+      - name: Setup Pages
+        if: github.event.inputs.deploy-to-pages != 'false'
+        uses: actions/configure-pages@v3
+
+      - name: Upload Dashboard Artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: 'public/dashboard'
+
+      - name: Upload Reports Archive
+        uses: actions/upload-artifact@v3
+        with:
+          name: accessibility-reports-${{ github.ref_name }}
+          path: public/reports
+          retention-days: 365
+
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: generate-reports
+    if: github.event.inputs.deploy-to-pages != 'false'
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+
+      - name: Comment Deployment URL
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            console.log('Dashboard deployed to: ${{ steps.deployment.outputs.page_url }}');
+            core.notice('Accessibility Dashboard: ${{ steps.deployment.outputs.page_url }}');
+
+  notify-complete:
+    name: Notify Completion
+    runs-on: ubuntu-latest
+    needs: [generate-reports, deploy-pages]
+    if: always()
+
+    steps:
+      - name: Create Summary
+        run: |
+          echo "# 📊 Accessibility Reports Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Generated:** $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔗 Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [View Dashboard](${{ needs.deploy-pages.outputs.page_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "- [Download Reports Archive](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📦 Generated Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Interactive HTML Dashboard" >> $GITHUB_STEP_SUMMARY
+          echo "- VPAT PDF Report" >> $GITHUB_STEP_SUMMARY
+          echo "- CSV Exports" >> $GITHUB_STEP_SUMMARY
+          echo "- Scene Screenshots" >> $GITHUB_STEP_SUMMARY
+          echo "- Generated Code Fixes" >> $GITHUB_STEP_SUMMARY
