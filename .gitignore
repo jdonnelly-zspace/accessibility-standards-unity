@@ -99,3 +99,13 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 [Aa]ssets/[Ss]treamingAssets/aa.meta
 [Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Test artifacts
+test-screenshot.png
+**/test-screenshot*.png
+
+# Tesseract OCR data files
+*.traineddata
+
+# Experimental scripts (not used in production)
+implementation/unity/scripts/AccessibilityAuditor.cs
