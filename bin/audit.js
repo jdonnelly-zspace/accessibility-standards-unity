@@ -13,6 +13,7 @@
  *   --output-dir <dir>   Output directory for audit reports (default: <project>/AccessibilityAudit)
  *   --format <format>    Output format: markdown (default), json, both
  *   --verbose            Enable verbose logging
+ *   --stakeholder-docs   Generate stakeholder communication templates (Quick Reference, Public Statement, FAQ)
  *
  * Output:
  *   AccessibilityAudit/
@@ -79,8 +80,18 @@ class AccessibilityAuditor {
         await this.runQuickWinsAutomation();
       }
 
+      // Step 3.5: Run Visual Analysis (if enabled)
+      if (this.options.captureScreenshots) {
+        await this.runVisualAnalysis();
+      }
+
       // Step 4: Generate reports
       await this.generateReports();
+
+      // Step 4.5: Generate stakeholder documentation (if requested)
+      if (this.options.generateStakeholderDocs) {
+        await this.generateStakeholderDocumentation();
+      }
 
       // Step 5: Display summary
       this.displaySummary();
@@ -204,6 +215,128 @@ class AccessibilityAuditor {
   }
 
   /**
+   * Step 3.5: Run Visual Analysis (Python scripts)
+   */
+  async runVisualAnalysis() {
+    console.log('🎨 Step 3.5: Running Visual Analysis...\n');
+
+    const automationDir = path.join(__dirname, '../automation/quick_wins');
+    const contrastScript = path.join(automationDir, 'color_contrast_analyzer.py');
+
+    // Check if Python scripts are available
+    if (!fs.existsSync(contrastScript)) {
+      this.log('⚠️  Visual analysis scripts not found, skipping...\n');
+      return;
+    }
+
+    try {
+      // Create screenshots directory if needed
+      const screenshotsDir = path.join(this.options.outputDir, 'screenshots');
+      if (!fs.existsSync(screenshotsDir)) {
+        fs.mkdirSync(screenshotsDir, { recursive: true });
+      }
+
+      this.log(`✓ Screenshots directory: ${screenshotsDir}`);
+
+      // Check if exe path provided for live capture
+      if (this.options.exePath && fs.existsSync(this.options.exePath)) {
+        this.log('✓ Executable path provided - will attempt live capture');
+        // For now, skip live capture and look for existing screenshots
+        this.log('  [INFO] Live capture not yet implemented, checking for existing screenshots...');
+      }
+
+      // Look for existing screenshots in project
+      const existingScreenshots = this.findExistingScreenshots();
+
+      if (existingScreenshots.length === 0) {
+        this.log('⚠️  No screenshots found. Visual analysis requires screenshots.');
+        this.log('   You can:');
+        this.log('   1. Manually capture screenshots and place them in AccessibilityAudit/screenshots/');
+        this.log('   2. Provide --exe-path to enable automated screenshot capture (future feature)');
+        this.log('   Skipping visual analysis...\n');
+        return;
+      }
+
+      this.log(`✓ Found ${existingScreenshots.length} screenshots to analyze\n`);
+
+      // Run contrast analyzer on existing screenshots
+      const contrastResultsPath = path.join(this.options.outputDir, 'contrast_analysis_results.json');
+
+      this.log('Running color contrast analysis...');
+      await this.runPythonScript(contrastScript, [screenshotsDir, contrastResultsPath]);
+
+      // Run color-blind simulation
+      const colorblindScript = path.join(automationDir, 'colorblind_simulator.py');
+      const colorblindOutputDir = path.join(this.options.outputDir, 'colorblind_simulations');
+      const colorblindResultsPath = path.join(this.options.outputDir, 'colorblind_analysis_results.json');
+
+      if (fs.existsSync(colorblindScript)) {
+        this.log('Running color-blind simulation...');
+        await this.runPythonScript(colorblindScript, [screenshotsDir, colorblindOutputDir]);
+      } else {
+        this.log('⚠️  Color-blind simulator not found, skipping...');
+      }
+
+      // Load visual analysis results
+      const visualAnalysis = {};
+
+      if (fs.existsSync(contrastResultsPath)) {
+        visualAnalysis.contrast = JSON.parse(fs.readFileSync(contrastResultsPath, 'utf-8'));
+        this.log('✅ Contrast analysis results loaded');
+      }
+
+      // Look for colorblind results in the reports/output directory
+      const colorblindReportPath = path.join(automationDir, '..', 'reports', 'output', 'qw8_colorblind_simulation.json');
+      if (fs.existsSync(colorblindReportPath)) {
+        visualAnalysis.colorblind = JSON.parse(fs.readFileSync(colorblindReportPath, 'utf-8'));
+        this.log('✅ Color-blind simulation results loaded');
+      }
+
+      if (Object.keys(visualAnalysis).length > 0) {
+        this.analysisReport.visualAnalysis = visualAnalysis;
+        this.log('✅ Visual analysis results integrated into audit report\n');
+      } else {
+        this.log('⚠️  No visual analysis results found\n');
+      }
+
+    } catch (error) {
+      this.log(`⚠️  Visual analysis failed: ${error.message}`);
+      if (this.options.verbose) {
+        console.error(error.stack);
+      }
+      this.log('   Continuing with audit...\n');
+    }
+  }
+
+  /**
+   * Helper: Find existing screenshots in project
+   */
+  findExistingScreenshots() {
+    const screenshots = [];
+    const screenshotsDir = path.join(this.options.outputDir, 'screenshots');
+
+    if (!fs.existsSync(screenshotsDir)) {
+      return screenshots;
+    }
+
+    const validExtensions = ['.png', '.jpg', '.jpeg', '.bmp'];
+
+    try {
+      const files = fs.readdirSync(screenshotsDir);
+      for (const file of files) {
+        const ext = path.extname(file).toLowerCase();
+        if (validExtensions.includes(ext)) {
+          screenshots.push(path.join(screenshotsDir, file));
+        }
+      }
+    } catch (error) {
+      // Directory doesn't exist or can't be read
+    }
+
+    return screenshots;
+  }
+
+  /**
    * Step 2: Create output directory
    */
   async createOutputDirectory() {
@@ -291,7 +424,17 @@ class AccessibilityAuditor {
       SCREEN_READER_SUPPORT_FOUND: report.statistics.screenReaderSupportFound,
       FOCUS_INDICATORS_FOUND: report.statistics.focusIndicatorsFound,
       ACCESSIBILITY_COMPONENTS_FOUND: report.statistics.accessibilityComponentsFound,
-      STYLUS_ONLY_SCRIPTS_COUNT: report.statistics.stylusOnlyScripts ? report.statistics.stylusOnlyScripts.length : 0
+      STYLUS_ONLY_SCRIPTS_COUNT: report.statistics.stylusOnlyScripts ? report.statistics.stylusOnlyScripts.length : 0,
+
+      // Visual Analysis Variables
+      VISUAL_ANALYSIS_PERFORMED: report.visualAnalysis && Object.keys(report.visualAnalysis).length > 0,
+      VISUAL_SCREENSHOTS_ANALYZED: report.visualAnalysis?.contrast?.summary?.screenshots_analyzed || 0,
+      VISUAL_CONTRAST_TOTAL_CHECKS: report.visualAnalysis?.contrast?.summary?.total_checks || 0,
+      VISUAL_CONTRAST_PASSED: report.visualAnalysis?.contrast?.summary?.total_passed || 0,
+      VISUAL_CONTRAST_FAILED: report.visualAnalysis?.contrast?.summary?.total_failed || 0,
+      VISUAL_CONTRAST_PASS_RATE: report.visualAnalysis?.contrast?.summary?.overall_pass_rate?.toFixed(1) || '0.0',
+      VISUAL_CONTRAST_COMPLIANT: report.visualAnalysis?.contrast?.summary?.wcag_compliant ? 'Yes ✅' : 'No ❌',
+      VISUAL_COLORBLIND_SIMULATIONS: report.visualAnalysis?.colorblind?.summary?.total_simulations || 0
     };
   }
 
@@ -339,6 +482,36 @@ class AccessibilityAuditor {
     }
 
     console.log();
+  }
+
+  /**
+   * Step 4.5: Generate stakeholder communication documentation
+   */
+  async generateStakeholderDocumentation() {
+    console.log('📢 Step 4.5: Generating stakeholder communication templates...\n');
+
+    // TODO: Implement stakeholder documentation generation
+    // This should:
+    // 1. Load templates from templates/stakeholder/
+    // 2. Populate with analysisReport data using Handlebars or similar
+    // 3. Generate:
+    //    - QUICK-REFERENCE.md (1-page for procurement)
+    //    - PUBLIC-STATEMENT.md (public-facing accessibility commitment)
+    //    - FAQ.md (multi-audience question bank)
+    // 4. Save to this.options.outputDir
+    //
+    // Template variables to populate:
+    //   - {{APP_NAME}}, {{AUDIT_DATE}}, {{FRAMEWORK_VERSION}}
+    //   - {{COMPLIANCE_SCORE}}, {{COMPLIANCE_LEVEL}}
+    //   - {{CRITICAL_COUNT}}, {{HIGH_COUNT}}, etc.
+    //   - Boolean flags: KEYBOARD_SUPPORT_FOUND, SCREEN_READER_SUPPORT_FOUND, etc.
+    //
+    // See templates/stakeholder/README.md for full implementation guidance
+
+    console.log('⚠️  Stakeholder documentation generation not yet fully implemented.');
+    console.log('    Templates are available in templates/stakeholder/');
+    console.log('    See External Communication Guide: docs/EXTERNAL-COMMUNICATION-GUIDE.md');
+    console.log('    Manual generation recommended until automated rendering is implemented.\n');
   }
 
   /**
@@ -404,11 +577,13 @@ Options:
   --output-dir <dir>      Output directory for reports (default: <project>/AccessibilityAudit)
   --format <format>       Output format: markdown, json, both (default: markdown)
   --verbose               Enable verbose logging
+  --stakeholder-docs      Generate stakeholder communication templates (Quick Reference, Public Statement, FAQ)
   --run-automation        Run Quick Wins automation tests (requires Python & dependencies)
   --exe-path <path>       Path to Unity executable for automation testing
   --log-path <path>       Path to Unity Player.log for log analysis
   --interactive           Enable interactive automation tests (keyboard navigation, etc.)
   --quick-wins <list>     Comma-separated list of Quick Wins to run (e.g., "1,2,5")
+  --capture-screenshots   Enable visual analysis with screenshot capture and contrast testing
   --help, -h              Show this help message
 
 Examples:
@@ -453,7 +628,8 @@ Quick Wins Automation:
     exePath: null,
     logPath: null,
     interactive: false,
-    quickWins: null
+    quickWins: null,
+    captureScreenshots: false
   };
 
   // Parse arguments
@@ -468,6 +644,8 @@ Quick Wins Automation:
       i++;
     } else if (arg === '--verbose') {
       options.verbose = true;
+    } else if (arg === '--stakeholder-docs') {
+      options.generateStakeholderDocs = true;
     } else if (arg === '--run-automation') {
       options.runQuickWins = true;
     } else if (arg === '--exe-path' && args[i + 1]) {
@@ -481,6 +659,8 @@ Quick Wins Automation:
     } else if (arg === '--quick-wins' && args[i + 1]) {
       options.quickWins = args[i + 1].split(',').map(n => parseInt(n.trim()));
       i++;
+    } else if (arg === '--capture-screenshots') {
+      options.captureScreenshots = true;
     } else if (!arg.startsWith('--')) {
       options.projectPath = arg;
     }
@@ -506,7 +686,8 @@ async function main() {
     exePath: options.exePath,
     logPath: options.logPath,
     interactive: options.interactive,
-    quickWins: options.quickWins
+    quickWins: options.quickWins,
+    captureScreenshots: options.captureScreenshots
   });
 
   await auditor.run();

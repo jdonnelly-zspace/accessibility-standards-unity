@@ -472,6 +472,119 @@ jobs:
 
 ---
 
+## 📢 External Communication & Stakeholder Documentation
+
+**NEW:** Guidelines and templates for sharing accessibility information with external stakeholders.
+
+### Why This Matters
+
+When you generate accessibility audits, you often need to share results with:
+- **Procurement officers** evaluating RFPs
+- **Legal/compliance teams** assessing risk
+- **Customers** requesting accessibility status
+- **Partners** requiring VPAT documentation
+- **General public** seeking transparency
+
+**The Challenge:** Balancing transparency with legal protection.
+
+### External Communication Guide
+
+Before sharing audit reports externally, review our comprehensive guide:
+
+**📖 [External Communication Guide](docs/EXTERNAL-COMMUNICATION-GUIDE.md)**
+
+This guide provides:
+- ✅ Safe language patterns (no binding commitments)
+- ✅ Required disclaimer templates
+- ✅ Stakeholder-specific messaging
+- ✅ Status indicator systems (✅🔄📋)
+- ✅ Legal protection strategies
+- ✅ zSpace-specific communication guidance
+
+**Key Principles:**
+- Be transparent about current status
+- Avoid specific dates and guarantees
+- Qualify all statements appropriately
+- Provide accommodation contact
+- Include proper disclaimers
+
+### Stakeholder Templates
+
+Ready-to-use templates for different audiences:
+
+#### 1. **Quick Reference** (Procurement Officers)
+**Location:** `templates/stakeholder/QUICK-REFERENCE.template.md`
+**Purpose:** 1-page summary for purchase decisions
+**Contains:** Section 508 status, accommodations, RFP answers
+
+#### 2. **Public Statement** (Website/Public)
+**Location:** `templates/stakeholder/PUBLIC-STATEMENT.template.md`
+**Purpose:** Public-facing accessibility commitment
+**Contains:** Current features, development priorities, accommodation process
+
+#### 3. **FAQ** (All Stakeholders)
+**Location:** `templates/stakeholder/FAQ.template.md`
+**Purpose:** Multi-audience question bank
+**Contains:** Procurement, technical, end-user, and media questions
+
+### Generating Stakeholder Documents
+
+```bash
+# Generate all stakeholder templates along with audit
+node bin/audit.js /path/to/unity-project --stakeholder-docs
+
+# Templates populate automatically with your audit data
+```
+
+### Which Document to Share
+
+| Audience | Recommended Document | Purpose |
+|----------|---------------------|---------|
+| Procurement Officers | Quick Reference + VPAT | RFP requirements, Section 508 |
+| Legal/Compliance | VPAT (comprehensive) | Risk assessment, regulatory review |
+| Customers/Partners | Public Statement | Transparency, current status |
+| General Public | Public Statement (website) | Accessibility commitment page |
+| Media/Press | FAQ | Consistent messaging, all questions |
+
+### Safe Language Examples
+
+✅ **SAFE:**
+```markdown
+🔄 **Keyboard Support** - Expanding keyboard alternatives for stylus
+   interactions (varies by scene)
+
+**Note:** Enhancement priorities depend on technical feasibility
+and Unity/zSpace SDK compatibility. Contact accessibility@zspace.com
+for individualized consultation.
+```
+
+❌ **AVOID:**
+```markdown
+✅ Keyboard accessible (too absolute)
+Available in Q1 2026 (specific date commitment)
+Will implement voice commands (binding guarantee)
+```
+
+### Legal Review Checklist
+
+Before publishing externally:
+- [ ] Read External Communication Guide
+- [ ] Legal counsel review completed
+- [ ] No specific dates promised
+- [ ] No feature guarantees included
+- [ ] Disclaimers present on all documents
+- [ ] Contact information accurate
+- [ ] Competitive claims verified
+- [ ] Accommodation commitments achievable
+
+### Resources
+
+- **External Communication Guide:** [docs/EXTERNAL-COMMUNICATION-GUIDE.md](docs/EXTERNAL-COMMUNICATION-GUIDE.md)
+- **Stakeholder Templates:** [templates/stakeholder/](templates/stakeholder/)
+- **Audit Templates:** [templates/audit/](templates/audit/)
+
+---
+
 ## Getting Started
 
 ### For New Unity zSpace Projects

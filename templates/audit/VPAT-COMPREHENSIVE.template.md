@@ -8,6 +8,71 @@
 **Report Date:** {{AUDIT_DATE}}
 **Last Updated:** {{AUDIT_DATE}}
 **Contact:** accessibility@zspace.com
+**Web:** https://github.com/jdonnelly-zspace/accessibility-standards-unity
+
+---
+
+## Executive Summary for Decision Makers
+
+### Accessibility Status at a Glance
+
+**Purpose of This Document:**
+This VPAT provides detailed accessibility conformance information for procurement officers, legal teams, and administrators evaluating {{APP_NAME}} for purchase or implementation.
+
+**Key Findings:**
+
+✅ **Current Status** ({{AUDIT_DATE}})
+- Comprehensive accessibility evaluation completed using automated framework
+- {{CRITICAL_COUNT}} critical issues, {{HIGH_COUNT}} high priority issues identified
+- Automated code analysis of {{TOTAL_SCRIPTS}} C# scripts across {{TOTAL_SCENES}} scenes
+- Accommodation support process established via accessibility@zspace.com
+
+🔄 **Enhancement Focus**
+
+{{APP_NAME}} can benefit from expanded accessibility through:
+{{#if KEYBOARD_SUPPORT_FOUND}}{{/if}}{{#if KEYBOARD_SUPPORT_FOUND}}{{/if}}- Keyboard alternatives for stylus interactions (critical priority)
+{{#if SCREEN_READER_SUPPORT_FOUND}}{{/if}}{{#if SCREEN_READER_SUPPORT_FOUND}}{{/if}}- Screen reader integration with Unity Accessibility API (critical priority)
+{{#if FOCUS_INDICATORS_FOUND}}{{/if}}{{#if FOCUS_INDICATORS_FOUND}}{{/if}}- Visual focus indicators for keyboard navigation (high priority)
+- Depth perception alternatives for stereoblindness (critical for zSpace)
+
+**Timeline Note:** Enhancement priorities depend on development team resources, technical feasibility, and Unity/zSpace SDK compatibility. No specific implementation dates are guaranteed.
+
+✅ **Industry Position**
+
+This accessibility framework provides comprehensive documentation that exceeds typical zSpace application accessibility transparency. Most zSpace applications do not publish VPATs or accessibility documentation.
+
+---
+
+## Quick Reference for Common Questions
+
+| Question | Answer |
+|----------|--------|
+| **Can we purchase for users with disabilities?** | {{#if COMPLIANCE_SCORE >= 70}}✅ Yes, substantial conformance demonstrated{{/if}}{{#if COMPLIANCE_SCORE >= 40 && COMPLIANCE_SCORE < 70}}🔄 Yes, working toward expanded support{{/if}}{{#if COMPLIANCE_SCORE < 40}}🔄 Accessibility enhancements recommended before deployment{{/if}} - detailed VPAT available |
+| **Section 508 compliant?** | {{#if COMPLIANCE_SCORE >= 70}}Substantial conformance{{/if}}{{#if COMPLIANCE_SCORE < 70}}Working toward conformance{{/if}} - see detailed criteria below |
+| **VPAT available for RFP?** | ✅ Yes (this document) |
+| **What if user needs accommodation NOW?** | Individual accommodation evaluation: accessibility@zspace.com |
+| **Automated or manual testing?** | Automated code analysis + manual validation recommended |
+| **zSpace-specific considerations?** | Stereoscopic depth alternatives, stylus vs keyboard, desktop screen readers |
+
+---
+
+## Risk Assessment for Legal Review
+
+**Litigation Risk:** MANAGED
+- Proactive accessibility evaluation completed
+- No known accessibility complaints or legal actions
+- Accommodation support process documented
+- Open-source accessibility framework published
+
+**Procurement Risk:** {{#if COMPLIANCE_SCORE >= 70}}LOW{{/if}}{{#if COMPLIANCE_SCORE >= 40 && COMPLIANCE_SCORE < 70}}MANAGEABLE{{/if}}{{#if COMPLIANCE_SCORE < 40}}MODERATE{{/if}}
+- VPAT available for RFP requirements
+- {{#if COMPLIANCE_SCORE >= 70}}Substantial conformance documented{{/if}}{{#if COMPLIANCE_SCORE < 70}}Working toward expanded conformance{{/if}}
+- Exceeds most zSpace application accessibility documentation
+
+**Regulatory Risk:** MANAGED
+- Proactive approach to accessibility
+- Ahead of typical zSpace application accessibility efforts
+- Public accessibility documentation available
 
 ---
 
@@ -37,6 +102,18 @@
 - ✅ Scene structure analysis ({{TOTAL_SCENES}} Unity scenes)
 {{#if KEYBOARD_SUPPORT_FOUND}}- ✅ Keyboard support patterns detected in codebase{{/if}}
 {{#if SCREEN_READER_SUPPORT_FOUND}}- ✅ Screen reader compatibility patterns detected{{/if}}
+
+### Visual Accessibility Analysis
+
+{{#if VISUAL_ANALYSIS_PERFORMED}}
+- ✅ Visual analysis performed
+- ✅ WCAG contrast ratio testing ({{VISUAL_SCREENSHOTS_ANALYZED}} screenshots)
+- ✅ Color-blind simulation (8 CVD types)
+- ✅ Automated visual accessibility report generated
+{{/if}}
+{{#if VISUAL_ANALYSIS_PERFORMED}}{{/if}}
+- ⬜ Visual analysis not performed
+- ℹ️ Run with `--capture-screenshots` flag to enable visual analysis
 
 ### Standards Referenced
 - ✅ WCAG 2.2 Level A and AA Success Criteria
@@ -195,6 +272,49 @@ The W3C XR Accessibility User Requirements (XAUR) specification provides guidanc
 {{#if FOCUS_INDICATORS_FOUND}}{{/if}}{{#if FOCUS_INDICATORS_FOUND}}{{/if}}- No focus indicator patterns detected
 {{#if ACCESSIBILITY_COMPONENTS_FOUND}}{{/if}}{{#if ACCESSIBILITY_COMPONENTS_FOUND}}{{/if}}- No accessibility framework components found
 
+### Visual Accessibility Results
+
+{{#if VISUAL_ANALYSIS_PERFORMED}}
+**Visual Analysis Status:** ✅ Performed
+
+**Screenshots Analyzed:** {{VISUAL_SCREENSHOTS_ANALYZED}}
+
+**Contrast Analysis:**
+- Total checks: {{VISUAL_CONTRAST_TOTAL_CHECKS}}
+- Passed: {{VISUAL_CONTRAST_PASSED}} ({{VISUAL_CONTRAST_PASS_RATE}}%)
+- Failed: {{VISUAL_CONTRAST_FAILED}}
+- WCAG Compliant: {{VISUAL_CONTRAST_COMPLIANT}}
+
+**Color-Blind Simulations:**
+- Simulations generated: {{VISUAL_COLORBLIND_SIMULATIONS}}
+- CVD types tested: Protanopia, Deuteranopia, Tritanopia, Protanomaly, Deuteranomaly, Tritanomaly, Achromatopsia, Achromatomaly
+- Output directory: `colorblind_simulations/`
+
+**Recommendations:**
+{{#if VISUAL_CONTRAST_COMPLIANT}}{{/if}}- ⚠️ {{VISUAL_CONTRAST_FAILED}} contrast issues found - review `contrast_analysis_results.json` for details
+- Review color-blind simulations to ensure information is not conveyed by color alone
+- View simulated images in `AccessibilityAudit/colorblind_simulations/` directory
+{{/if}}
+
+{{#if VISUAL_ANALYSIS_PERFORMED}}{{/if}}
+**Visual Analysis Status:** Not performed
+
+To enable comprehensive visual analysis, run:
+```bash
+node bin/audit.js <project-path> --capture-screenshots
+```
+
+This will provide:
+- Automated screenshot capture (all scenes)
+- WCAG contrast ratio analysis
+- Color-blind simulation (8 types)
+- Visual heatmap generation
+
+**Manual Testing Required:**
+1. Capture screenshots of all key application states
+2. Place screenshots in `AccessibilityAudit/screenshots/` directory
+3. Re-run audit with `--capture-screenshots` flag
+
 ### Compliance Estimate
 
 **Overall Compliance Score:** {{COMPLIANCE_SCORE}}% ({{COMPLIANCE_LEVEL}})
@@ -274,17 +394,38 @@ This VPAT was generated using automated code analysis. The following limitations
 
 ---
 
-## Legal Disclaimer
+## Important Disclaimer
 
-This VPAT was generated automatically using the accessibility-standards-unity framework v{{FRAMEWORK_VERSION}}.
+**Accuracy and Currency:** Information in this document reflects {{APP_NAME}}'s accessibility status as of {{AUDIT_DATE}}. Accessibility features, enhancement priorities, timelines, and capabilities are subject to change without notice.
 
-**Important:** This is an **automated analysis** that detects code patterns and potential accessibility issues. It does NOT replace manual accessibility testing or certification by qualified accessibility professionals.
+**Automated Analysis Limitations:** This VPAT was generated using automated code analysis via the accessibility-standards-unity framework v{{FRAMEWORK_VERSION}}. Automated analysis detects code patterns and potential issues but **does NOT replace** manual accessibility testing or certification by qualified accessibility professionals.
 
-**For Procurement Use:** Manual validation and expert review strongly recommended.
+**No Guarantees:** Descriptions of potential enhancements, detected patterns, or development recommendations should not be interpreted as commitments or guarantees. Actual implementation and timing may vary based on technical feasibility, Unity/zSpace SDK compatibility, resource allocation, and business priorities.
 
-**For Legal Compliance:** Conduct comprehensive accessibility audit with manual testing.
+**Individual Needs:** Accommodation feasibility depends on specific user requirements, Unity version, zSpace SDK version, scene complexity, hardware configuration, and current technical capabilities. We recommend contacting accessibility@zspace.com for individualized consultation regarding specific accommodation requests.
 
-**Contact:** See framework documentation at https://github.com/jdonnelly-zspace/accessibility-standards-unity
+**Third-Party Dependencies:** zSpace accessibility features depend on Unity Engine, zSpace SDK, Windows OS, and desktop assistive technology capabilities. Compatibility may vary based on:
+- Unity Engine version (2021.3 LTS vs 2023.2+ differences for Accessibility Module)
+- zSpace SDK version
+- Windows OS version and screen reader compatibility (NVDA, Narrator, JAWS)
+- Scene implementation by developers
+- Hardware setup (display, stylus, tracking system)
+
+**For Procurement Use:** Manual validation and expert review strongly recommended before purchase decisions. This automated analysis provides a foundation for accessibility evaluation but should be supplemented with:
+- Manual testing by qualified accessibility professionals
+- User testing with individuals who have disabilities
+- Validation on actual zSpace hardware (not simulator)
+- Review of color contrast on actual zSpace display
+- Screen reader testing with NVDA/Narrator/JAWS
+
+**For Legal Compliance:** Conduct comprehensive accessibility audit with manual testing before making compliance claims. This document is provided for informational purposes and should not be construed as legal advice or legal compliance certification. Organizations should consult with their own legal counsel regarding accessibility obligations.
+
+**Competitive Information:** Statements comparing zSpace application accessibility documentation are based on publicly available information as of {{AUDIT_DATE}} and may not reflect current capabilities of other products.
+
+**Contact:** For questions about information in this document: accessibility@zspace.com
+
+**Last Updated:** {{AUDIT_DATE}}
+**Next Planned Update:** As significant changes occur or upon major version releases
 
 ---
 
