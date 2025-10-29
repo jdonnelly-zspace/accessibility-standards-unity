@@ -757,6 +757,57 @@ jobs:
 
 ---
 
+## Known Limitations (v3.4.0-phase4)
+
+Based on E2E testing with Career Explorer (October 2025), the following limitations exist:
+
+### External Capture & Scene Detection
+
+**Low Scene Coverage (Expected):**
+- Scene completion rate: 7-15% typical
+- OCR confidence for scene detection: 28-35%
+- Many scenes detected as "Unknown"
+- **Cause:** Phase 3 OCR limitations with Tesseract.js
+- **Impact:** Limited automatic navigation, requires manual scene mapping improvements
+- **Workaround:** Navigation map helps but OCR accuracy needs improvement
+- **Tracking:** [Issue #2](https://github.com/jdonnelly-zspace/accessibility-standards-unity/issues/2)
+
+**Visual Analysis OCR Crash (Critical):**
+- Audit crashes during "Running OCR to detect text" phase
+- **Cause:** Tesseract.js error in visual analysis pipeline
+- **Impact:** Prevents full audit completion, reports not regenerated with screenshot data
+- **Workaround:** Existing reports from code analysis remain valid
+- **Status:** Needs investigation and fix
+- **Tracking:** [Issue #1](https://github.com/jdonnelly-zspace/accessibility-standards-unity/issues/1)
+
+**Non-Critical Warnings:**
+- Tesseract.js "logger is not a function" warning appears but doesn't block core functionality
+- Can be safely ignored in current version
+
+### What Works Reliably
+
+✅ **External application launch and control** - Fully functional
+✅ **Screenshot capture mechanism** - Works as designed
+✅ **Unity project code analysis** - Comprehensive (51 scenes, 758 scripts analyzed)
+✅ **Professional report generation** - All 6 main reports generate correctly
+✅ **Compliance score calculation** - Accurate based on code patterns
+✅ **Navigation automation framework** - Architecture solid, needs OCR improvements
+
+### Recommended Actions
+
+**For Production Use:**
+- Use code analysis features (fully stable)
+- Use external capture for screenshot collection (stable)
+- Skip visual analysis until Issue #1 is resolved
+- Expect low scene coverage until Issue #2 is resolved
+
+**For Development:**
+- Focus on fixing OCR crash (Issue #1) first
+- Improve scene detection confidence (Issue #2) second
+- Consider alternative scene identification methods (metadata, build logs, etc.)
+
+---
+
 ## Getting Started
 
 ### For New Unity zSpace Projects
