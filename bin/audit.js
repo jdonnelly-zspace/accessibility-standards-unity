@@ -46,6 +46,7 @@ import { UnityProjectAnalyzer } from './analyze-unity-project.js';
 import { captureScreenshots } from './capture-screenshots.js';
 import { ComplianceTracker } from './compliance-tracker.js';
 import { NavigationAutomation } from './navigate-and-capture.js';
+import LanguageValidator from './utils/language-validator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -84,6 +85,38 @@ class AccessibilityAuditor {
     };
     this.analysisReport = null;
     this.appName = path.basename(this.projectPath);
+
+    // NEW: Generate timestamp for this audit run (for filename prefixes)
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    this.timestamp = `${year}-${month}-${day}_${hours}${minutes}${seconds}`;
+
+    // Load zSpace-specific configuration for non-applicable criteria
+    this.zSpaceConfig = this.loadZSpaceConfig();
+  }
+
+  /**
+   * Load zSpace WCAG non-applicable criteria configuration
+   */
+  loadZSpaceConfig() {
+    const configPath = path.join(__dirname, '..', 'config', 'zspace-non-applicable-criteria.json');
+
+    try {
+      if (fs.existsSync(configPath)) {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        this.log('✅ Loaded zSpace configuration for non-applicable criteria');
+        return config;
+      }
+    } catch (error) {
+      this.log(`⚠️  Could not load zSpace config: ${error.message}`);
+    }
+
+    return null;
   }
 
   /**
@@ -161,7 +194,7 @@ class AccessibilityAuditor {
   }
 
   /**
-   * Handle report exports (Phase 3.4)
+   * Handle report exports (Phase 3.4) with timestamp-aware filenames
    */
   async handleExports() {
     console.log('\n📤 Step 5: Exporting reports...\n');
@@ -169,8 +202,8 @@ class AccessibilityAuditor {
     // Export to PDF
     if (this.options.exportPDF) {
       try {
-        const vpatPath = path.join(this.options.outputDir, `VPAT-${this.appName}.md`);
-        const pdfPath = path.join(this.options.outputDir, 'exports', `VPAT-${this.appName}.pdf`);
+        const vpatPath = path.join(this.options.outputDir, `${this.timestamp}_VPAT-${this.appName}.md`);
+        const pdfPath = path.join(this.options.outputDir, 'exports', `${this.timestamp}_VPAT-${this.appName}.pdf`);
 
         // Ensure exports directory exists
         const exportsDir = path.join(this.options.outputDir, 'exports');
@@ -195,8 +228,8 @@ class AccessibilityAuditor {
     // Export to CSV
     if (this.options.exportCSV) {
       try {
-        const jsonPath = path.join(this.options.outputDir, 'accessibility-analysis.json');
-        const csvPath = path.join(this.options.outputDir, 'exports', 'findings.csv');
+        const jsonPath = path.join(this.options.outputDir, `${this.timestamp}_accessibility-analysis.json`);
+        const csvPath = path.join(this.options.outputDir, 'exports', `${this.timestamp}_findings.csv`);
 
         const exportCSVPath = path.join(__dirname, 'export-csv.js');
 
@@ -214,7 +247,7 @@ class AccessibilityAuditor {
     // Create issues
     if (this.options.createIssues) {
       try {
-        const jsonPath = path.join(this.options.outputDir, 'accessibility-analysis.json');
+        const jsonPath = path.join(this.options.outputDir, `${this.timestamp}_accessibility-analysis.json`);
         const platform = this.options.createIssues.toLowerCase();
 
         if (platform !== 'github' && platform !== 'jira') {
@@ -242,13 +275,13 @@ class AccessibilityAuditor {
   }
 
   /**
-   * Handle fix generation (Phase 3.5)
+   * Handle fix generation (Phase 3.5) with timestamp-aware filenames
    */
   async handleFixGeneration() {
     console.log('\n🔧 Step 6: Generating accessibility fixes...\n');
 
     try {
-      const jsonPath = path.join(this.options.outputDir, 'accessibility-analysis.json');
+      const jsonPath = path.join(this.options.outputDir, `${this.timestamp}_accessibility-analysis.json`);
       const generateFixesPath = path.join(__dirname, 'generate-fixes.js');
 
       console.log('   🔨 Analyzing findings and generating fixes...');
@@ -316,12 +349,38 @@ class AccessibilityAuditor {
    * Step 0: Capture scene screenshots
    * Automatically chooses between external capture (if navigation map exists)
    * or Unity batch mode (traditional method)
+   * NEW: Auto-generates navigation map if external capture is requested
    */
   async captureSceneScreenshots() {
     console.log('📸 Step 0: Capturing scene screenshots...\n');
 
     // Check if navigation map exists
-    const navigationMapPath = this.detectNavigationMap();
+    let navigationMapPath = this.detectNavigationMap();
+
+    // NEW: Auto-generate navigation map if external capture is requested but map doesn't exist
+    if (!navigationMapPath && this.options.application) {
+      console.log('🗺️  Navigation map not found. Generating automatically...\n');
+
+      try {
+        const parseNavMapPath = path.join(__dirname, 'parse-navigation-map.js');
+        execSync(`node "${parseNavMapPath}" "${this.projectPath}"`, {
+          stdio: this.options.verbose ? 'inherit' : 'pipe'
+        });
+
+        // Check if navigation map was created
+        navigationMapPath = this.detectNavigationMap();
+
+        if (navigationMapPath) {
+          console.log('✅ Navigation map generated successfully\n');
+        } else {
+          console.warn('⚠️  Navigation map generation failed. Falling back to Unity batch mode...\n');
+        }
+      } catch (error) {
+        console.warn(`⚠️  Failed to generate navigation map: ${error.message}`);
+        console.warn('   Falling back to Unity batch mode...\n');
+      }
+    }
+
     const useExternalCapture = navigationMapPath && this.options.application;
 
     if (useExternalCapture) {
@@ -723,6 +782,57 @@ class AccessibilityAuditor {
   }
 
   /**
+   * Analyze project for context-dependent WCAG criteria
+   */
+  analyzeContextDependentCriteria() {
+    const report = this.analysisReport;
+    const contextCriteria = {};
+
+    // 3.2.3 Consistent Navigation - Check if navigation patterns are consistent
+    // Look for scene loading patterns and UI navigation
+    const hasSceneNavigation = report.findings.all?.some(finding =>
+      finding.description?.toLowerCase().includes('scene') ||
+      finding.description?.toLowerCase().includes('navigation')
+    );
+
+    // Check if there are multiple scenes (indicator of navigation)
+    const multipleScenes = report.summary.totalScenes > 1;
+
+    if (multipleScenes && hasSceneNavigation) {
+      // If we found potential navigation issues, mark as not supporting
+      contextCriteria.CONSISTENT_NAVIGATION_STATUS = 'Does Not Support';
+    } else if (multipleScenes) {
+      // Multiple scenes but no navigation issues detected
+      contextCriteria.CONSISTENT_NAVIGATION_STATUS = 'Supports';
+    } else {
+      // Single scene application
+      contextCriteria.CONSISTENT_NAVIGATION_STATUS = 'Not Applicable (single scene)';
+    }
+
+    // 2.4.5 Multiple Ways - Check for multiple navigation methods
+    // This is context-dependent: not applicable for linear educational sequences
+    const hasSearchFunctionality = report.findings.all?.some(finding =>
+      finding.description?.toLowerCase().includes('search')
+    );
+
+    const hasMenuNavigation = report.findings.all?.some(finding =>
+      finding.description?.toLowerCase().includes('menu')
+    );
+
+    if (multipleScenes && (hasSearchFunctionality || hasMenuNavigation)) {
+      // If app has multiple ways to navigate, check if implemented correctly
+      contextCriteria.MULTIPLE_WAYS_STATUS = 'Supports';
+    } else if (multipleScenes) {
+      // Linear sequence - exception applies
+      contextCriteria.MULTIPLE_WAYS_STATUS = 'Not Applicable (linear educational sequence)';
+    } else {
+      contextCriteria.MULTIPLE_WAYS_STATUS = 'Not Applicable (single scene)';
+    }
+
+    return contextCriteria;
+  }
+
+  /**
    * Prepare template variables from analysis report
    */
   prepareTemplateVariables() {
@@ -744,6 +854,9 @@ class AccessibilityAuditor {
         // Ignore errors
       }
     }
+
+    // Analyze context-dependent criteria
+    const contextCriteria = this.analyzeContextDependentCriteria();
 
     return {
       APP_NAME: this.appName,
@@ -799,7 +912,11 @@ class AccessibilityAuditor {
       VOICE_COMMANDS_DETECTED: false,
       HEATMAPS_GENERATED: false,
       HEATMAPS_COUNT: 0,
-      ...this.loadVisualAnalysisVariables()
+      ...this.loadVisualAnalysisVariables(),
+
+      // zSpace-specific context-dependent criteria (Phase 2: zSpace Integration)
+      CONSISTENT_NAVIGATION_STATUS: contextCriteria.CONSISTENT_NAVIGATION_STATUS,
+      MULTIPLE_WAYS_STATUS: contextCriteria.MULTIPLE_WAYS_STATUS
     };
   }
 
@@ -888,15 +1005,15 @@ class AccessibilityAuditor {
   }
 
   /**
-   * Step 3: Generate audit reports
+   * Step 3: Generate audit reports with timestamp prefixes
    */
   async generateReports() {
     console.log('📝 Step 3: Generating audit reports...\n');
 
-    // Always save JSON analysis report
-    const jsonPath = path.join(this.options.outputDir, 'accessibility-analysis.json');
+    // Always save JSON analysis report with timestamp prefix
+    const jsonPath = path.join(this.options.outputDir, `${this.timestamp}_accessibility-analysis.json`);
     fs.writeFileSync(jsonPath, JSON.stringify(this.analysisReport, null, 2));
-    this.log(`   ✅ Generated: accessibility-analysis.json`);
+    this.log(`   ✅ Generated: ${this.timestamp}_accessibility-analysis.json`);
 
     // Generate markdown reports from templates
     const templatesDir = path.join(__dirname, '../templates/audit');
@@ -904,17 +1021,36 @@ class AccessibilityAuditor {
     if (fs.existsSync(templatesDir)) {
       const variables = this.prepareTemplateVariables();
 
-      // Generate each report from template
+      // Generate each report from template with timestamp prefix
       const templates = [
-        { name: 'README.template.md', output: 'README.md' },
-        { name: 'AUDIT-SUMMARY.template.md', output: 'AUDIT-SUMMARY.md' },
-        { name: 'VPAT.template.md', output: `VPAT-SUMMARY-${this.appName}.md` },
-        { name: 'VPAT-COMPREHENSIVE.template.md', output: `VPAT-${this.appName}.md` },
-        { name: 'RECOMMENDATIONS.template.md', output: 'ACCESSIBILITY-RECOMMENDATIONS.md' }
+        { name: 'README.template.md', output: `${this.timestamp}_README.md` },
+        { name: 'AUDIT-SUMMARY.template.md', output: `${this.timestamp}_AUDIT-SUMMARY.md` },
+        { name: 'VPAT.template.md', output: `${this.timestamp}_VPAT-SUMMARY-${this.appName}.md` },
+        { name: 'VPAT-COMPREHENSIVE.template.md', output: `${this.timestamp}_VPAT-${this.appName}.md` },
+        { name: 'RECOMMENDATIONS.template.md', output: `${this.timestamp}_ACCESSIBILITY-RECOMMENDATIONS.md` }
       ];
 
-      templates.forEach(({ name, output }) => {
-        const templatePath = path.join(templatesDir, name);
+      // Generate communication documents from templates with timestamp prefix
+      const communicationTemplatesDir = path.join(__dirname, '../templates/communication');
+      const communicationTemplates = [
+        { name: 'QUICK-REFERENCE.template.md', output: `${this.timestamp}_ACCESSIBILITY-QUICK-REFERENCE-${this.appName}.md` },
+        { name: 'PUBLIC-STATEMENT.template.md', output: `${this.timestamp}_ACCESSIBILITY-PUBLIC-STATEMENT-${this.appName}.md` },
+        { name: 'FAQ.template.md', output: `${this.timestamp}_ACCESSIBILITY-FAQ-${this.appName}.md` },
+        { name: 'IMPLEMENTATION-GUIDE.template.md', output: `${this.timestamp}_ACCESSIBILITY-IMPLEMENTATION-GUIDE-${this.appName}.md` },
+        { name: 'PROGRESS-UPDATE.template.md', output: `${this.timestamp}_ACCESSIBILITY-PROGRESS-UPDATE-${this.appName}.md` }
+      ];
+
+      // Combine all templates
+      const allTemplates = [
+        ...templates.map(t => ({ ...t, dir: templatesDir })),
+        ...communicationTemplates.map(t => ({ ...t, dir: communicationTemplatesDir }))
+      ];
+
+      // Track generated files for validation
+      const generatedFiles = {};
+
+      allTemplates.forEach(({ name, output, dir }) => {
+        const templatePath = path.join(dir, name);
 
         if (fs.existsSync(templatePath)) {
           const templateContent = fs.readFileSync(templatePath, 'utf-8');
@@ -922,10 +1058,41 @@ class AccessibilityAuditor {
           const outputPath = path.join(this.options.outputDir, output);
           fs.writeFileSync(outputPath, renderedContent);
           this.log(`   ✅ Generated: ${output}`);
+
+          // Store for validation
+          generatedFiles[output] = renderedContent;
         } else {
           this.log(`   ⚠️  Template not found: ${name}`);
         }
       });
+
+      // Run language validation on all generated documents
+      console.log('\n📋 Running language validation...\n');
+      const validator = new LanguageValidator();
+      const validationResults = validator.validateMultiple(generatedFiles);
+      const validationReport = validator.generateReport(validationResults);
+
+      // Save validation report with timestamp prefix
+      const validationReportPath = path.join(this.options.outputDir, `${this.timestamp}_LANGUAGE-VALIDATION-REPORT.md`);
+      fs.writeFileSync(validationReportPath, validationReport);
+      this.log(`   ✅ Generated: ${this.timestamp}_LANGUAGE-VALIDATION-REPORT.md`);
+
+      // Display validation summary
+      const summary = validationResults.combined.summary;
+      console.log('\n📊 Language Validation Summary:');
+      console.log(`   🔴 Errors:   ${summary.totalErrors}`);
+      console.log(`   🟡 Warnings: ${summary.totalWarnings}`);
+      console.log(`   ℹ️  Info:     ${summary.totalInfo}`);
+
+      if (summary.totalErrors > 0) {
+        console.log('\n   ❌ CRITICAL: Language issues found that require legal review');
+        console.log(`   📄 Review: LANGUAGE-VALIDATION-REPORT.md\n`);
+      } else if (summary.totalWarnings > 0) {
+        console.log('\n   ⚠️  Language issues found for review');
+        console.log(`   📄 Review: LANGUAGE-VALIDATION-REPORT.md\n`);
+      } else {
+        console.log('\n   ✅ No language issues detected\n');
+      }
     } else {
       this.log('   ⚠️  Templates directory not found (Phase 1B in progress)');
     }
