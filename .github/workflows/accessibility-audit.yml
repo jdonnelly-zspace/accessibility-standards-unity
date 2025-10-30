@@ -78,12 +78,6 @@ jobs:
           targetPlatform: StandaloneLinux64
           allowDirtyBuild: true
 
-      - name: Activate Unity License
-        if: github.event.inputs.capture-screenshots != 'false'
-        uses: game-ci/unity-activate@v3
-        with:
-          unityVersion: ${{ matrix.unity-version }}
-
       - name: Run Accessibility Audit (Full)
         id: audit
         run: |
@@ -125,7 +119,7 @@ jobs:
 
       - name: Upload Audit Reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: accessibility-audit-reports-unity-${{ matrix.unity-version }}
           path: |
@@ -137,7 +131,7 @@ jobs:
 
       - name: Upload Screenshots
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: accessibility-screenshots-unity-${{ matrix.unity-version }}
           path: |
@@ -147,7 +141,7 @@ jobs:
 
       - name: Upload Generated Fixes
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: generated-fixes-unity-${{ matrix.unity-version }}
           path: |
@@ -268,7 +262,7 @@ jobs:
 
     steps:
       - name: Download All Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: all-results
 
@@ -283,7 +277,7 @@ jobs:
           ls -R all-results >> comparison.md
 
       - name: Upload Comparison
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unity-version-comparison
           path: comparison.md

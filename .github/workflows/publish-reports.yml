@@ -448,7 +448,7 @@ jobs:
           path: 'public/dashboard'
 
       - name: Upload Reports Archive
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: accessibility-reports-${{ github.ref_name }}
           path: public/reports
