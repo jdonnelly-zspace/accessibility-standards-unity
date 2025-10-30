@@ -1,0 +1,156 @@
+{
+  "timestamp": "2025-10-29T10:55:51.984704",
+  "wcag_criterion": "1.4.1 Use of Color (Level A)",
+  "summary": {
+    "screenshots_processed": 1,
+    "total_simulations": 8,
+    "cvd_types_tested": [
+      "protanopia",
+      "deuteranopia",
+      "tritanopia",
+      "protanomaly",
+      "deuteranomaly",
+      "tritanomaly",
+      "achromatopsia",
+      "achromatomaly"
+    ],
+    "output_directory": "C:\\Users\\Jill\\OneDrive\\Documents\\GitHub\\apps.career-explorer\\AccessibilityAudit\\colorblind_simulations",
+    "wcag_criterion": "1.4.1 Use of Color (Level A)"
+  },
+  "simulations": [
+    {
+      "original_image": "Unknown.png",
+      "original_path": "C:\\Users\\Jill\\OneDrive\\Documents\\GitHub\\apps.career-explorer\\AccessibilityAudit\\screenshots\\Unknown.png",
+      "timestamp": "2025-10-29T10:55:50.694085",
+      "simulations": [
+        {
+          "cvd_type": "protanopia",
+          "cvd_name": "Protanopia (Red-blind)",
+          "severity": "complete",
+          "output_file": "Unknown_protanopia.png",
+          "output_path": "C:\\Users\\Jill\\OneDrive\\Documents\\GitHub\\apps.career-explorer\\AccessibilityAudit\\colorblind_simulations\\Unknown_protanopia.png"
+        },
+        {
+          "cvd_type": "deuteranopia",
+          "cvd_name": "Deuteranopia (Green-blind)",
+          "severity": "complete",
+          "output_file": "Unknown_deuteranopia.png",
+          "output_path": "C:\\Users\\Jill\\OneDrive\\Documents\\GitHub\\apps.career-explorer\\AccessibilityAudit\\colorblind_simulations\\Unknown_deuteranopia.png"
+        },
+        {
+          "cvd_type": "tritanopia",
+          "cvd_name": "Tritanopia (Blue-blind)",
+          "severity": "complete",
+          "output_file": "Unknown_tritanopia.png",
+          "output_path": "C:\\Users\\Jill\\OneDrive\\Documents\\GitHub\\apps.career-explorer\\AccessibilityAudit\\colorblind_simulations\\Unknown_tritanopia.png"
+        },
+        {
+          "cvd_type": "protanomaly",
+          "cvd_name": "Protanomaly (Red-weak)",
+          "severity": "partial",
+          "output_file": "Unknown_protanomaly.png",
+          "output_path": "C:\\Users\\Jill\\OneDrive\\Documents\\GitHub\\apps.career-explorer\\AccessibilityAudit\\colorblind_simulations\\Unknown_protanomaly.png"
+        },
+        {
+          "cvd_type": "deuteranomaly",
+          "cvd_name": "Deuteranomaly (Green-weak)",
+          "severity": "partial",
+          "output_file": "Unknown_deuteranomaly.png",
+          "output_path": "C:\\Users\\Jill\\OneDrive\\Documents\\GitHub\\apps.career-explorer\\AccessibilityAudit\\colorblind_simulations\\Unknown_deuteranomaly.png"
+        },
+        {
+          "cvd_type": "tritanomaly",
+          "cvd_name": "Tritanomaly (Blue-weak)",
+          "severity": "partial",
+          "output_file": "Unknown_tritanomaly.png",
+          "output_path": "C:\\Users\\Jill\\OneDrive\\Documents\\GitHub\\apps.career-explorer\\AccessibilityAudit\\colorblind_simulations\\Unknown_tritanomaly.png"
+        },
+        {
+          "cvd_type": "achromatopsia",
+          "cvd_name": "Achromatopsia (Total color blindness)",
+          "severity": "complete",
+          "output_file": "Unknown_achromatopsia.png",
+          "output_path": "C:\\Users\\Jill\\OneDrive\\Documents\\GitHub\\apps.career-explorer\\AccessibilityAudit\\colorblind_simulations\\Unknown_achromatopsia.png"
+        },
+        {
+          "cvd_type": "achromatomaly",
+          "cvd_name": "Achromatomaly (Blue cone monochromacy)",
+          "severity": "complete",
+          "output_file": "Unknown_achromatomaly.png",
+          "output_path": "C:\\Users\\Jill\\OneDrive\\Documents\\GitHub\\apps.career-explorer\\AccessibilityAudit\\colorblind_simulations\\Unknown_achromatomaly.png"
+        }
+      ]
+    }
+  ],
+  "analysis": [
+    {
+      "original_image": "Unknown.png",
+      "cvd_comparisons": [
+        {
+          "cvd_type": "protanopia",
+          "cvd_name": "Protanopia (Red-blind)",
+          "similarity_score": 0.9900539997377552,
+          "information_preserved": true,
+          "difference_regions": 58,
+          "potential_issues": false
+        },
+        {
+          "cvd_type": "deuteranopia",
+          "cvd_name": "Deuteranopia (Green-blind)",
+          "similarity_score": 0.985888330638297,
+          "information_preserved": true,
+          "difference_regions": 86,
+          "potential_issues": false
+        },
+        {
+          "cvd_type": "tritanopia",
+          "cvd_name": "Tritanopia (Blue-blind)",
+          "similarity_score": 0.9906167661218634,
+          "information_preserved": true,
+          "difference_regions": 0,
+          "potential_issues": false
+        },
+        {
+          "cvd_type": "protanomaly",
+          "cvd_name": "Protanomaly (Red-weak)",
+          "similarity_score": 0.9968890275783686,
+          "information_preserved": true,
+          "difference_regions": 0,
+          "potential_issues": false
+        },
+        {
+          "cvd_type": "deuteranomaly",
+          "cvd_name": "Deuteranomaly (Green-weak)",
+          "similarity_score": 0.9978069447957976,
+          "information_preserved": true,
+          "difference_regions": 0,
+          "potential_issues": false
+        },
+        {
+          "cvd_type": "tritanomaly",
+          "cvd_name": "Tritanomaly (Blue-weak)",
+          "similarity_score": 0.9984199333032486,
+          "information_preserved": true,
+          "difference_regions": 0,
+          "potential_issues": false
+        },
+        {
+          "cvd_type": "achromatopsia",
+          "cvd_name": "Achromatopsia (Total color blindness)",
+          "similarity_score": 0.9638509827487262,
+          "information_preserved": true,
+          "difference_regions": 315,
+          "potential_issues": false
+        },
+        {
+          "cvd_type": "achromatomaly",
+          "cvd_name": "Achromatomaly (Blue cone monochromacy)",
+          "similarity_score": 0.9894178001004778,
+          "information_preserved": true,
+          "difference_regions": 7,
+          "potential_issues": false
+        }
+      ]
+    }
+  ]
+}
