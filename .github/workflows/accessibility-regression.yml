@@ -24,7 +24,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Setup Unity (if screenshot capture needed)
         if: inputs.capture-screenshots == 'true'
@@ -147,7 +147,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Update Baseline
         run: |

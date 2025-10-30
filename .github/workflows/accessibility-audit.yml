@@ -59,7 +59,7 @@ jobs:
 
       - name: Install Node.js Dependencies
         run: |
-          npm ci
+          npm install
           npm list --depth=0
         continue-on-error: true
 
