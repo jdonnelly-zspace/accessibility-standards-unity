@@ -1,0 +1,185 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2025-01-01",
+  "purpose": "Defines safe and unsafe language patterns for accessibility documentation to balance transparency with legal protection",
+
+  "statusIndicators": {
+    "availableNow": {
+      "icon": "✅",
+      "meaning": "Available Now",
+      "usage": "Feature exists in current release",
+      "qualifier": "Always qualify with context like 'varies by module' or 'in select features'"
+    },
+    "underDevelopment": {
+      "icon": "🔄",
+      "meaning": "Under Development",
+      "usage": "Actively being worked on"
+    },
+    "planned": {
+      "icon": "📋",
+      "meaning": "Planned",
+      "usage": "On roadmap but not yet started"
+    },
+    "partialSupport": {
+      "icon": "⚠️",
+      "meaning": "Partial Support",
+      "usage": "Works in some contexts, not others"
+    },
+    "notSupported": {
+      "icon": "❌",
+      "meaning": "Not Supported",
+      "usage": "Currently not available (use sparingly in external docs)"
+    }
+  },
+
+  "safeLanguage": {
+    "currentStatus": [
+      "Feature X is available in current release",
+      "Feature Y is included in version [specific version]",
+      "This capability is present in [specific modules/contexts]",
+      "Available (varies by module)",
+      "Partial support (under enhancement)",
+      "Substantial conformance with WCAG 2.2 Level AA"
+    ],
+    "developmentDirection": [
+      "Expanding keyboard support",
+      "Enhancing screen reader compatibility",
+      "Working toward [goal]",
+      "Under development",
+      "Planned enhancement",
+      "Exploring options for [feature]",
+      "Evaluating feasibility of [capability]",
+      "Considering [improvement]"
+    ],
+    "commitmentLanguage": [
+      "We are working to...",
+      "Our goal is to...",
+      "We aim to...",
+      "Development priority",
+      "Under active development",
+      "Planned enhancement",
+      "Exploring options for...",
+      "Evaluating feasibility of...",
+      "Pursuing conformance",
+      "Expanding support for...",
+      "Enhancing compatibility with..."
+    ],
+    "qualifiers": [
+      "varies by version, module, or configuration",
+      "Enhancement priorities and timelines are subject to change",
+      "based on technical feasibility, resource availability, and user feedback",
+      "depends on specific user requirements, software version, module design, and current technical capabilities"
+    ]
+  },
+
+  "unsafeLanguage": {
+    "specificDates": {
+      "avoid": [
+        "Available in Q1 2026",
+        "Will be released by March 2026",
+        "Compliance achieved by June 2026",
+        "48-hour response guarantee"
+      ],
+      "useInstead": [
+        "Near-term priority",
+        "Upcoming release",
+        "Actively working toward compliance",
+        "Prompt response to accommodation requests"
+      ]
+    },
+    "definitiveCommitments": {
+      "avoid": [
+        "Will implement...",
+        "Guaranteed to...",
+        "All users will be able to...",
+        "100% compliant",
+        "Full support for...",
+        "Commits to...",
+        "Promises..."
+      ],
+      "useInstead": [
+        "Under development",
+        "Working toward...",
+        "Expanding support for...",
+        "Pursuing conformance",
+        "Enhancing compatibility with..."
+      ]
+    },
+    "unqualifiedFeatureLists": {
+      "avoid": [
+        "✅ Keyboard accessible",
+        "✅ Screen reader compatible",
+        "✅ WCAG 2.2 Level AA compliant"
+      ],
+      "useInstead": [
+        "🔄 Expanding keyboard support",
+        "🔄 Enhancing screen reader compatibility",
+        "Working toward WCAG 2.2 Level AA conformance",
+        "✅ Keyboard navigation available (varies by module)",
+        "✅ Partial screen reader support (under enhancement)"
+      ]
+    }
+  },
+
+  "requiredDisclaimer": {
+    "sections": {
+      "accuracyAndCurrency": "Information in this document reflects {{PRODUCT_NAME}}'s accessibility status and plans as of {{PUBLICATION_DATE}}. Accessibility features, enhancement priorities, timelines, and capabilities are subject to change without notice.",
+
+      "noGuarantees": "Descriptions of planned enhancements, features under development, or future capabilities should not be interpreted as commitments or guarantees. Actual implementation and timing may vary based on technical feasibility, resource allocation, and business priorities.",
+
+      "individualNeeds": "Accommodation feasibility depends on specific user requirements, software version, module design, and current technical capabilities. We recommend contacting {{ACCESSIBILITY_CONTACT}} for individualized consultation regarding specific accommodation requests.",
+
+      "thirdPartyContent": "[If applicable] Some {{PRODUCT_NAME}} content is developed by third parties. Accessibility features and accommodation options may vary by content source.",
+
+      "competitiveInformation": "[If applicable] Comparative statements about other vendors' accessibility are based on publicly available information as of {{DATE}} and may not reflect current capabilities.",
+
+      "legalInterpretation": "This document is provided for informational purposes and should not be construed as legal advice or legal compliance certification. Organizations should consult with their own legal counsel regarding accessibility obligations.",
+
+      "contact": "For questions about information in this document: {{ACCESSIBILITY_EMAIL}}",
+
+      "updates": "**Last Updated:** {{DATE}}\n**Next Planned Update:** {{UPDATE_FREQUENCY}}"
+    }
+  },
+
+  "vpatLanguageReplacements": {
+    "traditionalVPAT": {
+      "doesNotSupport": "Enhancement Planned' or 'Under Development",
+      "supports": "Available (see remarks) - always include context",
+      "partiallySupports": "Partial Support - Enhancement Underway",
+      "notApplicable": "Not Applicable (unchanged)"
+    }
+  },
+
+  "competitiveComparison": {
+    "safePatterns": [
+      "{{PRODUCT_NAME}} provides more accessibility documentation than most competing {{CATEGORY}} platforms",
+      "{{PRODUCT_NAME}} provides industry-leading accessibility transparency",
+      "{{PRODUCT_NAME}} provides comprehensive VPAT documentation",
+      "Based on publicly available information, most competing {{CATEGORY}} platforms have not published comparable accessibility documentation",
+      "Most competing vendors have not published accessibility information or VPATs"
+    ],
+    "requiresVerification": true,
+    "lastVerifiedDate": "{{DATE}}",
+    "note": "Competitive information is based on publicly available documentation and may not reflect current capabilities"
+  },
+
+  "validationRules": {
+    "detectUnsafePatterns": [
+      "Q[1-4]\\s+20\\d{2}",
+      "by\\s+(January|February|March|April|May|June|July|August|September|October|November|December)\\s+20\\d{2}",
+      "\\d+-hour.*guarantee",
+      "will\\s+implement",
+      "guaranteed\\s+to",
+      "100%\\s+compliant",
+      "all\\s+users\\s+will\\s+be\\s+able",
+      "full\\s+support\\s+for"
+    ],
+    "requireQualifiers": [
+      "available",
+      "supports",
+      "compatible",
+      "accessible",
+      "compliant"
+    ]
+  }
+}

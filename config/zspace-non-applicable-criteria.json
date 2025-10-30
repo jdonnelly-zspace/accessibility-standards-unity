@@ -1,0 +1,189 @@
+{
+  "platform": {
+    "name": "zSpace Unity Applications",
+    "type": "native-desktop",
+    "technology": "Unity Engine",
+    "hardware": "zSpace AIO Pro/Inspire",
+    "deployment": "Standalone desktop executable (not web-based)",
+    "operatingSystem": "Windows 10/11",
+    "rendering": "Stereoscopic 3D with head-tracking",
+    "input": ["Stylus", "Mouse", "Keyboard"]
+  },
+  "documentReference": {
+    "title": "WCAG Criteria Not Applicable to zSpace Unity Applications",
+    "version": "1.0",
+    "date": "2025-10-29",
+    "author": "zSpace Accessibility Team"
+  },
+  "nonApplicableCriteria": {
+    "4.1.1": {
+      "title": "Parsing",
+      "level": "A",
+      "status": "not-applicable",
+      "reason": "Unity applications are not markup-based",
+      "justification": "Unity applications do not use HTML, XML, or any markup language that can be parsed by assistive technologies. Unity uses a component-based architecture with C# scripts and proprietary scene files, not parseable markup. Content is rendered directly via DirectX/OpenGL, not through markup parsing.",
+      "wcagNote": "This criterion is considered obsolete in WCAG 2.2 and is maintained only for backward compatibility with WCAG 2.0.",
+      "applicableAlternative": "WCAG 4.1.2 Name, Role, Value through Unity Accessibility Framework/API"
+    },
+    "1.3.5": {
+      "title": "Identify Input Purpose",
+      "level": "AA",
+      "status": "not-applicable-conditional",
+      "reason": "No personal data collection",
+      "justification": "This criterion specifically addresses autocomplete functionality for personal data fields in web forms. The application does not collect personal user information, has no form fields for user data, focuses on educational content, and has no account creation functionality.",
+      "applicableWhen": "Application implements user profiles, account creation, or personal data collection forms"
+    },
+    "1.2.1": {
+      "title": "Audio-only and Video-only (Prerecorded)",
+      "level": "A",
+      "status": "not-applicable-conditional",
+      "reason": "No audio-only or video-only content",
+      "justification": "Automated code analysis detected no audio-only or video-only media content. Application uses real-time 3D rendering, not pre-recorded media.",
+      "applicableWhen": "Application includes tutorial videos, audio narration tracks, pre-recorded demonstrations, or video testimonials"
+    },
+    "1.2.3": {
+      "title": "Audio Description or Media Alternative (Prerecorded)",
+      "level": "A",
+      "status": "not-applicable-conditional",
+      "reason": "No video content",
+      "justification": "No video files, video streams, or video-only presentations detected. Application uses interactive 3D content.",
+      "applicableWhen": "Application includes video content requiring audio descriptions",
+      "note": "WCAG 1.2.2 (Captions) may still apply for synchronized multimedia"
+    }
+  },
+  "limitedApplicabilityCriteria": {
+    "1.3.4": {
+      "title": "Orientation",
+      "level": "AA",
+      "status": "supports-special-case",
+      "reason": "Fixed hardware orientation",
+      "justification": "zSpace displays are physically landscape-oriented monitors that cannot be rotated. The stereoscopic 3D effect depends on specific display orientation for head-tracking. Content is not programmatically restricted; the hardware's physical orientation is an inherent device characteristic.",
+      "essentialException": "Stereoscopic 3D rendering with head-tracking requires specific orientation for proper depth perception",
+      "conformanceStatement": "Application supports this criterion by default as content is not programmatically restricted to a single orientation"
+    },
+    "1.4.10": {
+      "title": "Reflow",
+      "level": "AA",
+      "status": "limited-applicability",
+      "reason": "Fixed-resolution native application",
+      "justification": "This criterion was designed for responsive web content on variable viewport sizes, not fixed-resolution native applications. zSpace displays have fixed native resolutions (1920x1080 typical), apps run full-screen on dedicated hardware, and Unity uses absolute positioning and canvas scaling, not CSS reflow.",
+      "modernInterpretation": "Equivalent accessibility achieved through scalable UI elements, adjustable text sizes, responsive canvas sizing, and support for different zSpace display resolutions",
+      "exception": "3D spatial environments require two-dimensional layout for usage or meaning"
+    },
+    "1.4.12": {
+      "title": "Text Spacing",
+      "level": "AA",
+      "status": "limited-applicability",
+      "reason": "CSS properties do not exist in Unity",
+      "justification": "This criterion specifically references CSS properties (line-height, margin-bottom, letter-spacing, word-spacing) that do not exist in Unity's text rendering system. Unity uses TextMesh Pro with different property models.",
+      "equivalentCompliance": {
+        "approach": "Unity-specific text spacing parameters",
+        "measurements": {
+          "lineHeight": "1.5× font size → Unity lineSpacing = 1.5",
+          "letterSpacing": "0.12× font size → Unity characterSpacing ≈ 12",
+          "wordSpacing": "0.16× font size → Unity wordSpacing ≈ 16"
+        },
+        "requirements": [
+          "Provide user-configurable text spacing settings",
+          "Ensure text remains readable when spacing is increased",
+          "Test with TextMesh Pro spacing parameters",
+          "Avoid text clipping or overlap"
+        ]
+      }
+    },
+    "3.1.2": {
+      "title": "Language of Parts",
+      "level": "AA",
+      "status": "not-applicable-conditional",
+      "reason": "English-only content (typical)",
+      "justification": "If application is English-only with no mixed-language content, this criterion does not apply. Unity does not have native language markup like HTML's lang attribute.",
+      "applicableWhen": "Content includes quotes in other languages, technical terms from other languages, bilingual content, or multi-language features",
+      "unityImplementation": "Mixed-language content requires custom accessibility metadata implementation"
+    },
+    "3.2.3": {
+      "title": "Consistent Navigation",
+      "level": "AA",
+      "status": "context-specific",
+      "reason": "Web terminology does not map to Unity architecture",
+      "justification": "This criterion uses web-centric terminology ('Web pages') that doesn't directly map to Unity. Unity applications use scenes and states, not pages. Navigation may be spatial (3D environments) rather than hierarchical (menu-based).",
+      "reformulatedCriterion": "Navigational mechanisms that are repeated across multiple scenes or states within a Unity application occur in the same relative order and location each time they are repeated",
+      "equivalentApplication": [
+        "Consistent UI placement across scenes",
+        "Consistent interaction patterns",
+        "Predictable navigation flow"
+      ]
+    },
+    "3.2.4": {
+      "title": "Consistent Identification",
+      "level": "AA",
+      "status": "applies-context-specific",
+      "reason": "Interpreted for Unity component architecture",
+      "justification": "This applies to Unity applications but must be interpreted for game engine architecture. Unity uses reusable prefabs and components. Interactive buttons and 3D objects with the same function should have consistent visual appearance and accessible names.",
+      "webVsUnity": {
+        "web": "Navigation links, buttons, and form controls across pages",
+        "unity": "UI elements, 3D interactive objects, and menu items across scenes"
+      }
+    },
+    "2.4.5": {
+      "title": "Multiple Ways",
+      "level": "AA",
+      "status": "context-dependent",
+      "reason": "Depends on application structure",
+      "justification": "Applicability depends on whether the application follows a linear educational sequence or allows free navigation.",
+      "notApplicableIf": [
+        "Application follows a linear tutorial or lesson path (step-in-process exception)",
+        "Single-scene application with no navigation hierarchy",
+        "Process-driven workflow with prescribed educational sequence"
+      ],
+      "appliesIf": [
+        "Multiple stations/modules can be accessed in any order",
+        "Main menu allows both direct navigation and browsing",
+        "Search functionality available",
+        "Both category-based and alphabetical navigation provided"
+      ]
+    }
+  },
+  "platformConstraints": {
+    "keyDistinguishingCharacteristics": [
+      "Native desktop application (not web content, not HTML/CSS-based)",
+      "Unity game engine rendering (not DOM-based markup)",
+      "Proprietary hardware (purpose-built stereoscopic 3D displays)",
+      "Controlled environment (K-12 and higher education institutional settings)",
+      "Fixed deployment (runs on specific zSpace hardware only)"
+    ],
+    "technicalArchitecture": {
+      "noMarkup": "No HTML/XML; component-based C# scripts",
+      "noDOM": "No Document Object Model for AT to traverse",
+      "binaryFormat": "Unity scenes stored in binary/YAML, not parseable markup",
+      "renderingPipeline": "DirectX/OpenGL rendering, not markup parsing"
+    }
+  },
+  "vpatGuidance": {
+    "markNonApplicable": "Explicitly state 'Not Applicable' with platform-specific justification in VPAT",
+    "documentPlatform": "Include Platform Constraints section explaining native desktop application architecture",
+    "explainEquivalent": "For limited applicability criteria, document how application achieves equivalent accessibility through Unity-specific implementations",
+    "educationalContext": "For process-based criteria, explain educational use case and step-in-process exceptions"
+  },
+  "legalConsiderations": {
+    "section508": "Same non-applicability justifications apply to Section 508 (US federal procurement)",
+    "en301549": "Same non-applicability justifications apply to EN 301 549 (EU public procurement)",
+    "keyPrinciple": "Equivalent functionality is the goal, not literal criterion-by-criterion compliance",
+    "riskMitigation": [
+      "Demonstrates thoughtful accessibility analysis",
+      "Shows understanding of WCAG intent vs. literal interpretation",
+      "Documents platform-specific constraints",
+      "Provides equivalent accessibility measures"
+    ]
+  },
+  "essentialRequirements": {
+    "description": "While some criteria may not apply, zSpace applications must still achieve equivalent accessibility",
+    "requirements": [
+      "Unity Accessibility Framework/API for assistive technology support",
+      "Keyboard alternatives for stylus interactions",
+      "Multiple sensory cues for 3D spatial information",
+      "Configurable UI and text settings",
+      "Consistent interaction patterns throughout application"
+    ],
+    "goal": "Ensure all students can access educational content regardless of abilities, using methods appropriate to the platform and technology"
+  }
+}
