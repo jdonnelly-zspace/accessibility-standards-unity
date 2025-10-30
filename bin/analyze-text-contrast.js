@@ -28,7 +28,7 @@ export async function analyzeTextContrast(screenshotPath, options = {}) {
     // Step 1: OCR to detect text
     console.log('  📖 Running OCR to detect text...');
     const { data } = await Tesseract.recognize(screenshotPath, 'eng', {
-      logger: options.verbose ? (m) => console.log(`     ${m.status}: ${m.progress || ''}`) : undefined
+      logger: options.verbose ? (m) => console.log(`     ${m.status}: ${m.progress || ''}`) : () => {}
     });
 
     console.log(`  ✓ Detected ${data.words.length} words`);
