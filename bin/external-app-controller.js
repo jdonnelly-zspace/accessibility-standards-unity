@@ -74,8 +74,8 @@ export class ExternalAppController {
 
       this.log(`Application launched with PID: ${this.appProcess.pid}`);
 
-      // Wait for the window to appear (max 30 seconds)
-      const maxWaitTime = 30000; // 30 seconds
+      // Wait for the window to appear (max 60 seconds)
+      const maxWaitTime = 60000; // 60 seconds (increased for Unity apps)
       const checkInterval = 1000; // 1 second
       let elapsed = 0;
 
