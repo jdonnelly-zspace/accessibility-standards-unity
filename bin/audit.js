@@ -13,6 +13,7 @@
  *   --output-dir <dir>         Output directory for audit reports (default: <project>/AccessibilityAudit)
  *   --format <format>          Output format: markdown (default), json, both
  *   --capture-screenshots      Capture scene screenshots before analysis
+ *   --analyze-visual           Run visual analysis (contrast, colorblind simulation)
  *   --unity-path <path>        Path to Unity executable (for screenshot capture)
  *   --application <path>       Path to built application .exe (for external capture)
  *   --verbose                  Enable verbose logging
@@ -143,6 +144,11 @@ class AccessibilityAuditor {
 
       // Step 2: Create output directory
       await this.createOutputDirectory();
+
+      // Step 2.5: Run visual analysis (if enabled)
+      if (this.options.analyzeVisual) {
+        await this.runVisualAnalysis();
+      }
 
       // Step 3: Generate reports
       await this.generateReports();
@@ -595,10 +601,11 @@ class AccessibilityAuditor {
   }
 
   /**
-   * Step 3.5: Run Visual Analysis (Python scripts)
+   * Step 2.5: Run Visual Analysis (Python scripts)
+   * Runs color contrast analysis and colorblind simulation on captured screenshots
    */
   async runVisualAnalysis() {
-    console.log('🎨 Step 3.5: Running Visual Analysis...\n');
+    console.log('🎨 Step 2.5: Running Visual Analysis...\n');
 
     const automationDir = path.join(__dirname, '../automation/quick_wins');
     const contrastScript = path.join(automationDir, 'color_contrast_analyzer.py');
@@ -1268,6 +1275,7 @@ Quick Wins Automation:
     format: 'markdown',
     verbose: false,
     captureScreenshots: false,
+    analyzeVisual: false,
     unityPath: null,
     application: null,
     baseline: false,
@@ -1300,6 +1308,8 @@ Quick Wins Automation:
       i++;
     } else if (arg === '--capture-screenshots') {
       options.captureScreenshots = true;
+    } else if (arg === '--analyze-visual') {
+      options.analyzeVisual = true;
     } else if (arg === '--verbose') {
       options.verbose = true;
     } else if (arg === '--stakeholder-docs') {
