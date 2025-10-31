@@ -45,7 +45,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
 
       - name: Cache Unity Library
         uses: actions/cache@v3
@@ -60,7 +59,7 @@ jobs:
 
       - name: Install Node.js Dependencies
         run: |
-          npm ci
+          npm install
           npm list --depth=0
         continue-on-error: true
 
@@ -77,12 +76,6 @@ jobs:
           unityVersion: ${{ matrix.unity-version }}
           targetPlatform: StandaloneLinux64
           allowDirtyBuild: true
-
-      - name: Activate Unity License
-        if: github.event.inputs.capture-screenshots != 'false'
-        uses: game-ci/unity-activate@v3
-        with:
-          unityVersion: ${{ matrix.unity-version }}
 
       - name: Run Accessibility Audit (Full)
         id: audit
@@ -125,7 +118,7 @@ jobs:
 
       - name: Upload Audit Reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: accessibility-audit-reports-unity-${{ matrix.unity-version }}
           path: |
@@ -137,7 +130,7 @@ jobs:
 
       - name: Upload Screenshots
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: accessibility-screenshots-unity-${{ matrix.unity-version }}
           path: |
@@ -147,7 +140,7 @@ jobs:
 
       - name: Upload Generated Fixes
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: generated-fixes-unity-${{ matrix.unity-version }}
           path: |
@@ -268,7 +261,7 @@ jobs:
 
     steps:
       - name: Download All Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: all-results
 
@@ -283,7 +276,7 @@ jobs:
           ls -R all-results >> comparison.md
 
       - name: Upload Comparison
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unity-version-comparison
           path: comparison.md

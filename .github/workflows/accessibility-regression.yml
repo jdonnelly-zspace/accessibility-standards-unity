@@ -21,12 +21,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-type: '18'
-          cache: 'npm'
+          node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
-        working-directory: ./accessibility-standards-unity
+        run: npm install
 
       - name: Setup Unity (if screenshot capture needed)
         if: inputs.capture-screenshots == 'true'
@@ -44,7 +42,7 @@ jobs:
 
       - name: Upload Audit Reports
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: accessibility-audit-reports
           path: |
@@ -69,7 +67,7 @@ jobs:
 
       - name: Upload Diff Report
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: diff-report
           path: diff-report.json
@@ -149,8 +147,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
-        working-directory: ./accessibility-standards-unity
+        run: npm install
 
       - name: Update Baseline
         run: |
